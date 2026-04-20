@@ -1101,7 +1101,16 @@ const SalaryManagement = () => {
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>${bodyRows}</tbody>
+                            <tbody>
+                                ${bodyRows}
+                                <tr style="font-weight: 800; background: #eff6ff;">
+                                    <td colspan="4" class="right">TOTAL</td>
+                                    <td class="right">${toCurrency(filteredRows.reduce((acc, r) => acc + Number(r.gross_salary ?? getEarnedSalary(r) ?? 0), 0))}</td>
+                                    <td colspan="9"></td>
+                                    <td class="right">${toCurrency(filteredRows.reduce((acc, r) => acc + Number(r.calculated_salary || 0), 0))}</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </body>
@@ -1236,7 +1245,17 @@ const SalaryManagement = () => {
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>${bodyRows}</tbody>
+                            <tbody>
+                                ${bodyRows}
+                                <tr style="font-weight: 800; background: #eff6ff;">
+                                    <td colspan="7" class="right">TOTAL</td>
+                                    <td class="right">${toCurrency(filteredRows.reduce((acc, r) => acc + Number(r.gross_salary ?? getEarnedSalary(r) ?? 0), 0))}</td>
+                                    <td colspan="8" class="excel-only"></td>
+                                    <td colspan="8"></td>
+                                    <td class="right">${toCurrency(filteredRows.reduce((acc, r) => acc + Number(r.calculated_salary || 0), 0))}</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </body>
