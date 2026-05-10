@@ -1,0 +1,20 @@
+id,permission_id,approver_id,approver_type,status,comments,updated_at
+4,4,802,hod,Approved,,2026-03-11 04:52:12.717189
+6,5,802,hod,Approved,OK HOD,2026-03-11 04:54:10.95737
+9,7,802,hod,Approved,,2026-03-11 10:22:51.673181
+11,8,802,hod,Approved,,2026-03-13 04:41:25.384056
+21,17,802,hod,Approved,,2026-03-14 04:39:00.576879
+24,19,802,hod,Approved,,2026-03-16 17:33:56.546717
+26,20,5045,replacement,Pending,,2026-03-18 03:54:43.85881
+28,22,802,hod,Approved,,2026-03-18 09:45:10.022333
+29,22,1,principal,Approved,,2026-03-18 09:45:28.769531
+30,23,802,hod,Approved,,2026-03-18 10:59:13.467471
+31,23,1,principal,Approved,,2026-03-18 11:00:59.267686
+32,24,5045,replacement,Pending,,2026-03-24 09:55:00.931936
+33,25,802,hod,Approved,,2026-03-26 05:03:54.359946
+34,25,1,principal,Approved,,2026-03-26 05:04:34.204943
+35,26,911,hod,Pending,,2026-03-27 10:20:12.481958
+36,27,1191,replacement,Approved,,2026-04-01 10:16:26.937604
+37,27,802,hod,Approved,,2026-04-01 10:18:56.416627
+38,27,1,principal,Approved,,2026-04-01 10:20:35.647862
+39,28,1,principal,Pending,,2026-04-02 06:36:41.350156

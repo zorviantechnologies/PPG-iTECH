@@ -1,0 +1,35 @@
+TODAY (IST): 2026-03-29
+
+[1] users: FOUND: A1 | role: staff
+
+[2] biometric_logs today: 6 rows
+   id=1484 | 2026-03-29 06:00:54+00 | type=IN | device=MAIN_DEVICE_01
+   id=1485 | 2026-03-29 07:08:18+00 | type=OUT | device=MAIN_DEVICE_01
+   id=1538 | 2026-03-29 14:18:43+00 | type=OUT | device=MAIN_DEVICE_01
+   id=1539 | 2026-03-29 14:28:49+00 | type=OUT | device=MAIN_DEVICE_01
+   id=1540 | 2026-03-29 18:01:48+00 | type=OUT | device=MAIN_DEVICE_01
+   id=1541 | 2026-03-29 18:20:16+00 | type=OUT | device=MAIN_DEVICE_01
+
+[3] biometric_attendance today: 1 rows
+   id=747 | date=2026-03-29 | in=11:30:00 | out=23:50:16
+
+[4] attendance_records today: 1 rows
+   id=1174 | date=2026-03-29 | in=11:30:00 | out=12:38:00 | status=LOP | remarks=Status: LOP | Working Hours: 1h 8m | Alerts: Late Entry (11:30), Late LOP (Morni
+
+[5] attendance_records recent 5:
+   2026-03-29 | in=11:30:00 | out=12:38:00 | status=LOP
+   2026-03-28 | in=08:19:00 | out=18:56:00 | status=Present
+   2026-03-27 | in=08:19:00 | out=17:48:00 | status=Present
+   2026-03-26 | in=08:37:00 | out=17:41:00 | status=Present
+   2026-03-25 | in=08:40:00 | out=16:54:00 | status=Present
+
+[6] biometric_logs recent 5:
+   id=1541 | 2026-03-29 18:20:16+00 | type=OUT
+   id=1540 | 2026-03-29 18:01:48+00 | type=OUT
+   id=1539 | 2026-03-29 14:28:49+00 | type=OUT
+   id=1538 | 2026-03-29 14:18:43+00 | type=OUT
+   id=1485 | 2026-03-29 07:08:18+00 | type=OUT
+
+[7] attendance_records columns: id(int4), emp_id(varchar), date(date), in_time(time), out_time(time), status(attendance_status), remarks(text)
+
+[8] === ATTEMPTING DIRECT REBUILD FOR 5001 on 2026-03-29 ===

@@ -1,0 +1,6 @@
+id,key,label,full_name,color,default_days,is_default,created_at,updated_at
+1,cl,CL,Casual Leave,blue,12,true,2026-03-07 17:03:18.758067,2026-03-07 17:03:18.758067
+2,ml,ML,Medical Leave,rose,12,true,2026-03-07 17:03:18.758067,2026-03-07 17:03:18.758067
+3,od,OD,On Duty,amber,10,true,2026-03-07 17:03:18.758067,2026-03-07 17:03:18.758067
+4,comp_leave,COMP LEAVE,Comp Leave,purple,6,true,2026-03-07 17:03:18.758067,2026-03-09 08:32:04.576224
+5,lop,LOP,Loss of Pay,gray,30,true,2026-03-07 17:03:18.758067,2026-03-07 17:03:18.758067

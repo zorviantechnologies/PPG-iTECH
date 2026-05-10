@@ -1,0 +1,145 @@
+[dotenv@17.3.1] injecting env (19) from .env -- tip: ΓÜÖ∩╕Å  override existing env vars with { override: true }
+--- attendance_records schema ---
+[
+  { column_name: 'id', data_type: 'integer' },
+  { column_name: 'emp_id', data_type: 'character varying' },
+  { column_name: 'date', data_type: 'date' },
+  { column_name: 'in_time', data_type: 'time without time zone' },
+  { column_name: 'out_time', data_type: 'time without time zone' },
+  { column_name: 'status', data_type: 'USER-DEFINED' },
+  { column_name: 'remarks', data_type: 'text' }
+]
+--- users schema ---
+[
+  { column_name: 'id', data_type: 'integer' },
+  { column_name: 'emp_id', data_type: 'character varying' },
+  { column_name: 'emp_code', data_type: 'character varying' },
+  { column_name: 'password', data_type: 'character varying' },
+  { column_name: 'pin', data_type: 'character varying' },
+  { column_name: 'role', data_type: 'USER-DEFINED' },
+  { column_name: 'name', data_type: 'character varying' },
+  { column_name: 'email', data_type: 'character varying' },
+  { column_name: 'mobile', data_type: 'character varying' },
+  { column_name: 'department_id', data_type: 'integer' },
+  { column_name: 'designation', data_type: 'character varying' },
+  { column_name: 'profile_pic', data_type: 'text' },
+  { column_name: 'dob', data_type: 'date' },
+  { column_name: 'doj', data_type: 'date' },
+  { column_name: 'gender', data_type: 'USER-DEFINED' },
+  { column_name: 'blood_group', data_type: 'character varying' },
+  { column_name: 'religion', data_type: 'character varying' },
+  { column_name: 'nationality', data_type: 'character varying' },
+  { column_name: 'caste', data_type: 'character varying' },
+  { column_name: 'community', data_type: 'character varying' },
+  { column_name: 'whatsapp', data_type: 'character varying' },
+  { column_name: 'aadhar', data_type: 'character varying' },
+  { column_name: 'pan', data_type: 'character varying' },
+  { column_name: 'account_no', data_type: 'character varying' },
+  { column_name: 'bank_name', data_type: 'character varying' },
+  { column_name: 'branch', data_type: 'character varying' },
+  { column_name: 'ifsc', data_type: 'character varying' },
+  { column_name: 'pin_code', data_type: 'character varying' },
+  { column_name: 'pf_number', data_type: 'character varying' },
+  { column_name: 'uan_number', data_type: 'character varying' },
+  { column_name: 'permanent_address', data_type: 'text' },
+  { column_name: 'communication_address', data_type: 'text' },
+  { column_name: 'father_name', data_type: 'character varying' },
+  { column_name: 'mother_name', data_type: 'character varying' },
+  { column_name: 'marital_status', data_type: 'character varying' },
+  { column_name: 'monthly_salary', data_type: 'numeric' },
+  { column_name: 'experience', data_type: 'character varying' },
+  {
+    column_name: 'created_at',
+    data_type: 'timestamp without time zone'
+  },
+  { column_name: 'instance_id', data_type: 'uuid' },
+  { column_name: 'id', data_type: 'uuid' },
+  { column_name: 'aud', data_type: 'character varying' },
+  { column_name: 'role', data_type: 'character varying' },
+  { column_name: 'email', data_type: 'character varying' },
+  { column_name: 'encrypted_password', data_type: 'character varying' },
+  {
+    column_name: 'email_confirmed_at',
+    data_type: 'timestamp with time zone'
+  },
+  { column_name: 'invited_at', data_type: 'timestamp with time zone' },
+  { column_name: 'confirmation_token', data_type: 'character varying' },
+  {
+    column_name: 'confirmation_sent_at',
+    data_type: 'timestamp with time zone'
+  },
+  { column_name: 'recovery_token', data_type: 'character varying' },
+  {
+    column_name: 'recovery_sent_at',
+    data_type: 'timestamp with time zone'
+  },
+  {
+    column_name: 'email_change_token_new',
+    data_type: 'character varying'
+  },
+  { column_name: 'email_change', data_type: 'character varying' },
+  {
+    column_name: 'email_change_sent_at',
+    data_type: 'timestamp with time zone'
+  },
+  {
+    column_name: 'last_sign_in_at',
+    data_type: 'timestamp with time zone'
+  },
+  { column_name: 'raw_app_meta_data', data_type: 'jsonb' },
+  { column_name: 'raw_user_meta_data', data_type: 'jsonb' },
+  { column_name: 'is_super_admin', data_type: 'boolean' },
+  { column_name: 'created_at', data_type: 'timestamp with time zone' },
+  { column_name: 'updated_at', data_type: 'timestamp with time zone' },
+  { column_name: 'phone', data_type: 'text' },
+  {
+    column_name: 'phone_confirmed_at',
+    data_type: 'timestamp with time zone'
+  },
+  { column_name: 'phone_change', data_type: 'text' },
+  { column_name: 'phone_change_token', data_type: 'character varying' },
+  {
+    column_name: 'phone_change_sent_at',
+    data_type: 'timestamp with time zone'
+  },
+  {
+    column_name: 'confirmed_at',
+    data_type: 'timestamp with time zone'
+  },
+  {
+    column_name: 'email_change_token_current',
+    data_type: 'character varying'
+  },
+  { column_name: 'email_change_confirm_status', data_type: 'smallint' },
+  {
+    column_name: 'banned_until',
+    data_type: 'timestamp with time zone'
+  },
+  {
+    column_name: 'reauthentication_token',
+    data_type: 'character varying'
+  },
+  {
+    column_name: 'reauthentication_sent_at',
+    data_type: 'timestamp with time zone'
+  },
+  { column_name: 'is_sso_user', data_type: 'boolean' },
+  { column_name: 'deleted_at', data_type: 'timestamp with time zone' },
+  { column_name: 'is_anonymous', data_type: 'boolean' }
+]
+--- salary_records schema ---
+[
+  { column_name: 'id', data_type: 'integer' },
+  { column_name: 'emp_id', data_type: 'character varying' },
+  { column_name: 'month', data_type: 'integer' },
+  { column_name: 'year', data_type: 'integer' },
+  { column_name: 'total_present', data_type: 'integer' },
+  { column_name: 'total_leave', data_type: 'integer' },
+  { column_name: 'total_lop', data_type: 'integer' },
+  { column_name: 'calculated_salary', data_type: 'numeric' },
+  { column_name: 'status', data_type: 'USER-DEFINED' },
+  {
+    column_name: 'generated_at',
+    data_type: 'timestamp without time zone'
+  }
+]

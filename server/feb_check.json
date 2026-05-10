@@ -1,0 +1,41 @@
+{
+  "total_feb_records": 87,
+  "eligible_users": 3,
+  "sample_records": [
+    {
+      "emp_id": "EMP001",
+      "date": "2026-02-04T18:30:00.000Z",
+      "status": "Present",
+      "in_time": "08:52:00",
+      "out_time": "17:01:00"
+    },
+    {
+      "emp_id": "EMP001",
+      "date": "2026-02-05T18:30:00.000Z",
+      "status": "Present",
+      "in_time": "08:46:00",
+      "out_time": "17:02:00"
+    },
+    {
+      "emp_id": "EMP001",
+      "date": "2026-02-06T18:30:00.000Z",
+      "status": "Weekend",
+      "in_time": null,
+      "out_time": null
+    },
+    {
+      "emp_id": "EMP001",
+      "date": "2026-02-07T18:30:00.000Z",
+      "status": "Weekend",
+      "in_time": null,
+      "out_time": null
+    },
+    {
+      "emp_id": "EMP002",
+      "date": "2026-02-10T18:30:00.000Z",
+      "status": "Present",
+      "in_time": "08:58:00",
+      "out_time": "16:54:00"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "tables": [
+    "leave_approvals",
+    "leave_balances",
+    "leave_requests",
+    "leave_settings"
+  ],
+  "settings": [],
+  "balanceCols": [
+    "id",
+    "emp_id",
+    "year",
+    "cl_taken",
+    "ml_taken",
+    "od_taken",
+    "comp_taken",
+    "lop_taken"
+  ],
+  "requestCols": [
+    "id",
+    "emp_id",
+    "leave_type",
+    "from_date",
+    "to_date",
+    "days_count",
+    "reason",
+    "alternative_staff_id",
+    "status",
+    "approver_role",
+    "created_at"
+  ]
+}

@@ -1,0 +1,893 @@
+id,emp_id,date,in_time,out_time,status,remarks
+99,5045,2026-03-06,13:57:38,14:10:43,Present,
+103,101,2026-03-06,14:41:42,14:42:10,Present,
+105,802,2026-03-06,16:53:01,,Present,
+106,5045,2026-03-07,14:12:06,14:34:09,Present,
+118,5045,2026-03-09,09:12:57,16:52:14,Present,
+120,802,2026-03-09,09:16:05,17:32:49,Present,
+121,1196,2026-03-09,09:17:30,16:59:45,Present,
+122,1199,2026-03-09,09:17:51,16:59:53,Present,
+123,216,2026-03-09,09:18:09,17:10:31,Present,
+124,1006,2026-03-09,09:31:08,17:26:10,Present,
+125,1133,2026-03-09,09:32:11,17:43:39,Present,
+126,818,2026-03-09,09:51:33,16:59:06,Present,
+127,1124,2026-03-09,09:54:08,17:00:11,Present,
+128,1127,2026-03-09,09:54:40,16:53:14,Present,
+129,101,2026-03-09,09:55:07,17:33:10,Present,
+130,108,2026-03-09,,,OD,
+144,1119,2026-03-09,17:33:27,17:34:44,OD,
+148,1119,2026-03-10,16:49:34,,Absent,
+149,1119,2026-03-11,,,OD,
+150,1119,2026-03-12,,,OD,
+151,1119,2026-03-13,,,OD,
+153,1006,2026-03-10,09:01:55,01:20:00,CL,
+154,5045,2026-03-10,09:02:27,16:49:20,ML,
+155,1199,2026-03-10,09:02:59,17:22:22,Present,
+156,802,2026-03-10,09:05:45,17:28:53,Present,
+158,216,2026-03-10,09:06:17,17:21:18,Present,
+159,101,2026-03-10,09:10:28,17:14:05,Present,
+160,186,2026-03-10,09:28:55,,Present,
+161,818,2026-03-10,09:52:48,16:47:11,Present,
+162,1133,2026-03-10,09:53:30,17:22:28,Present,
+164,1124,2026-03-10,17:01:54,,Absent,
+167,5045,2026-03-11,09:15:45,15:00:00,Present,
+168,101,2026-03-11,08:58:34,17:11:20,Present,
+169,1006,2026-03-11,08:59:00,16:59:03,Present,
+170,802,2026-03-11,09:00:20,17:01:02,Present,
+171,216,2026-03-11,09:55:43,17:12:32,Present,
+172,5045,2026-03-12,,,CL,
+173,1199,2026-03-11,08:58:07,17:05:48,Present,
+174,802,2026-03-12,08:52:00,17:41:54,Present,
+175,216,2026-03-12,08:52:56,17:23:41,Present,
+176,1006,2026-03-12,08:53:08,14:45:09,Present,OD (Full Day)
+177,1199,2026-03-12,08:55:43,17:23:29,Present,
+178,108,2026-03-12,08:57:54,01:45:42,Present,OD (Full Day)
+179,1124,2026-03-12,08:58:32,17:25:48,Present,
+180,1133,2026-03-12,08:58:58,17:35:11,Present,
+181,818,2026-03-12,08:59:05,10:27:44,OD,OD
+182,101,2026-03-12,09:00:00,13:20:00,Present,
+192,5045,2026-03-13,09:48:00,10:05:00,LOP,Working Hours: 0h 17m | Alerts: Early Exit (10:05) | Approved Segments: OD: 09:00-13:00 (4h 0m) | OD: 13:00-16:45 (3h 45m) | OD: 13:45-16:45 (3h 0m) | OD: 13:45-16:45 (3h 0m)
+196,1199,2026-03-13,09:06:00,17:05:00,LOP,Working Hours: 7h 59m | Alerts: Late Entry (09:06)
+199,818,2026-03-13,08:58:48,16:46:34,Present,
+200,1006,2026-03-13,09:01:10,,LOP,
+201,216,2026-03-13,17:05:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:05)
+202,1196,2026-03-13,17:06:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:06)
+203,1133,2026-03-13,17:05:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:05)
+204,101,2026-03-13,16:50:00,16:53:00,LOP,Working Hours: 0h 3m | Alerts: Late Entry (16:50)
+210,802,2026-03-13,,,Leave,CL (Full Day)
+213,5045,2026-03-14,08:55:00,17:08:00,Present,Working Hours: 8h 13m
+214,108,2026-03-14,08:57:00,17:16:00,Present,Working Hours: 8h 19m
+215,1127,2026-03-14,08:57:00,17:15:00,Present,Working Hours: 8h 18m
+216,101,2026-03-14,09:00:00,17:18:00,Present,Working Hours: 8h 18m
+217,1119,2026-03-14,09:00:00,,Present,Working Hours: 0h 0m
+218,1199,2026-03-14,09:04:00,17:01:00,LOP,Working Hours: 7h 57m | Alerts: Late Entry (09:04)
+219,1006,2026-03-14,08:59:32,,Present,"Working Hours: 0h 0m "
+220,1196,2026-03-14,09:05:00,17:00:00,LOP,Working Hours: 7h 55m | Alerts: Late Entry (09:05)
+221,1133,2026-03-14,09:06:00,17:16:00,Present,Working Hours: 8h 10m | Alerts: Late Entry (09:06) | Approved Segments: Permission: 09:00:00-09:10:00 (0h 10m)
+222,818,2026-03-14,,,CL,CL (Full Day)
+223,802,2026-03-14,,,CL,CL (Full Day)
+240,5045,2026-03-16,08:52:00,16:47:00,Present,Working Hours: 7h 55m
+242,1199,2026-03-16,08:53:00,,Present,Working Hours: 0h 0m
+243,216,2026-03-16,08:54:00,,Present,Working Hours: 0h 0m
+244,1196,2026-03-16,08:59:56,,Present,Working Hours: 0h 0m
+245,101,2026-03-16,,,OD,OD (Full Day)
+254,818,2026-03-17,08:43:00,17:15:00,Present,Working Hours: 8h 32m
+255,108,2026-03-16,16:58:00,16:58:00,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:58)
+256,802,2026-03-16,08:57:02,,Present,Working Hours: 0h 0m
+257,1006,2026-03-16,08:58:45,,Present,Working Hours: 0h 0m
+258,69,2026-03-17,08:43:00,16:57:00,Present,Working Hours: 8h 14m
+259,158,2026-03-17,08:45:00,16:54:00,Present,Working Hours: 8h 9m
+260,1134,2026-03-17,08:46:00,17:28:00,Present,Working Hours: 8h 42m
+261,1127,2026-03-17,08:46:00,17:04:00,Present,Working Hours: 8h 18m
+262,386,2026-03-17,08:47:00,17:28:00,Present,Working Hours: 8h 41m
+263,5045,2026-03-17,08:49:00,,Present,Working Hours: 0h 0m
+264,36,2026-03-17,08:49:00,17:02:00,Present,Working Hours: 8h 13m
+265,1133,2026-03-17,08:50:00,17:30:00,Present,Working Hours: 8h 40m
+266,860,2026-03-17,08:52:00,17:21:00,Present,Working Hours: 8h 29m
+267,913,2026-03-17,08:52:00,17:24:00,Present,Working Hours: 8h 32m
+268,103,2026-03-17,08:53:00,08:53:00,LOP,Working Hours: 0h 0m | Alerts: Early Exit (08:53)
+270,1116,2026-03-17,08:53:00,17:23:00,Present,Working Hours: 8h 30m
+271,1112,2026-03-17,08:54:00,,Present,Working Hours: 0h 0m
+272,108,2026-03-17,08:54:00,17:08:00,Present,Working Hours: 8h 14m
+274,1087,2026-03-17,08:56:00,16:57:00,Present,Working Hours: 8h 1m
+275,802,2026-03-17,08:56:00,17:44:00,Present,Working Hours: 8h 48m
+276,1199,2026-03-17,09:00:00,17:05:00,Present,Working Hours: 8h 5m
+277,130,2026-03-17,09:00:00,,Present,Working Hours: 0h 0m
+278,919,2026-03-17,09:00:00,,Present,Working Hours: 0h 0m
+279,848,2026-03-17,09:00:00,16:52:00,Present,Working Hours: 7h 52m
+280,1097,2026-03-17,09:00:00,17:31:00,Present,Working Hours: 8h 31m
+281,101,2026-03-17,09:01:00,17:21:00,LOP,Working Hours: 8h 20m | Alerts: Late Entry (09:01)
+282,1196,2026-03-17,09:01:00,17:05:00,LOP,Working Hours: 8h 4m | Alerts: Late Entry (09:01)
+284,121,2026-03-17,09:03:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:03)
+285,1006,2026-03-17,09:03:00,17:30:00,LOP,Working Hours: 8h 27m | Alerts: Late Entry (09:03)
+286,1185,2026-03-17,09:05:00,09:05:00,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:05), Early Exit (09:05)"
+288,1124,2026-03-17,09:05:00,17:44:00,LOP,Working Hours: 8h 39m | Alerts: Late Entry (09:05)
+289,1119,2026-03-17,09:05:00,17:41:00,LOP,Working Hours: 8h 36m | Alerts: Late Entry (09:05)
+290,234,2026-03-17,09:10:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:10)
+291,51,2026-03-17,09:10:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:10)
+292,912,2026-03-17,09:11:00,17:31:00,LOP,Working Hours: 8h 20m | Alerts: Late Entry (09:11)
+293,878,2026-03-17,09:14:00,17:21:00,LOP,Working Hours: 8h 7m | Alerts: Late Entry (09:14)
+294,563,2026-03-17,17:22:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:22)
+295,216,2026-03-17,17:10:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:10)
+296,119,2026-03-17,08:55:55,,Present,Working Hours: 0h 0m
+297,1093,2026-03-17,16:48:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:48)
+298,910,2026-03-17,16:49:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:49)
+300,317,2026-03-17,16:52:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:52)
+302,984,2026-03-17,16:57:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:57)
+305,930,2026-03-17,16:59:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:59)
+307,92,2026-03-17,17:03:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:03)
+311,817,2026-03-17,17:05:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:05)
+327,911,2026-03-17,17:37:00,17:37:00,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:37)
+332,1173,2026-03-17,17:45:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:45)
+333,216,2026-03-18,08:43:00,,Present,Working Hours: 0h 0m
+334,1141,2026-03-18,08:43:00,,Present,Working Hours: 0h 0m
+335,1112,2026-03-18,08:43:00,,Present,Working Hours: 0h 0m
+336,506,2026-03-18,08:43:00,,Present,Working Hours: 0h 0m
+337,818,2026-03-18,08:44:00,,Present,Working Hours: 0h 0m
+338,1127,2026-03-18,08:44:00,16:25:00,Present,Working Hours: 7h 41m | Alerts: Early Exit (16:25) | Permission: 15:45:00-16:45:00 (Duration: 1h 0m)
+339,960,2026-03-18,08:44:00,,Present,Working Hours: 0h 0m
+340,860,2026-03-18,08:44:00,,Present,Working Hours: 0h 0m
+341,317,2026-03-18,08:44:00,,Present,Working Hours: 0h 0m
+342,1128,2026-03-18,08:44:00,,Present,Working Hours: 0h 0m
+343,1095,2026-03-18,08:44:00,,Present,Working Hours: 0h 0m
+344,69,2026-03-18,08:45:00,,Present,Working Hours: 0h 0m
+345,563,2026-03-18,08:45:00,,Present,Working Hours: 0h 0m
+346,930,2026-03-18,08:45:00,,Present,Working Hours: 0h 0m
+347,1173,2026-03-18,08:46:00,,Present,Working Hours: 0h 0m
+348,817,2026-03-18,08:47:00,,Present,Working Hours: 0h 0m
+349,1087,2026-03-18,08:49:00,,Present,Working Hours: 0h 0m
+350,108,2026-03-18,08:50:00,,Present,Working Hours: 0h 0m
+351,119,2026-03-18,08:51:00,,Present,Working Hours: 0h 0m
+352,5045,2026-03-18,08:51:00,,Present,Working Hours: 0h 0m
+353,919,2026-03-18,08:52:00,,Present,Working Hours: 0h 0m
+354,158,2026-03-18,08:52:00,,Present,Working Hours: 0h 0m
+355,103,2026-03-18,08:53:00,,Present,Working Hours: 0h 0m
+356,1003,2026-03-18,08:53:00,,Present,Working Hours: 0h 0m
+357,1196,2026-03-18,08:53:00,,Present,Working Hours: 0h 0m
+358,1103,2026-03-18,08:53:00,,Present,Working Hours: 0h 0m
+359,36,2026-03-18,08:54:00,,Present,Working Hours: 0h 0m
+360,409,2026-03-18,08:54:00,,Present,Working Hours: 0h 0m
+361,1119,2026-03-18,08:54:00,,Present,Working Hours: 0h 0m
+362,1116,2026-03-18,08:54:00,,Present,Working Hours: 0h 0m
+363,970,2026-03-18,08:56:00,,Present,Working Hours: 0h 0m
+364,1133,2026-03-18,08:57:00,,Present,Working Hours: 0h 0m
+365,1199,2026-03-18,08:57:00,,Present,Working Hours: 0h 0m
+366,913,2026-03-18,08:57:00,,Present,Working Hours: 0h 0m
+367,192,2026-03-18,08:57:00,,Present,Working Hours: 0h 0m
+368,912,2026-03-18,08:58:00,,Present,Working Hours: 0h 0m
+369,1090,2026-03-18,08:58:00,,Present,Working Hours: 0h 0m
+370,121,2026-03-18,08:59:00,,Present,Working Hours: 0h 0m
+371,1016,2026-03-18,08:59:00,08:59:00,LOP,Working Hours: 0h 0m | Alerts: Early Exit (08:59)
+373,910,2026-03-18,09:00:00,,Present,Working Hours: 0h 0m
+374,802,2026-03-18,09:00:00,,Present,Working Hours: 0h 0m
+375,130,2026-03-18,09:00:00,,Present,Working Hours: 0h 0m
+376,879,2026-03-18,09:00:00,,Present,Working Hours: 0h 0m
+377,242,2026-03-18,09:00:00,,Present,Working Hours: 0h 0m
+378,1097,2026-03-18,09:00:00,,Present,Working Hours: 0h 0m
+379,92,2026-03-18,09:01:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:01)
+380,1093,2026-03-18,09:01:00,16:48:00,LOP,Working Hours: 7h 47m | Alerts: Late Entry (09:01)
+381,848,2026-03-18,09:02:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:02)
+382,911,2026-03-18,09:02:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:02)
+383,51,2026-03-18,09:02:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:02)
+384,234,2026-03-18,09:03:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:03)
+385,1006,2026-03-18,09:03:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:03)
+386,101,2026-03-18,09:03:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:03)
+387,339,2026-03-18,09:04:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:04)
+388,1096,2026-03-18,09:04:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:04)
+389,1185,2026-03-18,09:06:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:06)
+390,948,2026-03-18,09:06:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:06)
+391,877,2026-03-18,09:06:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:06)
+392,1130,2026-03-18,09:07:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:07)
+393,878,2026-03-18,09:09:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:09)
+395,1181,2026-03-18,09:13:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:13)
+396,386,2026-03-18,09:23:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:23)
+399,1132,2026-03-18,16:48:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:48)
+401,5045,2026-03-19,20:15:00,22:51:00,LOP,Working Hours: 2h 36m | Alerts: Late Entry (20:15)
+414,5045,2026-03-20,16:58:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:58)
+431,5001,2026-03-02,09:10:00,17:35:00,Present,Mock Data - A1 current month reset
+432,5001,2026-03-03,09:10:00,17:35:00,Present,Mock Data - A1 current month reset
+433,5001,2026-03-04,,,LOP,Mock Data - Loss Of Pay
+434,5001,2026-03-05,09:10:00,17:35:00,Present,Mock Data - A1 current month reset
+435,5001,2026-03-06,,,Absent,Mock Data - Absent
+436,5001,2026-03-09,,,CL,Mock Data - Casual Leave
+437,5001,2026-03-10,09:10:00,17:35:00,Present,Mock Data - A1 current month reset
+438,5001,2026-03-11,09:10:00,17:35:00,Present,Mock Data - A1 current month reset
+439,5001,2026-03-12,09:10:00,17:35:00,Present,Mock Data - A1 current month reset
+440,5001,2026-03-13,,,LOP,Mock Data - Loss Of Pay
+441,5001,2026-03-16,09:10:00,17:35:00,Present,Mock Data - A1 current month reset
+442,5001,2026-03-17,,,Absent,Mock Data - Absent
+443,5001,2026-03-18,,,CL,Mock Data - Casual Leave
+444,5001,2026-03-19,09:10:00,17:35:00,Present,Mock Data - A1 current month reset
+445,5001,2026-03-20,09:10:00,17:35:00,Present,Mock Data - A1 current month reset
+446,5045,2026-03-23,08:45:00,17:48:00,Present,Working Hours: 9h 3m
+447,1133,2026-03-23,08:45:00,,Present,Working Hours: 0h 0m
+448,1112,2026-03-23,08:45:00,,Present,Working Hours: 0h 0m
+449,317,2026-03-23,08:45:00,,Present,Working Hours: 0h 0m
+450,818,2026-03-23,08:45:00,,Present,Working Hours: 0h 0m
+451,216,2026-03-23,08:45:00,,Present,Working Hours: 0h 0m
+452,69,2026-03-23,08:46:00,,Present,Working Hours: 0h 0m
+453,930,2026-03-23,08:46:00,,Present,Working Hours: 0h 0m
+454,860,2026-03-23,08:46:00,,Present,Working Hours: 0h 0m
+455,1127,2026-03-23,08:47:00,17:48:00,Present,Working Hours: 9h 1m
+456,1173,2026-03-23,08:48:00,,Present,Working Hours: 0h 0m
+457,1134,2026-03-23,08:49:00,,Present,Working Hours: 0h 0m
+458,92,2026-03-23,08:49:00,,Present,Working Hours: 0h 0m
+459,386,2026-03-23,08:49:00,,Present,Working Hours: 0h 0m
+460,802,2026-03-23,08:53:00,,Present,Working Hours: 0h 0m
+461,913,2026-03-23,08:53:00,,Present,Working Hours: 0h 0m
+462,1191,2026-03-23,08:53:00,,Present,Working Hours: 0h 0m
+463,215,2026-03-23,08:54:00,,Present,Working Hours: 0h 0m
+464,101,2026-03-23,08:55:00,,Present,Working Hours: 0h 0m
+465,911,2026-03-23,08:55:00,,Present,Working Hours: 0h 0m
+466,1101,2026-03-23,08:55:00,,Present,Working Hours: 0h 0m
+467,1148,2026-03-23,08:55:00,,Present,Working Hours: 0h 0m
+468,848,2026-03-23,08:55:00,16:58:00,Present,Working Hours: 8h 3m
+469,919,2026-03-23,08:55:00,,Present,Working Hours: 0h 0m
+470,970,2026-03-23,08:56:00,16:58:00,Present,Working Hours: 8h 2m
+471,103,2026-03-23,08:56:00,,Present,Working Hours: 0h 0m
+472,1093,2026-03-23,08:56:00,,Present,Working Hours: 0h 0m
+473,5001,2026-03-23,08:56:00,16:51:00,Present,Working Hours: 7h 55m
+474,879,2026-03-23,08:57:00,,Present,Working Hours: 0h 0m
+475,1199,2026-03-23,08:57:00,,Present,Working Hours: 0h 0m
+476,1096,2026-03-23,08:58:00,,Present,Working Hours: 0h 0m
+477,817,2026-03-23,08:58:00,,Present,Working Hours: 0h 0m
+478,1196,2026-03-23,08:58:00,,Present,Working Hours: 0h 0m
+479,1097,2026-03-23,08:59:00,,Present,Working Hours: 0h 0m
+480,1132,2026-03-23,08:59:00,,Present,Working Hours: 0h 0m
+481,512,2026-03-23,08:59:00,,Present,Working Hours: 0h 0m
+482,1006,2026-03-23,09:00:00,,Present,Working Hours: 0h 0m
+483,820,2026-03-23,09:00:00,,Present,Working Hours: 0h 0m
+484,409,2026-03-23,09:00:00,16:52:00,Present,Working Hours: 7h 52m
+485,77,2026-03-23,09:00:00,,Present,Working Hours: 0h 0m
+486,130,2026-03-23,09:01:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:01)
+487,192,2026-03-23,09:01:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:01)
+488,1130,2026-03-23,09:01:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:01)
+489,1124,2026-03-23,09:01:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:01)
+490,1016,2026-03-23,09:02:00,09:02:00,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:02), Early Exit (09:02)"
+492,121,2026-03-23,09:02:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:02)
+493,1119,2026-03-23,09:02:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:02)
+494,1019,2026-03-23,09:03:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:03)
+495,51,2026-03-23,09:03:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:03)
+496,910,2026-03-23,09:04:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:04)
+497,139,2026-03-23,09:05:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:05)
+498,1083,2026-03-23,09:06:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:06)
+499,106,2026-03-23,09:07:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:07)
+500,1185,2026-03-23,09:08:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:08)
+501,1003,2026-03-23,09:11:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:11)
+502,1141,2026-03-23,09:13:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:13)
+503,878,2026-03-23,09:17:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:17)
+504,1087,2026-03-23,08:52:50,,Present,Working Hours: 0h 0m
+508,1181,2026-03-23,16:59:00,16:59:00,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:59)
+512,1141,2026-03-24,08:41:00,,Present,Working Hours: 0h 0m
+513,1112,2026-03-24,08:41:00,,Present,Working Hours: 0h 0m
+514,5001,2026-03-24,08:41:00,16:47:00,Present,Working Hours: 8h 6m
+515,819,2026-03-24,08:42:00,,Present,Working Hours: 0h 0m
+516,5045,2026-03-24,08:42:00,16:46:00,Present,Working Hours: 8h 4m
+517,69,2026-03-24,08:44:00,,Present,Working Hours: 0h 0m
+518,930,2026-03-24,08:48:00,,Present,Working Hours: 0h 0m
+519,1127,2026-03-24,08:49:00,,Present,Working Hours: 0h 0m
+520,1148,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+521,1016,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+522,1101,2026-03-24,08:57:00,,Present,Working Hours: 0h 0m
+523,1199,2026-03-24,08:58:00,,Present,Working Hours: 0h 0m
+524,960,2026-03-24,08:58:00,,Present,Working Hours: 0h 0m
+525,1095,2026-03-24,08:58:00,,Present,Working Hours: 0h 0m
+526,970,2026-03-24,08:59:00,,Present,Working Hours: 0h 0m
+527,512,2026-03-24,09:00:00,,Present,Working Hours: 0h 0m
+528,820,2026-03-24,09:00:00,,Present,Working Hours: 0h 0m
+529,879,2026-03-24,09:00:00,,Present,Working Hours: 0h 0m
+530,1093,2026-03-24,09:00:00,,Present,Working Hours: 0h 0m
+531,1003,2026-03-24,09:00:00,,Present,Working Hours: 0h 0m
+532,1119,2026-03-24,09:00:00,,Present,Working Hours: 0h 0m
+533,101,2026-03-24,09:00:00,16:47:00,Present,Working Hours: 7h 47m
+534,1134,2026-03-24,09:00:00,,Present,Working Hours: 0h 0m
+535,92,2026-03-24,09:03:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:03)
+536,913,2026-03-24,09:03:00,16:58:00,LOP,Working Hours: 7h 55m | Alerts: Late Entry (09:03)
+537,1096,2026-03-24,09:03:00,16:57:00,LOP,Working Hours: 7h 54m | Alerts: Late Entry (09:03)
+538,386,2026-03-24,09:03:00,16:57:00,LOP,Working Hours: 7h 54m | Alerts: Late Entry (09:03)
+539,121,2026-03-24,09:03:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:03)
+540,844,2026-03-24,09:04:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:04)
+541,911,2026-03-24,09:04:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:04)
+542,948,2026-03-24,09:04:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:04)
+543,51,2026-03-24,09:05:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:05)
+544,130,2026-03-24,09:06:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:06)
+545,234,2026-03-24,09:10:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:10)
+546,1130,2026-03-24,09:12:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:12)
+548,506,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+549,802,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+550,1191,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+551,1133,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+552,317,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+553,103,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+554,1132,2026-03-24,08:55:00,16:54:00,Present,Working Hours: 7h 59m
+555,215,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+556,818,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+557,36,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+558,910,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+559,1173,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+560,919,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+561,1097,2026-03-24,08:55:00,16:54:00,Present,Working Hours: 7h 59m
+562,1196,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+563,409,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+564,1142,2026-03-24,08:55:00,,Present,Working Hours: 0h 0m
+566,1087,2026-03-24,08:51:01,05:10:23,Present,Working Hours: 8h 9m
+591,984,2026-03-24,16:57:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:57)
+594,1103,2026-03-24,16:58:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:58)
+596,263,2026-03-24,16:59:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:59)
+597,1185,2026-03-24,16:59:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:59)
+598,5045,2026-03-25,08:40:00,17:31:00,Present,Working Hours: 8h 51m
+599,5001,2026-03-25,08:40:00,16:54:00,Present,Working Hours: 8h 14m
+600,317,2026-03-25,08:41:00,,Present,Working Hours: 0h 0m
+601,1112,2026-03-25,08:42:00,,Present,Working Hours: 0h 0m
+602,818,2026-03-25,08:44:00,08:44:00,LOP,Working Hours: 0h 0m | Alerts: Early Exit (08:44)
+603,860,2026-03-25,08:44:00,,Present,Working Hours: 0h 0m
+605,563,2026-03-25,08:44:00,,Present,Working Hours: 0h 0m
+606,1173,2026-03-25,08:45:00,08:45:00,LOP,Working Hours: 0h 0m | Alerts: Early Exit (08:45)
+608,1127,2026-03-25,08:46:00,17:09:00,Present,Working Hours: 8h 23m
+609,817,2026-03-25,08:46:00,17:02:00,Present,Working Hours: 8h 16m
+610,1091,2026-03-25,08:48:00,08:48:00,LOP,Working Hours: 0h 0m | Alerts: Early Exit (08:48)
+612,930,2026-03-25,08:48:00,,Present,Working Hours: 0h 0m
+613,103,2026-03-25,08:48:00,,Present,Working Hours: 0h 0m
+614,1196,2026-03-25,08:48:00,17:32:00,Present,Working Hours: 8h 44m
+615,158,2026-03-25,08:50:00,,Present,Working Hours: 0h 0m
+616,1097,2026-03-25,08:51:00,16:52:00,Present,Working Hours: 8h 1m
+617,69,2026-03-25,08:52:00,16:57:00,Present,Working Hours: 8h 5m
+618,802,2026-03-25,08:52:00,17:42:00,Present,Working Hours: 8h 50m
+619,192,2026-03-25,08:52:00,16:59:00,Present,Working Hours: 8h 7m
+620,506,2026-03-25,08:53:00,,Present,Working Hours: 0h 0m
+621,1083,2026-03-25,08:54:00,,Present,Working Hours: 0h 0m
+622,1133,2026-03-25,08:55:00,17:09:00,Present,Working Hours: 8h 14m
+623,1003,2026-03-25,08:55:00,,Present,Working Hours: 0h 0m
+624,190,2026-03-25,08:56:00,,Present,Working Hours: 0h 0m
+625,1119,2026-03-25,08:57:00,17:07:00,Present,Working Hours: 8h 10m
+626,215,2026-03-25,08:57:00,,Present,Working Hours: 0h 0m
+627,512,2026-03-25,08:58:00,16:56:00,Present,Working Hours: 7h 58m
+628,1130,2026-03-25,08:58:00,,Present,Working Hours: 0h 0m
+629,1103,2026-03-25,08:58:00,,Present,Working Hours: 0h 0m
+630,1090,2026-03-25,08:58:00,,Present,Working Hours: 0h 0m
+631,911,2026-03-25,08:59:00,16:56:00,Present,Working Hours: 7h 57m
+632,101,2026-03-25,08:59:00,17:42:00,Present,Working Hours: 8h 43m
+633,913,2026-03-25,08:59:00,,Present,Working Hours: 0h 0m
+634,77,2026-03-25,08:59:00,,Present,Working Hours: 0h 0m
+635,1132,2026-03-25,08:59:00,16:52:00,Present,Working Hours: 7h 53m
+636,1199,2026-03-25,08:59:00,17:31:00,Present,Working Hours: 8h 32m
+637,409,2026-03-25,08:59:00,16:56:00,Present,Working Hours: 7h 57m
+638,386,2026-03-25,09:00:00,,Present,Working Hours: 0h 0m
+639,1093,2026-03-25,09:00:00,16:52:00,Present,Working Hours: 7h 52m
+640,912,2026-03-25,09:00:00,,Present,Working Hours: 0h 0m
+641,848,2026-03-25,09:00:00,,Present,Working Hours: 0h 0m
+642,1185,2026-03-25,09:00:00,16:59:00,Present,Working Hours: 7h 59m
+643,1191,2026-03-25,09:00:00,17:02:00,Present,Working Hours: 8h 2m
+644,1016,2026-03-25,09:01:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:01)
+645,1087,2026-03-25,09:01:00,16:57:00,LOP,Working Hours: 7h 56m | Alerts: Late Entry (09:01)
+646,1116,2026-03-25,09:01:00,16:57:00,LOP,Working Hours: 7h 56m | Alerts: Late Entry (09:01)
+647,1134,2026-03-25,09:01:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:01)
+648,844,2026-03-25,09:01:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:01)
+649,916,2026-03-25,09:02:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:02)
+650,877,2026-03-25,09:03:00,16:59:00,LOP,Working Hours: 7h 56m | Alerts: Late Entry (09:03)
+651,820,2026-03-25,09:03:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:03)
+652,910,2026-03-25,09:03:00,16:52:00,LOP,Working Hours: 7h 49m | Alerts: Late Entry (09:03)
+653,92,2026-03-25,09:03:00,16:52:00,LOP,Working Hours: 7h 49m | Alerts: Late Entry (09:03)
+654,51,2026-03-25,09:04:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:04)
+655,1019,2026-03-25,09:04:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:04)
+656,1006,2026-03-25,09:08:00,17:42:00,LOP,Working Hours: 8h 34m | Alerts: Late Entry (09:08)
+657,1181,2026-03-25,09:08:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:08)
+658,339,2026-03-25,09:10:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:10)
+659,242,2026-03-25,09:10:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:10)
+660,1101,2026-03-25,08:37:24,,Present,Working Hours: 0h 0m
+661,1142,2026-03-25,08:37:32,,Present,Working Hours: 0h 0m
+662,263,2026-03-25,08:37:38,,Present,Working Hours: 0h 0m
+663,1095,2026-03-25,08:37:43,,Present,Working Hours: 0h 0m
+664,819,2026-03-25,16:53:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:53)
+665,216,2026-03-25,17:08:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:08)
+666,1141,2026-03-25,08:53:37,,Present,Working Hours: 0h 0m
+667,879,2026-03-25,08:54:59,,Present,Working Hours: 0h 0m
+668,960,2026-03-25,16:56:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:56)
+669,919,2026-03-25,08:58:06,,Present,Working Hours: 0h 0m
+670,1124,2026-03-25,09:05:46,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:05)
+671,370,2026-03-25,09:08:05,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:05)
+672,878,2026-03-25,09:14:27,,Present,Working Hours: 0h 0m | Alerts: Late Entry (09:14)
+673,216,2026-03-24,,,CL,CL (Full Day): 09:00 AM-04:45 PM (7h 45m)
+681,108,2026-03-25,16:52:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:52)
+693,984,2026-03-25,16:57:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:57)
+712,1141,2026-03-26,08:18:00,17:09:00,Present,Working Hours: 8h 51m
+713,984,2026-03-26,08:18:00,17:01:00,Present,Working Hours: 8h 43m
+715,69,2026-03-26,08:19:00,17:03:00,Present,Working Hours: 8h 44m
+716,439,2026-03-26,08:19:00,,Present,Working Hours: 0h 0m
+717,216,2026-03-26,08:20:00,,Present,Working Hours: 0h 0m
+718,1142,2026-03-26,08:21:00,17:05:00,Present,Working Hours: 8h 44m
+720,817,2026-03-26,08:27:00,17:08:00,Present,Working Hours: 8h 41m
+721,506,2026-03-26,08:30:00,17:09:00,Present,Working Hours: 8h 39m
+722,819,2026-03-26,08:20:21,,Present,Working Hours: 0h 0m
+723,119,2026-03-26,08:27:42,,Present,Working Hours: 0h 0m
+724,5001,2026-03-26,08:37:00,17:41:00,Present,Working Hours: 9h 4m
+725,1148,2026-03-26,08:38:00,16:57:00,Present,Working Hours: 8h 19m
+726,1101,2026-03-26,08:39:00,17:11:00,Present,Working Hours: 8h 32m
+727,317,2026-03-26,08:39:00,17:13:00,Present,Working Hours: 8h 34m
+728,818,2026-03-26,08:41:00,17:01:00,Present,Working Hours: 8h 20m
+729,860,2026-03-26,08:42:00,17:32:00,Present,Working Hours: 8h 50m
+730,1091,2026-03-26,08:47:00,17:12:00,Present,Working Hours: 8h 25m
+731,844,2026-03-26,08:47:00,,Present,Working Hours: 0h 0m
+732,879,2026-03-26,08:48:00,17:56:00,Present,Working Hours: 9h 8m
+733,1112,2026-03-26,08:48:00,,Present,Working Hours: 0h 0m
+734,1127,2026-03-26,08:48:00,17:21:00,Present,Working Hours: 8h 33m
+735,1173,2026-03-26,08:49:00,17:12:00,Present,Working Hours: 8h 23m
+736,370,2026-03-26,08:51:00,,Present,Working Hours: 0h 0m
+737,108,2026-03-26,08:51:00,16:52:00,Present,Working Hours: 8h 1m
+738,919,2026-03-26,08:51:00,16:59:00,Present,Working Hours: 8h 8m
+739,1016,2026-03-26,08:52:00,,Present,Working Hours: 0h 0m
+740,1083,2026-03-26,08:53:00,17:09:00,Present,Working Hours: 8h 16m
+741,1196,2026-03-26,08:53:00,,Present,Working Hours: 0h 0m
+742,5045,2026-03-26,08:53:00,17:41:00,Present,Working Hours: 8h 48m
+743,1134,2026-03-26,08:54:00,17:09:00,Present,Working Hours: 8h 15m
+744,1003,2026-03-26,08:54:00,17:45:00,Present,Working Hours: 8h 51m
+745,215,2026-03-26,08:54:00,,Present,Working Hours: 0h 0m
+746,1087,2026-03-26,08:54:00,17:05:00,Present,Working Hours: 8h 11m
+747,1097,2026-03-26,08:55:00,16:54:00,Present,Working Hours: 7h 59m
+748,103,2026-03-26,08:55:00,16:57:00,Present,Working Hours: 8h 2m
+749,960,2026-03-26,08:56:00,16:55:00,Present,Working Hours: 7h 59m
+750,1090,2026-03-26,08:56:00,17:26:00,Present,Working Hours: 8h 30m
+751,820,2026-03-26,08:56:00,,Present,Working Hours: 0h 0m
+752,92,2026-03-26,08:56:00,,Present,Working Hours: 0h 0m
+753,1096,2026-03-26,08:56:00,,Present,Working Hours: 0h 0m
+754,101,2026-03-26,08:57:00,17:03:00,Present,Working Hours: 8h 6m
+755,1119,2026-03-26,08:57:00,17:20:00,Present,Working Hours: 8h 23m
+756,192,2026-03-26,08:57:00,16:49:00,Present,Working Hours: 7h 52m
+757,1133,2026-03-26,08:57:00,,Present,Working Hours: 0h 0m
+758,512,2026-03-26,08:57:00,16:46:00,Present,Working Hours: 7h 49m
+759,970,2026-03-26,08:57:00,16:58:00,Present,Working Hours: 8h 1m
+760,848,2026-03-26,08:57:00,16:57:00,Present,Working Hours: 8h 0m
+761,409,2026-03-26,08:57:00,,Present,Working Hours: 0h 0m
+762,158,2026-03-26,08:57:00,,Present,Working Hours: 0h 0m
+763,1132,2026-03-26,08:58:00,16:54:00,Present,Working Hours: 7h 56m
+764,802,2026-03-26,08:58:00,17:20:00,Present,Working Hours: 8h 22m
+765,1093,2026-03-26,08:59:00,16:53:00,Present,Working Hours: 7h 54m
+766,1191,2026-03-26,08:59:00,17:02:00,Present,Working Hours: 8h 3m
+767,911,2026-03-26,08:59:00,17:20:00,Present,Working Hours: 8h 21m
+768,190,2026-03-26,09:00:00,,Present,Working Hours: 0h 0m
+769,910,2026-03-26,09:00:00,,Present,Working Hours: 0h 0m
+770,913,2026-03-26,09:01:00,17:01:00,LOP,Working Hours: 8h 0m | Alerts: Late Entry (09:01)
+772,121,2026-03-26,09:03:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:03)
+773,1199,2026-03-26,09:03:00,,Present,Working Hours: 0h 0m | Alerts: Late Entry (09:03) | Permission: 09:00:00-10:00:00 (Duration: 1h 0m)
+775,77,2026-03-26,09:04:00,17:00:00,LOP,Working Hours: 7h 56m | Alerts: Late Entry (09:04)
+776,877,2026-03-26,09:05:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:05)
+777,1124,2026-03-26,09:06:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:06)
+778,1019,2026-03-26,09:06:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:06)
+779,339,2026-03-26,09:08:00,17:04:00,LOP,Working Hours: 7h 56m | Alerts: Late Entry (09:08)
+780,878,2026-03-26,09:09:00,17:11:00,LOP,Working Hours: 8h 2m | Alerts: Late Entry (09:09)
+781,234,2026-03-26,09:09:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:09)
+782,1185,2026-03-26,09:14:00,16:59:00,LOP,Working Hours: 7h 45m | Alerts: Late Entry (09:14)
+783,1181,2026-03-26,09:14:00,17:01:00,LOP,Working Hours: 7h 47m | Alerts: Late Entry (09:14)
+784,242,2026-03-26,09:14:00,17:33:00,LOP,Working Hours: 8h 19m | Alerts: Late Entry (09:14)
+785,1128,2026-03-26,08:39:00,17:13:00,Present,Working Hours: 8h 15m
+786,36,2026-03-26,16:52:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:52)
+787,1103,2026-03-26,08:54:00,17:09:00,Present,"Working Hours: 8h 4m "
+788,916,2026-03-26,17:01:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:01)
+789,930,2026-03-26,09:09:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:09)
+790,912,2026-03-26,16:55:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:55)
+791,130,2026-03-26,09:09:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:09)
+792,51,2026-03-26,09:10:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (09:10)
+797,139,2026-03-26,16:56:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (16:56)
+809,106,2026-03-26,17:01:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:01)
+833,1006,2026-03-26,09:50:00,17:21:00,LOP,Working Hours: 7h 31m | Alerts: Late Entry (09:50)
+837,1130,2026-03-26,09:32:00,,LOP,Working Hours: 0h 0m | Alerts: Late Entry (17:32)
+843,5001,2026-03-27,08:19:00,17:48:00,Present,Working Hours: 9h 29m
+844,984,2026-03-27,08:19:00,16:59:00,Present,"Working Hours: 8h 40m
+"
+845,439,2026-03-27,08:20:00,17:01:00,Present,Working Hours: 0h 0m
+847,1141,2026-03-27,08:21:00,17:04:00,Present,Status: Present | Working Hours: 8h 43m
+848,1142,2026-03-27,08:22:00,16:58:00,Present,Working Hours: 0h 0m
+850,1095,2026-03-27,08:24:00,,Present,Working Hours: 0h 0m
+851,5045,2026-03-27,08:27:00,17:08:00,Present,Status: Present | Working Hours: 8h 41m
+852,817,2026-03-27,08:27:00,16:58:00,Present,"Working Hours: 0h 0m
+"
+853,119,2026-03-27,08:28:00,,Present,Working Hours: 0h 0m
+854,1148,2026-03-27,08:29:00,16:58:00,Present,Working Hours: 0h 0m
+855,860,2026-03-27,08:31:00,17:23:00,Present,Status: Present | Working Hours: 8h 52m
+856,819,2026-03-27,08:32:00,,Present,Working Hours: 0h 0m
+857,216,2026-03-27,08:32:00,,Present,Working Hours: 0h 0m
+858,1107,2026-03-27,08:33:00,,Present,Working Hours: 0h 0m
+859,317,2026-03-27,08:35:00,16:51:00,Present,Working Hours: 8h 16m
+860,818,2026-03-27,08:38:00,17:01:00,Present,Working Hours: 0h 0m
+861,1179,2026-03-27,08:41:00,17:01:00,Present,Working Hours: 0h 0m
+862,1112,2026-03-27,08:46:00,16:59:00,Present,Working Hours: 0h 0m
+863,1016,2026-03-27,08:47:00,,Present,Working Hours: 0h 0m
+864,1173,2026-03-27,08:48:00,,Present,Working Hours: 0h 0m
+865,370,2026-03-27,08:48:00,,Present,"Working Hours: 0h 0m
+"
+866,1127,2026-03-27,08:48:00,,Present,Working Hours: 0h 0m
+867,948,2026-03-27,08:48:00,,Present,Working Hours: 0h 0m
+868,1119,2026-03-27,08:50:00,,Present,Working Hours: 0h 0m
+869,69,2026-03-27,08:50:00,17:01:00,Present,Status: Present | Working Hours: 8h 11m
+870,409,2026-03-27,08:50:00,16:53:00,Present,Working Hours: 8h 3m
+871,930,2026-03-27,08:51:00,,Present,"Working Hours: 0h 0m
+"
+872,1087,2026-03-27,08:52:00,17:04:00,Present,Status: Present | Working Hours: 8h 12m
+873,36,2026-03-27,08:52:00,16:50:00,Present,Working Hours: 7h 58m
+874,913,2026-03-27,08:53:00,16:55:00,Present,Working Hours: 8h 2m
+875,92,2026-03-27,08:53:00,,Present,Working Hours: 0h 0m
+876,103,2026-03-27,08:53:00,,Present,Working Hours: 0h 0m
+877,960,2026-03-27,08:54:00,16:57:00,Present,Working Hours: 8h 3m
+878,1096,2026-03-27,08:55:00,,Present,"Working Hours: 0h 0m
+"
+879,879,2026-03-27,08:55:00,17:05:00,Present,Working Hours: 0h 0m
+880,1196,2026-03-27,08:55:00,17:21:00,Present,Status: Present | Working Hours: 8h 26m
+881,1003,2026-03-27,08:55:00,17:21:00,Present,Status: Present | Working Hours: 8h 26m
+882,1103,2026-03-27,08:56:00,,Present,Working Hours: 0h 0m
+883,1093,2026-03-27,08:56:00,17:10:00,Present,Status: Present | Working Hours: 8h 14m
+884,1097,2026-03-27,08:57:00,17:11:00,Present,Status: Present | Working Hours: 8h 14m
+885,1019,2026-03-27,08:57:00,17:01:00,Present,Working Hours: 0h 0m
+886,970,2026-03-27,08:57:00,,Present,"Working Hours: 0h 0m
+"
+887,919,2026-03-27,08:58:00,,Present,Working Hours: 0h 0m
+888,1199,2026-03-27,08:58:00,,Present,Working Hours: 0h 0m
+889,139,2026-03-27,08:58:00,17:29:00,Present,Status: Present | Working Hours: 8h 31m
+890,77,2026-03-27,08:58:00,17:04:00,Present,Status: Present | Working Hours: 8h 6m
+891,802,2026-03-27,08:58:00,18:18:00,Present,Status: Present | Working Hours: 9h 20m
+892,910,2026-03-27,08:58:00,,Present,Working Hours: 0h 0m
+893,1130,2026-03-27,08:59:00,,Present,Working Hours: 0h 0m
+894,1133,2026-03-27,08:59:00,,Present,Working Hours: 0h 0m
+895,1132,2026-03-27,08:59:00,17:10:00,Present,Status: Present | Working Hours: 8h 11m
+896,106,2026-03-27,08:59:00,17:04:00,Present,Status: Present | Working Hours: 8h 5m
+897,101,2026-03-27,08:59:00,17:34:00,Present,Working Hours: 0h 0m
+898,215,2026-03-27,08:59:00,,Present,Working Hours: 0h 0m
+899,820,2026-03-27,08:59:00,,Present,Working Hours: 0h 0m
+900,234,2026-03-27,08:59:00,17:05:00,Present,Status: Present | Working Hours: 8h 6m
+901,190,2026-03-27,09:00:00,,Present,Working Hours: 0h 0m
+902,158,2026-03-27,09:00:00,,Present,Working Hours: 0h 0m
+904,339,2026-03-27,09:09:00,00:00:00,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:09), Late LOP (Full Day)"
+905,1128,2026-03-27,08:36:00,17:00:00,Present,Working Hours: 0h 0m
+906,1124,2026-03-27,09:01:00,,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:01), Late LOP (Full Day)"
+907,912,2026-03-27,09:01:00,,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:01), Late LOP (Full Day)"
+908,1090,2026-03-27,09:01:00,,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:01), Late LOP (Full Day)"
+909,878,2026-03-27,09:01:00,17:06:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 8h 5m | Alerts: Late Entry (09:01), Late LOP (Morning)"
+910,1091,2026-03-27,09:02:00,,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:02), Late LOP (Full Day)"
+911,1134,2026-03-27,09:02:00,,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:02), Late LOP (Full Day)"
+912,916,2026-03-27,09:02:00,,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:02), Late LOP (Full Day)"
+913,386,2026-03-27,09:02:00,,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:02), Late LOP (Full Day)"
+914,51,2026-03-27,09:03:00,,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:03), Late LOP (Full Day)"
+915,1191,2026-03-27,09:04:00,17:04:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 8h 0m | Alerts: Late Entry (09:04), Late LOP (Morning)"
+916,130,2026-03-27,09:04:00,,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:04), Late LOP (Full Day)
+"
+917,1006,2026-03-27,09:05:00,17:08:00,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:05), Late LOP (Full Day)"
+918,121,2026-03-27,09:06:00,,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:06), Late LOP (Full Day)"
+919,848,2026-03-27,09:07:00,17:05:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 7h 58m | Alerts: Late Entry (09:07), Late LOP (Morning)"
+969,911,2026-03-27,09:11:00,,LOP,"Working Hours: 0h 0m | Alerts: Late Entry (09:11), Late LOP (Full Day)"
+1004,1185,2026-03-27,17:05:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (17:05), Late LOP (Full Day)"
+1008,263,2026-03-27,17:10:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (17:10), Late LOP (Full Day)"
+1016,216,2026-03-28,08:12:00,,Present,Status: Present | Working Hours: 0h 0m
+1017,819,2026-03-28,08:12:00,18:55:00,Present,Status: Present | Working Hours: 10h 43m
+1018,1107,2026-03-28,08:13:00,18:55:00,Present,Status: Present | Working Hours: 10h 42m
+1019,1142,2026-03-28,08:13:00,18:37:00,Present,Status: Present | Working Hours: 10h 24m
+1020,69,2026-03-28,08:13:00,,Present,Status: Present | Working Hours: 0h 0m
+1021,1141,2026-03-28,08:14:00,18:37:00,Present,Status: Present | Working Hours: 10h 23m
+1023,984,2026-03-28,08:15:00,18:36:00,Present,Status: Present | Working Hours: 10h 21m
+1024,5001,2026-03-28,08:19:00,18:56:00,Present,Status: Present | Working Hours: 10h 37m
+1025,5045,2026-03-28,08:19:00,18:59:00,Present,Status: Present | Working Hours: 10h 40m
+1026,1095,2026-03-28,08:26:00,18:38:00,Present,Status: Present | Working Hours: 10h 12m
+1027,36,2026-03-28,08:28:00,18:47:00,Present,Status: Present | Working Hours: 10h 19m
+1028,1119,2026-03-28,08:28:00,18:55:00,Present,Status: Present | Working Hours: 10h 27m
+1029,930,2026-03-28,08:28:00,18:58:00,Present,Status: Present | Working Hours: 10h 30m
+1030,913,2026-03-28,08:32:00,18:41:00,Present,Status: Present | Working Hours: 10h 9m
+1031,512,2026-03-28,08:32:00,,Present,Status: Present | Working Hours: 0h 0m
+1032,919,2026-03-28,08:32:00,18:38:00,Present,Status: Present | Working Hours: 10h 6m
+1033,916,2026-03-28,08:32:00,18:47:00,Present,Status: Present | Working Hours: 10h 15m
+1035,1101,2026-03-28,08:36:00,18:38:00,Present,Status: Present | Working Hours: 10h 2m
+1036,818,2026-03-28,08:36:00,08:36:00,Present,Status: Present | Working Hours: 0h 0m
+1037,317,2026-03-28,08:37:00,18:38:00,Present,Status: Present | Working Hours: 10h 1m
+1038,439,2026-03-28,08:37:00,08:37:00,Present,Status: Present | Working Hours: 0h 0m
+1039,1103,2026-03-28,08:37:00,18:37:00,Present,Status: Present | Working Hours: 10h 0m
+1040,77,2026-03-28,08:37:00,18:40:00,Present,Status: Present | Working Hours: 10h 3m
+1041,1148,2026-03-28,08:52:00,18:38:00,Present,Status: Present | Working Hours: 9h 46m
+1042,1124,2026-03-28,08:53:00,18:55:00,Present,Status: Present | Working Hours: 9h 54m
+1044,92,2026-03-28,08:58:00,18:42:00,Present,Status: Present | Working Hours: 9h 44m
+1047,948,2026-03-28,08:58:00,18:39:00,Present,Status: Present | Working Hours: 9h 41m
+1051,970,2026-03-28,09:07:00,18:40:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 9h 33m | Alerts: Late Entry (09:07), Late LOP (Morning)"
+1053,121,2026-03-28,09:07:00,18:58:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 9h 51m | Alerts: Late Entry (09:07), Late LOP (Morning)"
+1055,386,2026-03-28,09:08:00,09:08:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:08), Late LOP (Morning)"
+1057,1,2026-03-28,09:09:00,09:09:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:09), Late LOP (Morning)"
+1059,1003,2026-03-28,09:10:00,18:38:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 9h 28m | Alerts: Late Entry (09:10), Late LOP (Morning)"
+1061,1196,2026-03-28,09:10:00,18:38:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 9h 28m | Alerts: Late Entry (09:10), Late LOP (Morning)"
+1063,119,2026-03-28,08:50:00,18:37:00,Present,Status: Present | Working Hours: 9h 47m
+1094,506,2026-03-28,08:38:00,18:36:00,Present,Status: Present | Working Hours: 9h 54m
+1117,1179,2026-03-28,09:01:00,18:37:00,LOP,"Status: LOP | Working Hours: 09h 51m | Alerts: Late Entry (09:01), Late LOP (Full Day)"
+1121,192,2026-03-28,08:54:00,18:37:00,Present,Status: Present | Working Hours: 9h 54m
+1123,1096,2026-03-28,08:47:00,18:37:00,Present,Status: Present | Working Hours: 9h 54m
+1124,877,2026-03-28,09:01:00,18:38:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 9h 37m | Alerts: Late Entry (09:01), Late LOP (Morning)"
+1125,1112,2026-03-28,08:42:00,18:37:00,Present,Status: Present | Working Hours: 9h 54m
+1127,1185,2026-03-28,08:40:00,18:37:00,Present,Status: Present | Working Hours: 9h 54m
+1129,263,2026-03-28,08:40:00,18:37:00,Present,Status: Present | Working Hours: 9h 54m
+1131,370,2026-03-28,08:38:00,18:36:00,Present,Status: Present | Working Hours: 9h 54m
+1133,848,2026-03-28,08:35:00,18:38:00,Present,Status: Present | Working Hours: 10h 3m
+1137,1091,2026-03-28,08:51:00,18:38:00,Present,Status: Present | Working Hours: 9h 54m
+1139,1173,2026-03-28,08:46:00,18:38:00,Present,Status: Present | Working Hours: 9h 54m
+1140,1191,2026-03-28,08:44:00,18:44:00,Present,Status: Present | Working Hours: 9h 54m
+1141,1128,2026-03-28,08:39:00,18:40:00,Present,"Status: Present | Working Hours: 10h 49m "
+1143,817,2026-03-28,08:49:00,18:39:00,Present,Status: Present | Working Hours: 9h 54m
+1145,1130,2026-03-28,08:59:00,18:40:00,Present,Status: Present | Working Hours: 9h 41m
+1146,1019,2026-03-28,08:59:00,18:40:00,Present,Status: Present | Working Hours: 9h 41m
+1147,960,2026-03-28,08:47:00,18:39:00,Present,"Status: Present | Working Hours: 9h 54m
+"
+1148,1087,2026-03-28,08:46:00,18:40:00,Present,Status: Present | Working Hours: 9h 54m
+1151,879,2026-03-28,08:51:00,18:41:00,Present,Status: Present | Working Hours: 9h 50m
+1152,1093,2026-03-28,08:36:00,18:42:00,Present,Status: Present | Working Hours: 10h 6m
+1153,1097,2026-03-28,08:48:00,18:42:00,Present,Status: Present | Working Hours: 9h 54m
+1154,1090,2026-03-28,18:42:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (18:42), Late LOP (Full Day)"
+1155,339,2026-03-28,08:46:00,18:42:00,Present,Status: Present | Working Hours: 9h 54m
+1157,1083,2026-03-28,08:40:00,18:44:00,Present,Status: Present | Working Hours: 9h 54m
+1158,912,2026-03-28,08:43:00,18:45:00,Present,Status: Present | Working Hours: 9h 54m
+1161,878,2026-03-28,08:55:00,18:46:00,Present,Status: Present | Working Hours: 9h 54m
+1162,139,2026-03-28,08:42:00,18:47:00,Present,Status: Present | Working Hours: 9h 54m
+1163,910,2026-03-28,08:46:00,18:47:00,Present,Status: Present | Working Hours: 9h 54m
+1164,1016,2026-03-28,08:44:00,18:50:00,Present,Status: Present | Working Hours: 9h 54m
+1166,860,2026-03-28,08:41:00,18:56:00,Present,Status: Present | Working Hours: 9h 54m
+1167,101,2026-03-28,08:43:00,18:56:00,Present,Status: Present | Working Hours: 9h 54m
+1168,108,2026-03-28,08:43:00,18:57:00,Present,Status: Present | Working Hours: 9h 54m
+1172,242,2026-03-28,19:00:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (19:00), Late LOP (Full Day)"
+1173,158,2026-03-28,19:00:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (19:00), Late LOP (Full Day)"
+1174,5001,2026-03-29,11:30:00,23:50:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 12h 20m | Alerts: Late Entry (11:30), Late LOP (Morning)"
+1177,5001,2026-03-30,01:27:00,16:18:00,LOP,"Status: LOP (Early Exit) + Present | Working Hours: 14h 51m | Alerts: Early Exit (16:18), Early Exit LOP (Evening)"
+1178,844,2026-03-28,08:50:00,18:55:00,Present,Status: Present | Working Hours: 9h 54m
+1179,106,2026-03-28,08:51:00,18:55:00,Present,"Status: Present | Working Hours: 9h 54m
+"
+1180,409,2026-03-28,08:44:00,18:54:00,Present,Status: Present | Working Hours: 9h 54m
+1183,5045,2026-03-30,08:16:00,16:18:00,LOP,"Status: LOP (Early Exit) + Present | Working Hours: 8h 2m | Alerts: Early Exit (16:18), Early Exit LOP (Evening)"
+1184,984,2026-03-30,08:16:00,,Present,Status: Present | Working Hours: 0h 0m
+1185,69,2026-03-30,08:17:00,16:59:00,Present,Status: Present | Working Hours: 8h 42m
+1186,1141,2026-03-30,08:19:00,17:05:00,Present,Status: Present | Working Hours: 8h 46m
+1187,1095,2026-03-30,08:21:00,,Present,Status: Present | Working Hours: 0h 0m
+1188,1142,2026-03-30,08:22:00,,Present,Status: Present | Working Hours: 0h 0m
+1189,817,2026-03-30,08:24:00,,Present,Status: Present | Working Hours: 0h 0m
+1190,119,2026-03-30,08:24:00,17:08:00,Present,Status: Present | Working Hours: 8h 44m
+1191,439,2026-03-30,08:24:00,17:03:00,Present,Status: Present | Working Hours: 8h 39m
+1192,1148,2026-03-30,08:25:00,,Present,Status: Present | Working Hours: 0h 0m
+1193,506,2026-03-30,08:28:00,17:05:00,Present,Status: Present | Working Hours: 8h 37m
+1194,1128,2026-03-30,08:28:00,,Present,Status: Present | Working Hours: 0h 0m
+1195,819,2026-03-30,08:28:00,,Present,Status: Present | Working Hours: 0h 0m
+1196,1134,2026-03-30,08:29:00,,Present,Status: Present | Working Hours: 0h 0m
+1197,263,2026-03-30,08:32:00,,Present,Status: Present | Working Hours: 0h 0m
+1198,1101,2026-03-30,08:33:00,,Present,Status: Present | Working Hours: 0h 0m
+1199,860,2026-03-30,08:43:00,,Present,Status: Present | Working Hours: 0h 0m
+1200,370,2026-03-30,08:41:00,16:49:00,Present,Status: Present | Working Hours: 8h 8m
+1201,848,2026-03-30,08:48:00,,Present,Status: Present | Working Hours: 0h 0m
+1202,1173,2026-03-30,08:47:00,,Present,Status: Present | Working Hours: 0h 0m
+1203,108,2026-03-30,08:48:00,17:08:00,Present,Status: Present | Working Hours: 8h 20m
+1204,913,2026-03-30,08:50:00,17:01:00,Present,Status: Present | Working Hours: 8h 11m
+1205,317,2026-03-30,08:49:00,,Present,Status: Present | Working Hours: 0h 0m
+1206,802,2026-03-30,08:51:00,,Present,Status: Present | Working Hours: 0h 0m
+1207,919,2026-03-30,08:51:00,17:00:00,Present,Status: Present | Working Hours: 8h 9m
+1208,92,2026-03-30,08:53:00,16:45:00,Present,Status: Present | Working Hours: 7h 52m
+1209,879,2026-03-30,08:53:00,,Present,Status: Present | Working Hours: 0h 0m
+1210,1124,2026-03-30,08:53:00,,Present,Status: Present | Working Hours: 0h 0m
+1211,36,2026-03-30,08:53:00,17:05:00,Present,Status: Present | Working Hours: 8h 12m
+1212,1087,2026-03-30,08:53:00,17:00:00,Present,Status: Present | Working Hours: 8h 7m
+1213,1103,2026-03-30,08:54:00,17:05:00,Present,Status: Present | Working Hours: 8h 11m
+1214,512,2026-03-30,08:55:00,16:49:00,Present,Status: Present | Working Hours: 7h 54m
+1215,1130,2026-03-30,08:55:00,,Present,Status: Present | Working Hours: 0h 0m
+1216,1097,2026-03-30,08:55:00,17:03:00,Present,Status: Present | Working Hours: 8h 8m
+1217,1016,2026-03-30,08:55:00,,Present,Status: Present | Working Hours: 0h 0m
+1218,215,2026-03-30,08:55:00,,Present,Status: Present | Working Hours: 0h 0m
+1219,1093,2026-03-30,08:56:00,17:03:00,Present,Status: Present | Working Hours: 8h 7m
+1220,339,2026-03-30,08:56:00,,Present,Status: Present | Working Hours: 0h 0m
+1221,1091,2026-03-30,08:57:00,,Present,Status: Present | Working Hours: 0h 0m
+1222,1199,2026-03-30,08:57:00,16:59:00,Present,Status: Present | Working Hours: 8h 2m
+1223,1006,2026-03-30,08:57:00,,Present,Status: Present | Working Hours: 0h 0m
+1224,1133,2026-03-30,08:57:00,,Present,Status: Present | Working Hours: 0h 0m
+1225,1019,2026-03-30,08:57:00,,Present,Status: Present | Working Hours: 0h 0m
+1226,1196,2026-03-30,08:57:00,17:03:00,Present,Status: Present | Working Hours: 8h 6m
+1227,130,2026-03-30,08:57:00,,Present,Status: Present | Working Hours: 0h 0m
+1228,948,2026-03-30,08:58:00,,Present,Status: Present | Working Hours: 0h 0m
+1229,192,2026-03-30,08:58:00,16:45:00,Present,Status: Present | Working Hours: 7h 47m
+1230,1003,2026-03-30,08:58:00,,Present,Status: Present | Working Hours: 0h 0m
+1231,190,2026-03-30,08:58:00,,Present,Status: Present | Working Hours: 0h 0m
+1232,1083,2026-03-30,08:58:00,,Present,Status: Present | Working Hours: 0h 0m
+1233,1132,2026-03-30,08:58:00,17:03:00,Present,Status: Present | Working Hours: 8h 5m
+1234,1191,2026-03-30,08:59:00,17:03:00,Present,Status: Present | Working Hours: 8h 4m
+1235,158,2026-03-30,09:00:00,,Present,Status: Present | Working Hours: 0h 0m
+1236,820,2026-03-30,09:00:00,,Present,Status: Present | Working Hours: 0h 0m
+1237,77,2026-03-30,09:00:00,,Present,Status: Present | Working Hours: 0h 0m
+1238,386,2026-03-30,09:00:00,,Present,Status: Present | Working Hours: 0h 0m
+1239,912,2026-03-30,09:00:00,17:05:00,Present,Status: Present | Working Hours: 8h 5m
+1240,1090,2026-03-30,09:00:00,,Present,Status: Present | Working Hours: 0h 0m
+1241,916,2026-03-30,09:01:00,,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:01), Late LOP (Morning)"
+1242,101,2026-03-30,09:00:00,,Present,Status: Present | Working Hours: 0h 0m
+1243,1096,2026-03-30,09:01:00,16:52:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 7h 51m | Alerts: Late Entry (09:01), Late LOP (Morning)"
+1244,139,2026-03-30,09:02:00,17:04:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 8h 2m | Alerts: Late Entry (09:02), Late LOP (Morning)"
+1245,911,2026-03-30,09:02:00,,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:02), Late LOP (Morning)"
+1246,877,2026-03-30,09:07:00,,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:07), Late LOP (Morning)"
+1247,234,2026-03-30,09:09:00,,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:09), Late LOP (Morning)"
+1248,51,2026-03-30,09:10:00,,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:10), Late LOP (Morning)"
+1250,1112,2026-03-30,09:44:00,09:44:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:44), Late LOP (Morning)"
+1252,1181,2026-03-30,09:59:00,16:57:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 6h 58m | Alerts: Late Entry (09:59), Late LOP (Morning)"
+1253,970,2026-03-30,10:01:00,,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (10:01), Late LOP (Morning)"
+1254,878,2026-03-30,10:23:00,,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (10:23), Late LOP (Morning)"
+1259,844,2026-03-30,09:03:00,,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:03), Late LOP (Morning)"
+1260,1119,2026-03-30,09:03:00,,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:03), Late LOP (Morning)"
+1265,1127,2026-03-30,16:52:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (16:52), Late LOP (Full Day)"
+1270,1185,2026-03-30,16:59:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (16:59), Late LOP (Full Day)"
+1272,930,2026-03-30,17:00:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (17:00), Late LOP (Full Day)"
+1281,106,2026-03-30,17:03:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (17:03), Late LOP (Full Day)"
+1287,943,2026-03-30,17:05:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (17:05), Late LOP (Full Day)"
+1291,5001,2026-03-31,14:20:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (14:20), Late LOP (Full Day)"
+1292,101,2026-03-31,09:50:00,,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (14:20), Late LOP (Full Day)"
+1293,5001,2026-04-01,08:04:00,16:55:00,Present,Status: Present | Working Hours: 8h 51m
+1294,69,2026-04-01,08:16:00,17:00:00,Present,Status: Present | Working Hours: 8h 44m
+1295,944,2026-04-01,08:18:00,17:11:00,Present,Status: Present | Working Hours: 0h 0m
+1296,984,2026-04-01,08:19:00,16:58:00,Present,Status: Present | Working Hours: 8h 39m
+1297,817,2026-04-01,08:23:00,17:08:00,Present,Status: Present | Working Hours: 0h 0m
+1298,1095,2026-04-01,08:24:00,17:14:00,Present,Status: Present | Working Hours: 0h 0m
+1299,119,2026-04-01,08:24:00,17:05:00,Present,Status: Present | Working Hours: 8h 41m
+1300,1142,2026-04-01,08:25:00,17:04:00,Present,Status: Present | Working Hours: 8h 39m
+1301,114,2026-04-01,08:25:00,,Present,Status: Present | Working Hours: 0h 0m
+1302,1128,2026-04-01,08:27:00,,Present,Status: Present | Working Hours: 0h 0m
+1303,506,2026-04-01,08:27:00,15:45:00,LOP,"Status: LOP (Early Exit) + Present | Working Hours: 7h 18m | Alerts: Early Exit (15:45), Early Exit LOP (Evening)"
+1304,819,2026-04-01,08:28:00,18:26:00,Present,Status: Present | Working Hours: 0h 0m
+1305,370,2026-04-01,08:29:00,16:48:00,Present,Status: Present | Working Hours: 8h 19m
+1306,263,2026-04-01,08:34:00,17:14:00,Present,Status: Present | Working Hours: 0h 0m
+1307,1107,2026-04-01,08:35:00,,Present,Status: Present | Working Hours: 0h 0m
+1308,1101,2026-04-01,08:36:00,17:14:00,Present,Status: Present | Working Hours: 0h 0m
+1309,860,2026-04-01,08:39:00,17:15:00,Present,Status: Present | Working Hours: 0h 0m
+1310,818,2026-04-01,08:41:00,17:06:00,Present,Status: Present | Working Hours: 8h 25m
+1311,234,2026-04-01,08:41:00,17:21:00,Present,Status: Present | Working Hours: 0h 0m
+1312,1173,2026-04-01,08:42:00,17:50:00,Present,Status: Present | Working Hours: 0h 0m
+1313,1127,2026-04-01,08:46:00,16:50:00,Present,Status: Present | Working Hours: 8h 4m
+1314,1132,2026-04-01,08:48:00,16:52:00,Present,Status: Present | Working Hours: 8h 4m
+1315,317,2026-04-01,08:59:00,17:16:00,Present,Status: Present | Working Hours: 0h 0m
+1316,5045,2026-04-01,08:59:00,16:55:00,Present,Status: Present | Working Hours: 7h 56m
+1317,1199,2026-04-01,08:59:00,15:42:00,Present,"Status: LOP (Early Exit) + Present | Working Hours: 6h 43m | Alerts: Early Exit (15:42), Early Exit LOP (Evening) | Permission: 15:45:00-16:45:00 (Duration: 1h 0m)"
+1318,877,2026-04-01,08:59:00,17:15:00,Present,Status: Present | Working Hours: 0h 0m
+1319,1116,2026-04-01,08:59:00,17:01:00,Present,Status: Present | Working Hours: 8h 2m
+1320,1134,2026-04-01,08:59:00,,Present,Status: Present | Working Hours: 0h 0m
+1321,192,2026-04-01,08:59:00,16:56:00,Present,Status: Present | Working Hours: 7h 57m
+1322,190,2026-04-01,08:59:00,17:46:00,Present,Status: Present | Working Hours: 0h 0m
+1323,820,2026-04-01,08:59:00,18:27:00,Present,Status: Present | Working Hours: 0h 0m
+1324,386,2026-04-01,08:59:00,,Present,Status: Present | Working Hours: 0h 0m
+1325,1090,2026-04-01,09:00:00,17:50:00,Present,Status: Present | Working Hours: 0h 0m
+1326,916,2026-04-01,09:00:00,17:36:00,Present,Status: Present | Working Hours: 0h 0m
+1327,130,2026-04-01,09:00:00,,Present,Status: Present | Working Hours: 0h 0m
+1328,948,2026-04-01,09:01:00,17:43:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:01), Late LOP (Morning)"
+1329,911,2026-04-01,09:01:00,17:16:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:01), Late LOP (Morning)"
+1330,121,2026-04-01,09:01:00,,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:01), Late LOP (Morning)"
+1331,92,2026-04-01,09:02:00,16:56:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 7h 54m | Alerts: Late Entry (09:02), Late LOP (Morning)"
+1332,242,2026-04-01,09:03:00,17:12:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:03), Late LOP (Morning)"
+1333,158,2026-04-01,09:03:00,17:12:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:03), Late LOP (Morning)"
+1334,1179,2026-04-01,09:05:00,17:05:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 8h 0m | Alerts: Late Entry (09:05), Late LOP (Morning)"
+1335,1185,2026-04-01,09:06:00,17:04:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 7h 58m | Alerts: Late Entry (09:06), Late LOP (Morning)"
+1336,339,2026-04-01,09:06:00,,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:06), Late LOP (Morning)"
+1337,844,2026-04-01,09:06:00,18:57:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:06), Late LOP (Morning)"
+1338,878,2026-04-01,09:06:00,17:36:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:06), Late LOP (Morning)"
+1339,106,2026-04-01,09:06:00,16:57:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 7h 51m | Alerts: Late Entry (09:06), Late LOP (Morning)"
+1340,1196,2026-04-01,08:48:00,17:11:00,Present,Status: Present | Working Hours: 0h 0m
+1341,36,2026-04-01,08:50:00,16:49:00,Present,Status: Present | Working Hours: 8h 2m
+1342,108,2026-04-01,08:50:00,17:03:00,Present,Status: Present | Working Hours: 8h 13m
+1343,1016,2026-04-01,08:51:00,17:35:00,Present,"Status: Present | Working Hours: 0h 0m
+"
+1344,913,2026-04-01,08:51:00,16:55:00,Present,Status: Present | Working Hours: 8h 2m
+1345,1191,2026-04-01,08:51:00,16:59:00,Present,Status: Present | Working Hours: 8h 2m
+1346,802,2026-04-01,08:52:00,17:15:00,Present,Status: Present | Working Hours: 0h 0m
+1347,103,2026-04-01,08:52:00,,Present,Status: Present | Working Hours: 0h 0m
+1348,879,2026-04-01,08:52:00,17:06:00,Present,Status: Present | Working Hours: 8h 2m
+1349,1103,2026-04-01,08:53:00,17:11:00,Present,"Status: Present | Working Hours: 0h 0m
+"
+1350,215,2026-04-01,08:53:00,16:29:00,Present,Status: Present | Working Hours: 0h 0m
+1351,848,2026-04-01,08:53:00,17:38:00,Present,Status: Present | Working Hours: 0h 0m
+1352,563,2026-04-01,08:53:00,17:16:00,Present,Status: Present | Working Hours: 0h 0m
+1353,930,2026-04-01,08:54:00,16:58:00,Present,Status: Present | Working Hours: 8h 2m
+1354,1087,2026-04-01,08:54:00,17:00:00,Present,Status: Present | Working Hours: 8h 2m
+1355,1003,2026-04-01,08:54:00,17:25:00,Present,"Status: Present | Working Hours: 0h 0m
+"
+1356,1133,2026-04-01,08:54:00,17:23:00,Present,Status: Present | Working Hours: 0h 0m
+1357,970,2026-04-01,08:54:00,13:02:00,LOP,"Status: LOP | Working Hours: 0h 0m | Alerts: Late Entry (13:02), Late LOP (Full Day)"
+1358,101,2026-04-01,08:55:00,17:07:00,Present," Status: Present | Working Hours: 8h 2m"
+1359,1097,2026-04-01,08:55:00,16:52:00,Present,Status: Present | Working Hours: 8h 2m
+1360,1130,2026-04-01,08:56:00,17:25:00,Present,Status: Present | Working Hours: 0h 0m
+1361,1091,2026-04-01,08:56:00,17:19:00,Present,Status: Present | Working Hours: 0h 0m
+1362,1083,2026-04-01,08:56:00,17:38:00,Present,Status: Present | Working Hours: 0h 0m
+1363,960,2026-04-01,08:56:00,16:55:00,Present,"Status: Present | Working Hours: 8h 2m "
+1364,1093,2026-04-01,08:57:00,16:52:00,Present,Status: Present | Working Hours: 8h 2m
+1365,919,2026-04-01,08:57:00,17:05:00,Present,Status: Present | Working Hours: 8h 2m
+1366,1119,2026-04-01,08:57:00,17:18:00,Present,Status: Present | Working Hours: 0h 0m
+1367,139,2026-04-01,08:58:00,16:53:00,Present,Status: Present | Working Hours: 8h 2m
+1368,77,2026-04-01,09:55:00,16:53:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 6h 58m | Alerts: Late Entry (09:55), Late LOP (Morning)"
+1369,1019,2026-04-01,09:57:00,17:34:00,LOP,"Status: LOP (Late Entry) + Present | Working Hours: 0h 0m | Alerts: Late Entry (09:57), Late LOP (Morning)"
+1373,1112,2026-04-01,08:53:00,17:14:00,Present,Status: Present | Working Hours: 0h
+1391,1096,2026-04-01,16:54:00,16:54:00,LOP,Working Hours: 0h
+1414,1083,2026-04-02,08:45:00,,Present,"Working Hours: 0h
+"
+1415,819,2026-04-02,08:29:00,,Present,Working Hours: 0h 0m
+1416,1130,2026-04-02,08:30:00,,Present,Working Hours: 0h 0m
+1417,5001,2026-04-02,08:22:00,11:15:00,Present,Working Hours: 0h 0m
+1418,5045,2026-04-02,08:46:00,11:15:00,Present,"Working Hours: 0h 0m
+"
+1419,69,2026-04-02,08:46:00,,Present,Working Hours: 0h 0m
+1420,563,2026-04-02,08:47:00,,Present,Working Hours: 0h 0m
+1421,930,2026-04-02,08:48:00,,Present,Working Hours: 0h 0m
+1422,1127,2026-04-02,08:49:00,,Present,"Working Hours: 0h 0m
+"
+1423,1119,2026-04-02,09:00:00,,Present,Working Hours: 0h 0m
+1424,190,2026-04-02,09:01:00,,LOP,Working Hours: 0h 0m
+1425,121,2026-04-02,09:01:00,,LOP,"Working Hours: 0h 0m
+"
+1426,878,2026-04-02,09:12:00,,LOP,"Working Hours: 0h 0m
+"
+1427,242,2026-04-02,09:20:00,,LOP,"Working Hours: 0h 0m
+"
+1428,51,2026-04-02,09:39:00,,LOP,"Working Hours: 0h 0m
+"
+1430,1101,2026-04-02,08:36:00,,Present,"Working Hours: 0h 0m
+"
+1431,1107,2026-04-02,08:36:00,,Present,"Working Hours: 0h 0m
+"
+1435,114,2026-04-02,08:36:00,,Present,"Working Hours: 0h 0m
+"
+1439,317,2026-04-02,08:36:00,,Present,"Working Hours: 0h 0m
+"
+1526,848,2026-04-02,12:49:00,,LOP,"Working Hours: 0h 0m
+"
+1527,36,2026-04-02,08:50:00,13:00:00,LOP,"Working Hours: 0h 0m
+"
+1528,101,2026-04-02,08:57:00,,Present,"Working Hours: 0h 0m
+"
+1529,802,2026-04-02,08:52:00,,Present,Working Hours: 0h 0m
+1530,506,2026-04-02,08:25:00,,Present,Working Hours: 0h 0m
+1531,817,2026-04-02,08:22:00,,Present,Working Hours: 0h 0m
+1532,119,2026-04-02,08:21:00,,Present,Working Hours: 0h 0m
+1533,1095,2026-04-02,08:20:00,,Present,Working Hours: 0h 0m
+1534,1142,2026-04-02,08:20:00,,Present,"Working Hours: 0h 0m
+"
+1535,944,2026-04-02,08:18:00,,Present,Working Hours: 0h 0m
+1536,984,2026-04-02,08:18:00,,Present,Working Hours: 0h 0m
+1537,439,2026-04-02,08:18:00,,Present,"Working Hours: 0h 0m
+"
+1538,1141,2026-04-02,08:18:00,,Present,Working Hours: 0h 0m
+1539,1134,2026-04-02,08:25:00,,Present,Working Hours: 0h 0m
+1540,1179,2026-04-02,08:25:00,,Present,Working Hours: 0h 0m
+1541,1128,2026-04-02,08:26:00,,Present,Working Hours: 0h 0m
+1542,263,2026-04-02,08:29:00,,Present,Working Hours: 0h 0m
+1543,860,2026-04-02,08:41:00,,Present,"
+Working Hours: 0h 0m"
+1544,1173,2026-04-02,08:44:00,,Present,Working Hours: 0h 0m
+1545,92,2026-04-02,08:49:00,,Present,Working Hours: 0h 0m
+1546,1091,2026-04-02,08:49:00,,Present,Working Hours: 0h 0m
+1547,512,2026-04-02,08:50:00,,Present,Working Hours: 0h 0m
+1548,103,2026-04-02,08:50:00,,Present,Working Hours: 0h 0m
+1549,960,2026-04-02,08:51:00,,Present,Working Hours: 0h 0m
+1550,1132,2026-04-02,08:51:00,,Present,"
+Working Hours: 0h 0m"
+1551,820,2026-04-02,08:52:00,,Present,Working Hours: 0h 0m
+1552,1103,2026-04-02,08:52:00,,Present,Working Hours: 0h 0m
+1553,215,2026-04-02,08:52:00,,Present,Working Hours: 0h 0m
+1554,1196,2026-04-02,08:53:00,,Present,"
+Working Hours: 0h 0m"
+1555,1191,2026-04-02,08:54:00,,Present,Working Hours: 0h 0m
+1556,1097,2026-04-02,08:54:00,,Present,Working Hours: 0h 0m
+1557,919,2026-04-02,08:54:00,,Present,Working Hours: 0h 0m
+1558,1133,2026-04-02,08:54:00,,Present,Working Hours: 0h 0m
+1559,1003,2026-04-02,08:54:00,,Present,Working Hours: 0h 0m
+1560,1087,2026-04-02,08:54:00,,Present,Working Hours: 0h 0m
+1561,1016,2026-04-02,08:55:00,,Present,Working Hours: 0h 0m
+1562,370,2026-04-02,08:55:00,,Present,Working Hours: 0h 0m
+1563,77,2026-04-02,08:55:00,,Present,Working Hours: 0h 0m
+1564,913,2026-04-02,08:55:00,,Present,Working Hours: 0h 0m
+1565,970,2026-04-02,08:55:00,,Present,Working Hours: 0h 0m
+1566,192,2026-04-02,08:56:00,,Present,"
+Working Hours: 0h 0m"
+1567,1093,2026-04-02,08:56:00,,Present,Working Hours: 0h 0m
+1568,1096,2026-04-02,08:57:00,,Present,Working Hours: 0h 0m
+1569,1124,2026-04-02,08:58:00,,Present,Working Hours: 0h 0m
+1570,911,2026-04-02,08:58:00,,Present,Working Hours: 0h 0m
+1571,1090,2026-04-02,08:59:00,,Present,"Working Hours: 0h 0m
+"
+1572,912,2026-04-02,08:59:00,,Present,Working Hours: 0h 0m
+1573,879,2026-04-02,08:59:00,,Present,Working Hours: 0h 0m
+1574,234,2026-04-02,08:59:00,,Present,"
+Working Hours: 0h 0m"
+1575,1199,2026-04-02,08:59:00,,Present,"
+Working Hours: 0h 0m"
+1576,1019,2026-04-02,08:59:00,,Present,Working Hours: 0h 0m
+1577,158,2026-04-02,09:05:00,,LOP,Working Hours: 0h 0m
+1578,844,2026-04-02,09:05:00,,LOP,Working Hours: 0h 0m
+1579,877,2026-04-02,09:05:00,,LOP,Working Hours: 0h 0m
+1580,943,2026-04-02,09:06:00,,LOP,Working Hours: 0h 0m
+1581,339,2026-04-02,09:08:00,,LOP,Working Hours: 0h 0m
+1582,1185,2026-04-02,09:09:00,,LOP,Working Hours: 0h 0m

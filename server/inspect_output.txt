@@ -1,0 +1,40 @@
+﻿[dotenv@17.3.1] injecting env (13) from .env -- tip: ≡ƒ¢á∩╕Å  run anywhere with `dotenvx run -- yourcommand`
+
+≡ƒôï Tables in public schema:
+  - biometric_logs
+  - departments
+  - holidays
+  - leave_settings
+  - users
+
+≡ƒôï columns in public.users:
+  id (bigint)
+  created_at (timestamp with time zone)
+
+≡ƒôï ENUM types:
+  - aal_level
+  - action
+  - approval_status
+  - approver_role_type
+  - approver_type_enum
+  - attendance_status
+  - biometric_log_type
+  - buckettype
+  - code_challenge_method
+  - day_of_week_type
+  - equality_op
+  - factor_status
+  - factor_type
+  - gender_type
+  - leave_type_enum
+  - notification_type_enum
+  - oauth_authorization_status
+  - oauth_client_type
+  - oauth_registration_type
+  - oauth_response_type
+  - one_time_token_type
+  - priority_type
+  - purchase_status
+  - salary_status
+  - target_role_type
+  - user_role

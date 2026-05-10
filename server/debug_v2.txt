@@ -1,0 +1,1114 @@
+[dotenv@17.3.1] injecting env (19) from .env -- tip: ΓÜÖ∩╕Å  enable debug logging with { debug: true }
+--- Checking Users ---
+[
+  { emp_id: '5001', name: 'A1', role: 'staff', monthly_salary: '0.00' },
+  {
+    emp_id: '818',
+    name: 'Mohankumar M',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '5045',
+    name: 'Poovarasan K ',
+    role: 'staff',
+    monthly_salary: '58887.00'
+  },
+  {
+    emp_id: '1116',
+    name: 'Hemalatha R',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1134',
+    name: 'Hemalatha K',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '121',
+    name: 'Muthu Kumar ',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1127',
+    name: 'Hemalatha  P',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '984',
+    name: 'Aravindhan P',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '101',
+    name: 'Manoj M',
+    role: 'staff',
+    monthly_salary: '35565.00'
+  },
+  {
+    emp_id: '1006',
+    name: 'Pradeepa R',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1133',
+    name: 'Priyadharshini T',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '948',
+    name: 'Mythily G',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1199',
+    name: 'Sowbarnika M',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '216',
+    name: 'Vivithabharathi K',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1119',
+    name: 'Balaji Prasath S',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1112',
+    name: 'Lidiya P',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '386',
+    name: 'Poongodi C',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '144',
+    name: 'Mohan Kumar JK',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '919',
+    name: 'Uma Devi  P',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1185',
+    name: 'Premkumari  T',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '103',
+    name: 'Jenefa A',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '848',
+    name: 'Jayanthi P',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1097',
+    name: 'Hema V',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '913',
+    name: 'Revathy D',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '108',
+    name: 'Praveen Prabhu D',
+    role: 'staff',
+    monthly_salary: '29998.00'
+  },
+  {
+    emp_id: '878',
+    name: 'Prabha B',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '817',
+    name: 'Santhana Bhoopathi  A',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1173',
+    name: 'Divya R',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '916',
+    name: 'Angeline sheela J',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '234',
+    name: 'Manikandan M',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1087',
+    name: 'Gaayathri RV',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '186',
+    name: 'Deekchaya R',
+    role: 'staff',
+    monthly_salary: '30000.00'
+  },
+  {
+    emp_id: '1124',
+    name: 'Kamalesh C',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '69',
+    name: 'Mallika Devi K',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: 'EMP001',
+    name: 'Nandhakumar',
+    role: 'staff',
+    monthly_salary: '70000.00'
+  },
+  {
+    emp_id: '@PPG ZORVIAN',
+    name: 'Super Admin',
+    role: 'admin',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '242',
+    name: 'Sakthinavaneethan B',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '158',
+    name: 'Uydhaya kumar ',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '317',
+    name: 'Santhamani V',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '192',
+    name: 'Indhu V',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '263',
+    name: 'Hemalatha R',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '36',
+    name: 'Magesh C ',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1096',
+    name: 'Priyavadhana M',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '130',
+    name: 'Gokila Deepa G',
+    role: 'hod',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1093',
+    name: 'Shoron M',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '910',
+    name: 'Selvakumar C',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '92',
+    name: 'Bindhu  V',
+    role: 'hod',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1103',
+    name: 'Santhakumari S',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1141',
+    name: 'Sindhuja N',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '339',
+    name: 'Karthika G',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '911',
+    name: 'Karthick Myilvahanan',
+    role: 'hod',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '860',
+    name: 'Muthukumar A',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '970',
+    name: 'Mythily Priya K',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1090',
+    name: 'Priyadharshini S',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1095',
+    name: 'Navadharani M',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '563',
+    name: 'Shankar C',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1130',
+    name: 'Sahana S',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '139',
+    name: 'Dhivya Parameswari A',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1128',
+    name: 'Sowndariya R',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '960',
+    name: 'Priyadharshini R',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '802',
+    name: 'Dharmaraj T.B',
+    role: 'hod',
+    monthly_salary: '50000.00'
+  },
+  {
+    emp_id: '1181',
+    name: 'Ravina K',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '930',
+    name: 'Thamaraikannan P',
+    role: 'hod',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '912',
+    name: 'Chinnarasu K',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1019',
+    name: 'Mukil E',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1003',
+    name: 'Mahalakshmi K',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '506',
+    name: 'Kiruthika R',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '439',
+    name: 'Dhanalakshmi V',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '877',
+    name: 'Gokilam S',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '3',
+    name: 'Prakash M',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '879',
+    name: 'Arunraj C',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1196',
+    name: 'Bagyalakshmi P',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1',
+    name: 'Nanthakumar ',
+    role: 'principal',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '819',
+    name: 'Kamban S',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '820',
+    name: 'Aravind Kumar R',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1016',
+    name: 'Nitheesh kumar C',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '409',
+    name: 'Selvakumar S',
+    role: 'hod',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '215',
+    name: 'Mohan M',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1083',
+    name: 'Sivadharshini R',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '119',
+    name: 'Prabhu K',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1191',
+    name: 'Tamilthendral',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1091',
+    name: 'Vandhana V',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '512',
+    name: 'Kailasapathi T',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1132',
+    name: 'Ramya S',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '106',
+    name: 'Kaaviyakanth K',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '77',
+    name: 'Thirumalaikumar G',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1101',
+    name: 'Anupriya K',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '923',
+    name: 'Dinek R',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1148',
+    name: 'Subathra S M',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: '1114',
+    name: 'Shabeena Begam M',
+    role: 'staff',
+    monthly_salary: '0.00'
+  },
+  {
+    emp_id: 'Management',
+    name: 'Institutional Management',
+    role: 'management',
+    monthly_salary: null
+  }
+]
+--- Checking Attendance for Principal ---
+Principal 1 has 0 attendance records.
+--- Checking Salary Records ---
+[
+  {
+    id: 13,
+    emp_id: 'EMP001',
+    month: 2,
+    year: 2026,
+    total_present: 19,
+    total_leave: 3,
+    total_lop: 0,
+    calculated_salary: '51333.33',
+    status: 'Paid',
+    generated_at: 2026-03-03T04:51:55.998Z
+  },
+  {
+    id: 35,
+    emp_id: '848',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:16.257Z
+  },
+  {
+    id: 36,
+    emp_id: '69',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:16.404Z
+  },
+  {
+    id: 37,
+    emp_id: '1087',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:16.537Z
+  },
+  {
+    id: 3,
+    emp_id: 'EMP001',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Paid',
+    generated_at: 2026-03-01T23:15:28.889Z
+  },
+  {
+    id: 39,
+    emp_id: '1185',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 1,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:16.804Z
+  },
+  {
+    id: 19,
+    emp_id: '101',
+    month: 3,
+    year: 2026,
+    total_present: 7,
+    total_leave: 0,
+    total_lop: 2,
+    calculated_salary: '8298.50',
+    status: 'Paid',
+    generated_at: 2026-03-07T00:34:22.714Z
+  },
+  {
+    id: 16,
+    emp_id: '802',
+    month: 3,
+    year: 2026,
+    total_present: 8,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '13333.33',
+    status: 'Paid',
+    generated_at: 2026-03-07T00:34:22.079Z
+  },
+  {
+    id: 43,
+    emp_id: '1097',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:17.335Z
+  },
+  {
+    id: 45,
+    emp_id: '144',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:17.601Z
+  },
+  {
+    id: 46,
+    emp_id: '984',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:17.735Z
+  },
+  {
+    id: 47,
+    emp_id: '817',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:17.867Z
+  },
+  {
+    id: 49,
+    emp_id: '916',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:18.131Z
+  },
+  {
+    id: 50,
+    emp_id: '913',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:18.263Z
+  },
+  {
+    id: 52,
+    emp_id: '1173',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:18.527Z
+  },
+  {
+    id: 53,
+    emp_id: '1112',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:18.659Z
+  },
+  {
+    id: 54,
+    emp_id: '878',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 1,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:18.791Z
+  },
+  {
+    id: 55,
+    emp_id: '919',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:18.924Z
+  },
+  {
+    id: 56,
+    emp_id: '103',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 1,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:19.056Z
+  },
+  {
+    id: 58,
+    emp_id: '948',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:19.322Z
+  },
+  {
+    id: 59,
+    emp_id: '386',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:19.453Z
+  },
+  {
+    id: 34,
+    emp_id: '1119',
+    month: 3,
+    year: 2026,
+    total_present: 5,
+    total_leave: 0,
+    total_lop: 1,
+    calculated_salary: '0.00',
+    status: 'Paid',
+    generated_at: 2026-03-09T23:33:13.248Z
+  },
+  {
+    id: 22,
+    emp_id: '186',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '1000.00',
+    status: 'Paid',
+    generated_at: 2026-03-09T23:33:10.860Z
+  },
+  {
+    id: 33,
+    emp_id: '1124',
+    month: 3,
+    year: 2026,
+    total_present: 2,
+    total_leave: 0,
+    total_lop: 1,
+    calculated_salary: '0.00',
+    status: 'Paid',
+    generated_at: 2026-03-09T23:33:13.045Z
+  },
+  {
+    id: 64,
+    emp_id: '234',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 1,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:20.114Z
+  },
+  {
+    id: 30,
+    emp_id: '1006',
+    month: 3,
+    year: 2026,
+    total_present: 6,
+    total_leave: 0,
+    total_lop: 2,
+    calculated_salary: '0.00',
+    status: 'Paid',
+    generated_at: 2026-03-09T23:33:12.450Z
+  },
+  {
+    id: 23,
+    emp_id: '108',
+    month: 3,
+    year: 2026,
+    total_present: 3,
+    total_leave: 0,
+    total_lop: 2,
+    calculated_salary: '2999.80',
+    status: 'Paid',
+    generated_at: 2026-03-09T23:33:11.045Z
+  },
+  {
+    id: 31,
+    emp_id: '1133',
+    month: 3,
+    year: 2026,
+    total_present: 5,
+    total_leave: 0,
+    total_lop: 1,
+    calculated_salary: '0.00',
+    status: 'Paid',
+    generated_at: 2026-03-09T23:33:12.650Z
+  },
+  {
+    id: 29,
+    emp_id: '1199',
+    month: 3,
+    year: 2026,
+    total_present: 6,
+    total_leave: 0,
+    total_lop: 2,
+    calculated_salary: '0.00',
+    status: 'Paid',
+    generated_at: 2026-03-09T23:33:12.220Z
+  },
+  {
+    id: 27,
+    emp_id: '216',
+    month: 3,
+    year: 2026,
+    total_present: 5,
+    total_leave: 0,
+    total_lop: 1,
+    calculated_salary: '0.00',
+    status: 'Paid',
+    generated_at: 2026-03-09T23:33:11.861Z
+  },
+  {
+    id: 32,
+    emp_id: '1127',
+    month: 3,
+    year: 2026,
+    total_present: 3,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Paid',
+    generated_at: 2026-03-09T23:33:12.853Z
+  },
+  {
+    id: 71,
+    emp_id: '3',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 1,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:21.039Z
+  },
+  {
+    id: 72,
+    emp_id: '119',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:21.171Z
+  },
+  {
+    id: 73,
+    emp_id: '36',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:21.302Z
+  },
+  {
+    id: 74,
+    emp_id: '911',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:21.434Z
+  },
+  {
+    id: 75,
+    emp_id: '130',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:21.566Z
+  },
+  {
+    id: 76,
+    emp_id: '860',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:21.698Z
+  },
+  {
+    id: 77,
+    emp_id: '563',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:21.830Z
+  },
+  {
+    id: 78,
+    emp_id: '912',
+    month: 3,
+    year: 2026,
+    total_present: 0,
+    total_leave: 0,
+    total_lop: 1,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:21.962Z
+  },
+  {
+    id: 79,
+    emp_id: '158',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:22.094Z
+  },
+  {
+    id: 28,
+    emp_id: '1196',
+    month: 3,
+    year: 2026,
+    total_present: 2,
+    total_leave: 0,
+    total_lop: 3,
+    calculated_salary: '0.00',
+    status: 'Paid',
+    generated_at: 2026-03-09T23:33:12.059Z
+  },
+  {
+    id: 40,
+    emp_id: '5001',
+    month: 3,
+    year: 2026,
+    total_present: 3,
+    total_leave: 0,
+    total_lop: 2,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:16.938Z
+  },
+  {
+    id: 26,
+    emp_id: '818',
+    month: 3,
+    year: 2026,
+    total_present: 7,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Paid',
+    generated_at: 2026-03-09T23:33:11.654Z
+  },
+  {
+    id: 18,
+    emp_id: '5045',
+    month: 3,
+    year: 2026,
+    total_present: 10,
+    total_leave: 0,
+    total_lop: 3,
+    calculated_salary: '19629.00',
+    status: 'Paid',
+    generated_at: 2026-03-07T00:34:22.514Z
+  },
+  {
+    id: 48,
+    emp_id: '1116',
+    month: 3,
+    year: 2026,
+    total_present: 2,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:17.999Z
+  },
+  {
+    id: 51,
+    emp_id: '1134',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 0,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:18.395Z
+  },
+  {
+    id: 57,
+    emp_id: '121',
+    month: 3,
+    year: 2026,
+    total_present: 1,
+    total_leave: 0,
+    total_lop: 1,
+    calculated_salary: '0.00',
+    status: 'Pending',
+    generated_at: 2026-03-16T22:31:19.188Z
+  }
+]

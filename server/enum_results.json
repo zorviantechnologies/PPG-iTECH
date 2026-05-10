@@ -1,0 +1,33 @@
+{
+  "status": {
+    "type": "attendance_status",
+    "values": [
+      "Present",
+      "Absent",
+      "CL",
+      "ML",
+      "OD",
+      "Comp Leave",
+      "LOP",
+      "Holiday",
+      "Weekend"
+    ]
+  },
+  "role": {
+    "type": "user_role",
+    "values": [
+      "admin",
+      "principal",
+      "hod",
+      "staff"
+    ]
+  },
+  "gender": {
+    "type": "gender_type",
+    "values": [
+      "Male",
+      "Female",
+      "Other"
+    ]
+  }
+}

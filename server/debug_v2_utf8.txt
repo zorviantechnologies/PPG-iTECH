@@ -1,0 +1,2 @@
+[dotenv@17.3.1] injecting env (19) from .env -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
+--- Checking Users ---

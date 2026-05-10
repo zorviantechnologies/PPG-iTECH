@@ -1,0 +1,425 @@
+{
+  "departments": [
+    {
+      "column_name": "id",
+      "data_type": "integer",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "name",
+      "data_type": "character varying",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "code",
+      "data_type": "character varying",
+      "is_nullable": "YES"
+    }
+  ],
+  "enums": [
+    {
+      "typname": "factor_type",
+      "enumlabel": "totp"
+    },
+    {
+      "typname": "factor_type",
+      "enumlabel": "webauthn"
+    },
+    {
+      "typname": "factor_status",
+      "enumlabel": "unverified"
+    },
+    {
+      "typname": "factor_status",
+      "enumlabel": "verified"
+    },
+    {
+      "typname": "aal_level",
+      "enumlabel": "aal1"
+    },
+    {
+      "typname": "aal_level",
+      "enumlabel": "aal2"
+    },
+    {
+      "typname": "aal_level",
+      "enumlabel": "aal3"
+    },
+    {
+      "typname": "code_challenge_method",
+      "enumlabel": "s256"
+    },
+    {
+      "typname": "code_challenge_method",
+      "enumlabel": "plain"
+    },
+    {
+      "typname": "one_time_token_type",
+      "enumlabel": "confirmation_token"
+    },
+    {
+      "typname": "one_time_token_type",
+      "enumlabel": "reauthentication_token"
+    },
+    {
+      "typname": "one_time_token_type",
+      "enumlabel": "recovery_token"
+    },
+    {
+      "typname": "one_time_token_type",
+      "enumlabel": "email_change_token_new"
+    },
+    {
+      "typname": "one_time_token_type",
+      "enumlabel": "email_change_token_current"
+    },
+    {
+      "typname": "one_time_token_type",
+      "enumlabel": "phone_change_token"
+    },
+    {
+      "typname": "factor_type",
+      "enumlabel": "phone"
+    },
+    {
+      "typname": "oauth_registration_type",
+      "enumlabel": "dynamic"
+    },
+    {
+      "typname": "oauth_registration_type",
+      "enumlabel": "manual"
+    },
+    {
+      "typname": "oauth_authorization_status",
+      "enumlabel": "pending"
+    },
+    {
+      "typname": "oauth_authorization_status",
+      "enumlabel": "approved"
+    },
+    {
+      "typname": "oauth_authorization_status",
+      "enumlabel": "denied"
+    },
+    {
+      "typname": "oauth_authorization_status",
+      "enumlabel": "expired"
+    },
+    {
+      "typname": "oauth_response_type",
+      "enumlabel": "code"
+    },
+    {
+      "typname": "oauth_client_type",
+      "enumlabel": "public"
+    },
+    {
+      "typname": "oauth_client_type",
+      "enumlabel": "confidential"
+    },
+    {
+      "typname": "buckettype",
+      "enumlabel": "STANDARD"
+    },
+    {
+      "typname": "buckettype",
+      "enumlabel": "ANALYTICS"
+    },
+    {
+      "typname": "buckettype",
+      "enumlabel": "VECTOR"
+    },
+    {
+      "typname": "equality_op",
+      "enumlabel": "eq"
+    },
+    {
+      "typname": "equality_op",
+      "enumlabel": "neq"
+    },
+    {
+      "typname": "equality_op",
+      "enumlabel": "lt"
+    },
+    {
+      "typname": "equality_op",
+      "enumlabel": "lte"
+    },
+    {
+      "typname": "equality_op",
+      "enumlabel": "gt"
+    },
+    {
+      "typname": "equality_op",
+      "enumlabel": "gte"
+    },
+    {
+      "typname": "action",
+      "enumlabel": "INSERT"
+    },
+    {
+      "typname": "action",
+      "enumlabel": "UPDATE"
+    },
+    {
+      "typname": "action",
+      "enumlabel": "DELETE"
+    },
+    {
+      "typname": "action",
+      "enumlabel": "TRUNCATE"
+    },
+    {
+      "typname": "action",
+      "enumlabel": "ERROR"
+    },
+    {
+      "typname": "equality_op",
+      "enumlabel": "in"
+    },
+    {
+      "typname": "user_role",
+      "enumlabel": "admin"
+    },
+    {
+      "typname": "user_role",
+      "enumlabel": "principal"
+    },
+    {
+      "typname": "user_role",
+      "enumlabel": "hod"
+    },
+    {
+      "typname": "user_role",
+      "enumlabel": "staff"
+    },
+    {
+      "typname": "gender_type",
+      "enumlabel": "Male"
+    },
+    {
+      "typname": "gender_type",
+      "enumlabel": "Female"
+    },
+    {
+      "typname": "gender_type",
+      "enumlabel": "Other"
+    },
+    {
+      "typname": "attendance_status",
+      "enumlabel": "Present"
+    },
+    {
+      "typname": "attendance_status",
+      "enumlabel": "Absent"
+    },
+    {
+      "typname": "attendance_status",
+      "enumlabel": "CL"
+    },
+    {
+      "typname": "attendance_status",
+      "enumlabel": "ML"
+    },
+    {
+      "typname": "attendance_status",
+      "enumlabel": "OD"
+    },
+    {
+      "typname": "attendance_status",
+      "enumlabel": "Comp Leave"
+    },
+    {
+      "typname": "attendance_status",
+      "enumlabel": "LOP"
+    },
+    {
+      "typname": "attendance_status",
+      "enumlabel": "Holiday"
+    },
+    {
+      "typname": "attendance_status",
+      "enumlabel": "Weekend"
+    },
+    {
+      "typname": "leave_type_enum",
+      "enumlabel": "CL"
+    },
+    {
+      "typname": "leave_type_enum",
+      "enumlabel": "ML"
+    },
+    {
+      "typname": "leave_type_enum",
+      "enumlabel": "OD"
+    },
+    {
+      "typname": "leave_type_enum",
+      "enumlabel": "Comp Leave"
+    },
+    {
+      "typname": "leave_type_enum",
+      "enumlabel": "LOP"
+    },
+    {
+      "typname": "approval_status",
+      "enumlabel": "Pending"
+    },
+    {
+      "typname": "approval_status",
+      "enumlabel": "Approved"
+    },
+    {
+      "typname": "approval_status",
+      "enumlabel": "Rejected"
+    },
+    {
+      "typname": "approver_role_type",
+      "enumlabel": "hod"
+    },
+    {
+      "typname": "approver_role_type",
+      "enumlabel": "principal"
+    },
+    {
+      "typname": "approver_role_type",
+      "enumlabel": "admin"
+    },
+    {
+      "typname": "priority_type",
+      "enumlabel": "Low"
+    },
+    {
+      "typname": "priority_type",
+      "enumlabel": "Medium"
+    },
+    {
+      "typname": "priority_type",
+      "enumlabel": "High"
+    },
+    {
+      "typname": "purchase_status",
+      "enumlabel": "Pending"
+    },
+    {
+      "typname": "purchase_status",
+      "enumlabel": "Approved_HOD"
+    },
+    {
+      "typname": "purchase_status",
+      "enumlabel": "Approved_Principal"
+    },
+    {
+      "typname": "purchase_status",
+      "enumlabel": "Approved_Admin"
+    },
+    {
+      "typname": "purchase_status",
+      "enumlabel": "Rejected"
+    },
+    {
+      "typname": "purchase_status",
+      "enumlabel": "Purchased"
+    },
+    {
+      "typname": "target_role_type",
+      "enumlabel": "all"
+    },
+    {
+      "typname": "target_role_type",
+      "enumlabel": "principal"
+    },
+    {
+      "typname": "target_role_type",
+      "enumlabel": "hod"
+    },
+    {
+      "typname": "target_role_type",
+      "enumlabel": "staff"
+    },
+    {
+      "typname": "day_of_week_type",
+      "enumlabel": "Monday"
+    },
+    {
+      "typname": "day_of_week_type",
+      "enumlabel": "Tuesday"
+    },
+    {
+      "typname": "day_of_week_type",
+      "enumlabel": "Wednesday"
+    },
+    {
+      "typname": "day_of_week_type",
+      "enumlabel": "Thursday"
+    },
+    {
+      "typname": "day_of_week_type",
+      "enumlabel": "Friday"
+    },
+    {
+      "typname": "day_of_week_type",
+      "enumlabel": "Saturday"
+    },
+    {
+      "typname": "day_of_week_type",
+      "enumlabel": "Sunday"
+    },
+    {
+      "typname": "salary_status",
+      "enumlabel": "Pending"
+    },
+    {
+      "typname": "salary_status",
+      "enumlabel": "Paid"
+    },
+    {
+      "typname": "approver_type_enum",
+      "enumlabel": "replacement"
+    },
+    {
+      "typname": "approver_type_enum",
+      "enumlabel": "hod"
+    },
+    {
+      "typname": "approver_type_enum",
+      "enumlabel": "principal"
+    },
+    {
+      "typname": "approver_type_enum",
+      "enumlabel": "admin"
+    },
+    {
+      "typname": "notification_type_enum",
+      "enumlabel": "leave"
+    },
+    {
+      "typname": "notification_type_enum",
+      "enumlabel": "purchase"
+    },
+    {
+      "typname": "notification_type_enum",
+      "enumlabel": "birthday"
+    },
+    {
+      "typname": "notification_type_enum",
+      "enumlabel": "system"
+    },
+    {
+      "typname": "notification_type_enum",
+      "enumlabel": "conversation"
+    },
+    {
+      "typname": "notification_type_enum",
+      "enumlabel": "info"
+    },
+    {
+      "typname": "biometric_log_type",
+      "enumlabel": "IN"
+    },
+    {
+      "typname": "biometric_log_type",
+      "enumlabel": "OUT"
+    }
+  ]
+}

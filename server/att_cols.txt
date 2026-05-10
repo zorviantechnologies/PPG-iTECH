@@ -1,0 +1,26 @@
+[
+  {
+    "column_name": "id",
+    "data_type": "integer"
+  },
+  {
+    "column_name": "emp_id",
+    "data_type": "character varying"
+  },
+  {
+    "column_name": "date",
+    "data_type": "date"
+  },
+  {
+    "column_name": "in_time",
+    "data_type": "time without time zone"
+  },
+  {
+    "column_name": "out_time",
+    "data_type": "time without time zone"
+  },
+  {
+    "column_name": "status",
+    "data_type": "USER-DEFINED"
+  }
+]

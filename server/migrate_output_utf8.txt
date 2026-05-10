@@ -1,0 +1,185 @@
+﻿[dotenv@17.3.1] injecting env (19) from .env -- tip: ΓÜí∩╕Å secrets for agents: https://dotenvx.com/as2
+
+>>> Processing departments_rows.csv -> table: departments
+   Headers: id, name, code
+   Truncating departments...
+   Inserting 11 rows...
+
+>>> Processing users.csv -> table: users
+   Headers: id, emp_id, emp_code, password, pin, role, name, email, mobile, department_id, designation, profile_pic, dob, doj, gender, blood_group, religion, nationality, caste, community, whatsapp, aadhar, pan, account_no, bank_name, branch, ifsc, pin_code, pf_number, uan_number, permanent_address, communication_address, father_name, mother_name, marital_status, monthly_salary, experience, created_at, deductions, employment_status
+   Truncating users...
+   Inserting 100 rows...
+node :    Error inserting 
+row 90: invalid input 
+value for enum user_role: 
+"management"
+At line:1 char:1
++ node 
+migrate_from_csv.js > 
+migrate_output.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (   
+    Error insert...e: "   
+ management":String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+   Error inserting row 
+91: duplicate key value 
+violates unique 
+constraint "users_pkey"
+   Error inserting row 
+92: duplicate key value 
+violates unique 
+constraint "users_pkey"
+   Error inserting row 
+93: duplicate key value 
+violates unique 
+constraint "users_pkey"
+   Error inserting row 
+94: duplicate key value 
+violates unique 
+constraint "users_pkey"
+   Error inserting row 
+95: duplicate key value 
+violates unique 
+constraint "users_pkey"
+   Error inserting row 
+96: duplicate key value 
+violates unique 
+constraint "users_pkey"
+   Error inserting row 
+97: duplicate key value 
+violates unique 
+constraint "users_pkey"
+   Error inserting row 
+98: duplicate key value 
+violates unique 
+constraint "users_pkey"
+   Error inserting row 
+99: duplicate key value 
+violates unique 
+constraint "users_pkey"
+   Error inserting row 
+100: duplicate key value 
+violates unique 
+constraint "users_pkey"
+
+>>> Processing activity_logs_rows.csv -> table: activity_logs
+   Headers: id, user_id, action, details, created_at
+   Truncating activity_logs...
+   Inserting 746 rows...
+   Error inserting row 
+93: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+94: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+95: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+96: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+97: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+98: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+99: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+100: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+101: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+102: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+103: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+104: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+105: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+106: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+107: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+108: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+109: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+110: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+111: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+112: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+113: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"
+   Error inserting row 
+114: duplicate key value 
+violates unique 
+constraint 
+"activity_logs_pkey"

@@ -1,0 +1,26 @@
+{
+  "name": "ppg-emp-hub",
+  "version": "1.0.0",
+  "description": "PPG Employee Management Hub",
+  "scripts": {
+    "start": "cd server && node server.js",
+    "install-client": "cd client && npm install",
+    "install-server": "cd server && npm install",
+    "install-all": "npm run install-client && npm run install-server",
+    "build-client": "cd client && npm run build",
+    "start-server": "cd server && npm start",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "deploy": "npm run install-all && npm run build-client && cd server && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.0",
+    "pg": "^8.20.0"
+  }
+}

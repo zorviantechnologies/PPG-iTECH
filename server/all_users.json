@@ -1,0 +1,31 @@
+﻿[dotenv@17.3.1] injecting env (13) from .env -- tip: ≡ƒöÉ encrypt with Dotenvx: https://dotenvx.com
+[
+  {
+    "emp_id": "EMP003",
+    "role": "staff",
+    "name": "Manoj",
+    "pin": "0987",
+    "has_password": true
+  },
+  {
+    "emp_id": "@PPG ZORVIAN",
+    "role": "admin",
+    "name": "Super Admin",
+    "pin": "638581",
+    "has_password": true
+  },
+  {
+    "emp_id": "EMP001",
+    "role": "principal",
+    "name": "Nandhakumar",
+    "pin": "1234",
+    "has_password": true
+  },
+  {
+    "emp_id": "EMP002",
+    "role": "hod",
+    "name": "Dharmaraj",
+    "pin": "5678",
+    "has_password": true
+  }
+]

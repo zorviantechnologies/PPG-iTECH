@@ -1,0 +1,30 @@
+const { pool } = require('../config/db');
+
+async function migrate() {
+    console.log('Starting DECIMAL migration on Supabase...');
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        console.log('Altering leave_requests.days_count TO DECIMAL(5,2)...');
+        await client.query('ALTER TABLE leave_requests ALTER COLUMN days_count TYPE DECIMAL(5,2)');
+
+        console.log('Altering leave_balances columns TO DECIMAL(5,2)...');
+        await client.query('ALTER TABLE leave_balances ALTER COLUMN cl_taken TYPE DECIMAL(5,2)');
+        await client.query('ALTER TABLE leave_balances ALTER COLUMN ml_taken TYPE DECIMAL(5,2)');
+        await client.query('ALTER TABLE leave_balances ALTER COLUMN od_taken TYPE DECIMAL(5,2)');
+        await client.query('ALTER TABLE leave_balances ALTER COLUMN comp_taken TYPE DECIMAL(5,2)');
+        await client.query('ALTER TABLE leave_balances ALTER COLUMN lop_taken TYPE DECIMAL(5,2)');
+
+        await client.query('COMMIT');
+        console.log('✅ Migration successful! 0.5 day applications are now supported.');
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('❌ Migration failed:', err.message);
+    } finally {
+        client.release();
+        await pool.end();
+    }
+}
+
+migrate();

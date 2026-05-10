@@ -1,0 +1,38 @@
+[
+  {
+    "typname": "attendance_status",
+    "enumlabel": "Present"
+  },
+  {
+    "typname": "attendance_status",
+    "enumlabel": "Absent"
+  },
+  {
+    "typname": "attendance_status",
+    "enumlabel": "CL"
+  },
+  {
+    "typname": "attendance_status",
+    "enumlabel": "ML"
+  },
+  {
+    "typname": "attendance_status",
+    "enumlabel": "OD"
+  },
+  {
+    "typname": "attendance_status",
+    "enumlabel": "Comp Leave"
+  },
+  {
+    "typname": "attendance_status",
+    "enumlabel": "LOP"
+  },
+  {
+    "typname": "attendance_status",
+    "enumlabel": "Holiday"
+  },
+  {
+    "typname": "attendance_status",
+    "enumlabel": "Weekend"
+  }
+]

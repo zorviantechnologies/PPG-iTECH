@@ -1,0 +1,37 @@
+{
+  "users_count": 3,
+  "att_count": 87,
+  "result_count": 3,
+  "result": [
+    {
+      "emp_id": "EMP001",
+      "name": "Nandhakumar",
+      "role": "principal",
+      "total_present": "16",
+      "total_leave": "1",
+      "total_od": "0",
+      "total_lop": "0",
+      "total_absent": "3"
+    },
+    {
+      "emp_id": "EMP002",
+      "name": "Dharmaraj",
+      "role": "hod",
+      "total_present": "16",
+      "total_leave": "1",
+      "total_od": "2",
+      "total_lop": "0",
+      "total_absent": "1"
+    },
+    {
+      "emp_id": "EMP003",
+      "name": "Manoj",
+      "role": "staff",
+      "total_present": "15",
+      "total_leave": "3",
+      "total_od": "1",
+      "total_lop": "0",
+      "total_absent": "1"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+id,leave_type,max_days,restriction_window_start,restriction_window_end
+1,CL,12,,
+2,ML,15,,
+3,OD,15,,
+4,Comp Leave,15,,
+5,LOP,0,,

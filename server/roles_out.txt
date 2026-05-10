@@ -1,0 +1,8 @@
+[dotenv@17.3.1] injecting env (19) from .env -- tip: ΓÜÖ∩╕Å  enable debug logging with { debug: true }
+Available Roles in DB: [
+  { role: 'principal' },
+  { role: 'staff' },
+  { role: 'management' },
+  { role: 'hod' },
+  { role: 'admin' }
+]
