@@ -23,6 +23,7 @@ const AttendanceMonthlySummaryPage = () => {
     const [role, setRole] = useState(() => (user?.role === 'hod' ? 'staff' : ''));
     const [departments, setDepartments] = useState([]);
     const [rows, setRows] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
 
     const formatCount = (value) => Number(value || 0).toFixed(1);
@@ -52,6 +53,15 @@ const AttendanceMonthlySummaryPage = () => {
             setLoading(false);
         }
     };
+
+    const filteredRows = useMemo(() => {
+        if (!searchTerm) return rows;
+        const low = searchTerm.toLowerCase();
+        return rows.filter(r => 
+            String(r.name || '').toLowerCase().includes(low) ||
+            String(r.emp_id || '').toLowerCase().includes(low)
+        );
+    }, [rows, searchTerm]);
 
     useEffect(() => {
         fetchDepartments();
@@ -120,6 +130,17 @@ const AttendanceMonthlySummaryPage = () => {
                         </select>
                     </div>
 
+                    <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Search Name/ID</label>
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full p-3 rounded-xl border border-gray-100 bg-gray-50 font-bold text-sm"
+                        />
+                    </div>
+
                     <div className="flex items-end">
                         <button
                             onClick={fetchMonthlySummary}
@@ -162,7 +183,7 @@ const AttendanceMonthlySummaryPage = () => {
                                     <td colSpan={9} className="p-8 text-center text-sm font-bold text-gray-400">No records found for selected month.</td>
                                 </tr>
                             ) : (
-                                rows.map((rec) => (
+                                filteredRows.map((rec) => (
                                     <tr key={rec.emp_id} className="border-t border-gray-50 hover:bg-sky-50/30">
                                         <td className="p-4 text-sm font-black text-sky-700">{rec.emp_id}</td>
                                         <td className="p-4 text-sm font-bold text-gray-700">{rec.name}</td>

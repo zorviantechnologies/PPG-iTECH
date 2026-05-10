@@ -33,6 +33,7 @@ const AttendanceRecord = () => {
     const [summaryRecords, setSummaryRecords] = useState([]);
     const [detailedRecords, setDetailedRecords] = useState([]);
     const [biometricRecords, setBiometricRecords] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [departments, setDepartments] = useState([]);
     const [absentModal, setAbsentModal] = useState(null); // { emp_id, name, dates: [] }
     const [viewMode, setViewMode] = useState(() => {
@@ -168,6 +169,24 @@ const AttendanceRecord = () => {
         detailedRecords.forEach(rec => dates.add(String(rec.date).slice(0, 10)));
         return Array.from(dates).sort();
     }, [detailedRecords]);
+
+    const filteredSummaryRecords = useMemo(() => {
+        if (!searchTerm) return summaryRecords;
+        const lowTerm = searchTerm.toLowerCase();
+        return summaryRecords.filter(rec => 
+            String(rec.name || '').toLowerCase().includes(lowTerm) ||
+            String(rec.emp_id || '').toLowerCase().includes(lowTerm)
+        );
+    }, [summaryRecords, searchTerm]);
+
+    const filteredGroupedRecords = useMemo(() => {
+        if (!searchTerm) return groupedByEmployee;
+        const lowTerm = searchTerm.toLowerCase();
+        return groupedByEmployee.filter(rec => 
+            String(rec.name || '').toLowerCase().includes(lowTerm) ||
+            String(rec.emp_id || '').toLowerCase().includes(lowTerm)
+        );
+    }, [groupedByEmployee, searchTerm]);
 
     const firstColumnWidth = 118;
     const dayColumnWidth = uniqueDates.length >= 26 ? 64 : uniqueDates.length >= 18 ? 72 : 82;
@@ -602,7 +621,20 @@ const AttendanceRecord = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Search Name/Emp ID</label>
+                                <div className="relative">
+                                    <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Enter name or ID..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="w-full pl-11 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all font-bold text-gray-700 text-sm"
+                                    />
+                                </div>
+                            </div>
                             <div>
                                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">From Date</label>
                                 <input
@@ -718,7 +750,7 @@ const AttendanceRecord = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {summaryRecords.map((rec) => (
+                                        {filteredSummaryRecords.map((rec) => (
                                             <tr key={rec.emp_id} className="hover:bg-sky-50/50 transition-colors border-b border-gray-50 last:border-0 text-left">
                                                 <td className="p-5 text-sm font-black text-sky-900 text-left">{rec.emp_id}</td>
                                                 <td className="p-5 text-sm font-bold text-gray-700 text-left">{rec.name}</td>
@@ -780,7 +812,7 @@ const AttendanceRecord = () => {
                             </div>
 
                             {/* Employee Attendance Sheets */}
-                            {groupedByEmployee.map((emp) => (
+                            {filteredGroupedRecords.map((emp) => (
                                 <motion.div
                                     key={emp.emp_id}
                                     initial={{ opacity: 0, y: 12 }}
