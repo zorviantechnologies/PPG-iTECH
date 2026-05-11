@@ -4,7 +4,7 @@ import Layout from '../../components/Layout';
 import api from '../../utils/api';
 import Swal from 'sweetalert2';
 import { runPrintWindow } from '../../utils/printUtils';
-import { FaEdit, FaTrash, FaUserPlus, FaSearch, FaFilter, FaUsers, FaIdBadge, FaEnvelope, FaPhone, FaPrint, FaEye, FaBirthdayCake } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaUserPlus, FaSearch, FaFilter, FaUsers, FaIdBadge, FaEnvelope, FaPhone, FaPrint, FaEye, FaBirthdayCake, FaCertificate, FaPlus } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
@@ -636,7 +636,7 @@ const EmployeeManagement = () => {
                                         onClick={() => setIsBirthdayModalOpen(false)}
                                         className="h-10 w-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center text-gray-400 hover:text-rose-500 transition-colors"
                                     >
-                                        <FaEye size={14} className="rotate-45" />
+                                        <FaPlus size={14} className="rotate-45" />
                                     </button>
                                 </div>
 
