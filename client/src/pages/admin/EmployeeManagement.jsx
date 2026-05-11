@@ -635,10 +635,10 @@ const EmployeeManagement = () => {
                                 className="absolute inset-0 bg-gray-900/40 backdrop-blur-md"
                             />
                             <motion.div
-                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                                initial={{ scale: 0.95, opacity: 0, y: 30 }}
                                 animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                                className="relative w-full max-w-2xl bg-white rounded-[40px] shadow-2xl overflow-hidden border border-gray-100"
+                                exit={{ scale: 0.95, opacity: 0, y: 30 }}
+                                className="relative w-[95%] h-[95vh] bg-white rounded-[40px] shadow-2xl overflow-hidden border border-gray-100 flex flex-col"
                             >
                                 <div className="p-10 border-b border-gray-50 flex justify-between items-center bg-rose-50/30">
                                     <div>
@@ -672,7 +672,7 @@ const EmployeeManagement = () => {
                                         </select>
                                     </div>
 
-                                    <div className="space-y-4 max-h-[400px] overflow-y-auto no-scrollbar pr-2">
+                                    <div className="space-y-4 flex-1 overflow-y-auto no-scrollbar pr-2">
                                         {(() => {
                                             const monthName = new Date(0, selectedBirthdayMonth - 1).toLocaleString('en-US', { month: 'long' });
                                             const monthEmployees = employees.filter(e => {
@@ -744,10 +744,10 @@ const EmployeeManagement = () => {
                                 className="absolute inset-0 bg-gray-900/60 backdrop-blur-md"
                             />
                             <motion.div
-                                initial={{ scale: 0.9, opacity: 0, y: 30 }}
+                                initial={{ scale: 0.95, opacity: 0, y: 30 }}
                                 animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 0.9, opacity: 0, y: 30 }}
-                                className="relative w-full max-w-2xl bg-white rounded-[40px] shadow-2xl overflow-hidden"
+                                exit={{ scale: 0.95, opacity: 0, y: 30 }}
+                                className="relative w-[95%] h-[95vh] bg-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col"
                             >
                                 <div className="p-10 border-b border-gray-50 flex justify-between items-center bg-sky-50/30">
                                     <div className="flex items-center gap-4">
@@ -769,7 +769,7 @@ const EmployeeManagement = () => {
                                     </button>
                                 </div>
 
-                                <div className="p-10 max-h-[70vh] overflow-y-auto no-scrollbar">
+                                <div className="p-10 flex-1 overflow-y-auto no-scrollbar">
                                     {/* Add Status Form */}
                                     <div className="mb-10 p-8 bg-sky-50/50 rounded-[32px] border border-sky-100/50">
                                         <label className="block text-[10px] font-black text-sky-600 uppercase tracking-widest mb-4 ml-1">Log New Certificate Status</label>
