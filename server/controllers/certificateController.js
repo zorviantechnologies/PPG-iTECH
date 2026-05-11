@@ -20,8 +20,10 @@ exports.uploadCertificate = async (req, res) => {
         const { userId } = req.params;
 
         // Allow admin to upload for anyone, others can only upload for themselves
-        if (req.user.role !== 'admin' && String(req.user.id) !== String(userId)) {
-            return res.status(403).json({ message: 'You can only upload certificates for your own profile' });
+        // Allow management/admin roles to upload for anyone, others can only upload for themselves
+        const allowedRoles = ['admin', 'management', 'accounts', 'principal', 'hod'];
+        if (!allowedRoles.includes(req.user.role) && String(req.user.id) !== String(userId)) {
+            return res.status(403).json({ message: 'You are not authorized to manage certificates for this user' });
         }
 
         const { certificate_name, file_name, file_type, file_data, handled_by } = req.body;
@@ -98,7 +100,9 @@ exports.deleteCertificate = async (req, res) => {
         const { certId } = req.params;
 
         // Check ownership: admin can delete any, others can only delete their own
-        if (req.user.role !== 'admin') {
+        // Check ownership: management/admin roles can delete any, others can only delete their own
+        const allowedRoles = ['admin', 'management', 'accounts', 'principal', 'hod'];
+        if (!allowedRoles.includes(req.user.role)) {
             const { rows: certRows } = await pool.query(
                 'SELECT user_id FROM certificates WHERE id = $1',
                 [certId]
