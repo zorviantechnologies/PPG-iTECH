@@ -256,27 +256,13 @@ const DepartmentManagement = () => {
 
                                 <div className="relative z-10 space-y-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Active Department</p>
-                                    </div>
-                                    <div className="flex items-center gap-3">
                                         <h3 className="text-2xl font-black text-gray-800 tracking-tight group-hover:text-sky-600 transition-colors">{dept.name}</h3>
-                                        {dept.code && (
-                                            <span className="px-2 py-1 bg-sky-50 border border-sky-100 rounded-lg text-[9px] font-black text-sky-600 tracking-widest">{dept.code}</span>
-                                        )}
                                     </div>
 
                                     <div className="flex items-center gap-6 pt-4 border-t border-gray-50">
-                                        <div className="flex items-center gap-2 text-gray-400">
-                                            <span className="px-2 py-1 bg-gray-50 border border-gray-100 rounded-lg text-[9px] font-black text-gray-600 tracking-widest">{dept.code || 'NO-CODE'}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-gray-400">
-                                            <FaBuilding size={10} />
-                                            <span className="text-[9px] font-bold uppercase tracking-widest">Division</span>
-                                        </div>
                                         <button
                                             onClick={() => handleViewStaff(dept)}
-                                            className="ml-auto text-sky-600 hover:text-sky-800 text-[10px] font-black uppercase tracking-widest hover:underline"
+                                            className="text-sky-600 hover:text-sky-800 text-[10px] font-black uppercase tracking-widest hover:underline"
                                         >
                                             View Staff & HODs
                                         </button>

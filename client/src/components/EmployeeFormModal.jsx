@@ -183,8 +183,8 @@ const EmployeeFormModal = ({ isOpen, onClose, employee, onSave, departments }) =
                     {/* Single Page Form Area */}
                     <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-12 custom-scrollbar">
                         <FormSection title="Personal Information" icon={<FaUser />}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div className="md:col-span-2 lg:col-span-3 flex items-center gap-10 bg-sky-50/30 p-8 rounded-[32px] border border-sky-50 shadow-inner mb-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="md:col-span-2 flex items-center gap-10 bg-sky-50/30 p-8 rounded-[32px] border border-sky-50 shadow-inner mb-4">
                                     <div className="relative group">
                                         <div className="w-32 h-32 rounded-[40px] border-4 border-white overflow-hidden bg-white shadow-2xl ring-4 ring-sky-50/50 group-hover:scale-105 transition-transform duration-500">
                                             <img src={formData.profile_pic || `https://ui-avatars.com/api/?name=${formData.name || 'User'}&background=3b82f6&color=fff&bold=true`} alt="Profile" className="w-full h-full object-cover" />
@@ -316,29 +316,31 @@ const EmployeeFormModal = ({ isOpen, onClose, employee, onSave, departments }) =
                                         <input name="spouse_name" value={formData.spouse_name || ''} onChange={handleChange} className={inputClass} />
                                     </div>
                                 )}
-                                <div className="md:col-span-2 lg:col-span-3">
-                                    <label className={labelClass} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        Children Details
-                                        <button type="button" onClick={addChild} className="h-6 w-6 bg-emerald-500 text-white rounded-lg flex items-center justify-center hover:bg-emerald-600 active:scale-90 transition-all">
-                                            <FaPlus size={10} />
-                                        </button>
-                                    </label>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {(Array.isArray(formData.children) ? formData.children : []).map((child, idx) => (
-                                            <div key={idx} className="flex gap-2">
-                                                <input 
-                                                    value={child} 
-                                                    onChange={(e) => handleChildChange(idx, e.target.value)} 
-                                                    className={inputClass} 
-                                                    placeholder={`Child ${idx + 1} Name`}
-                                                />
-                                                <button type="button" onClick={() => removeChild(idx)} className="h-12 w-12 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center hover:bg-rose-100 active:scale-90 transition-all">
-                                                    <FaTrash size={14} />
-                                                </button>
-                                            </div>
-                                        ))}
+                                {formData.marital_status !== 'Single' && (
+                                    <div className="md:col-span-2">
+                                        <label className={labelClass} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            Children Details
+                                            <button type="button" onClick={addChild} className="h-6 w-6 bg-emerald-500 text-white rounded-lg flex items-center justify-center hover:bg-emerald-600 active:scale-90 transition-all">
+                                                <FaPlus size={10} />
+                                            </button>
+                                        </label>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {(Array.isArray(formData.children) ? formData.children : []).map((child, idx) => (
+                                                <div key={idx} className="flex gap-2">
+                                                    <input 
+                                                        value={child} 
+                                                        onChange={(e) => handleChildChange(idx, e.target.value)} 
+                                                        className={inputClass} 
+                                                        placeholder={`Child ${idx + 1} Name`}
+                                                    />
+                                                    <button type="button" onClick={() => removeChild(idx)} className="h-12 w-12 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center hover:bg-rose-100 active:scale-90 transition-all">
+                                                        <FaTrash size={14} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 <div>
                                     <label className={labelClass}>Community</label>
@@ -348,14 +350,14 @@ const EmployeeFormModal = ({ isOpen, onClose, employee, onSave, departments }) =
                         </FormSection>
 
                         <FormSection title="" icon={null}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div className="md:col-span-2 lg:col-span-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="md:col-span-2">
                                     <label className={labelClass}>Permanent Address</label>
-                                    <textarea name="permanent_address" value={formData.permanent_address || ''} onChange={handleChange} className={inputClass + " h-24 pt-4 resize-none"} />
+                                    <textarea name="permanent_address" value={formData.permanent_address || ''} onChange={handleChange} className={inputClass + " h-32 pt-4 resize-none"} />
                                 </div>
-                                <div className="md:col-span-2 lg:col-span-3">
+                                <div className="md:col-span-2">
                                     <label className={labelClass}>Communication Address</label>
-                                    <textarea name="communication_address" value={formData.communication_address || ''} onChange={handleChange} className={inputClass + " h-24 pt-4 resize-none"} />
+                                    <textarea name="communication_address" value={formData.communication_address || ''} onChange={handleChange} className={inputClass + " h-32 pt-4 resize-none"} />
                                 </div>
                                 <div>
                                     <label className={labelClass}>PIN Code</label>
@@ -369,7 +371,7 @@ const EmployeeFormModal = ({ isOpen, onClose, employee, onSave, departments }) =
                         </FormSection>
 
                         <FormSection title="" icon={null}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
                                     <label className={labelClass}>Bank Account Holder Name</label>
                                     <input name="bank_account_name" value={formData.bank_account_name || ''} onChange={handleChange} className={inputClass} />
@@ -417,15 +419,8 @@ const EmployeeFormModal = ({ isOpen, onClose, employee, onSave, departments }) =
 
 
                         <FormSection title="Account Security" icon={<FaLock />}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div className="md:col-span-2 bg-amber-50 p-8 rounded-[32px] border border-amber-100 mb-4">
-                                    <p className="text-xs text-amber-800 font-bold leading-relaxed flex items-center gap-4">
-                                        <div className="h-10 w-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                                            <FaLock className="text-amber-600" />
-                                        </div>
-                                        Security PIN is required for the employee to login. Please make sure it is noted down securely.
-                                    </p>
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
                                 <div>
                                     <label className={labelClass}>{employee ? 'Reset Security PIN' : 'Set Security PIN'}</label>
                                     <input name="pin" type="password" value={formData.pin || ''} onChange={handleChange} className={inputClass + " tracking-[0.5em] text-center font-black"} placeholder="••••••" />
