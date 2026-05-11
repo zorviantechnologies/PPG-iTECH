@@ -10,7 +10,7 @@ const DetailedAttendancePage = () => {
     const { empId, month, startDate: paramStart, endDate: paramEnd } = useParams();
     const navigate = useNavigate();
     const printRef = useRef(null);
-    const [summary, setSummary] = React.useState({ workingDays: 0, holidays: 0, absent: 0, lop: 0, lateEntry: 0 });
+    const [summary, setSummary] = React.useState({ workingDays: 0, holidays: 0, absent: 0, unpaid: 0, lateEntry: 0 });
 
     // Support both month-based and range-based navigation
     const start = paramStart || (month ? `${month}-01` : null);
@@ -79,7 +79,7 @@ const DetailedAttendancePage = () => {
                 Working Days: <b>${fmt(summary.workingDays)}</b> &nbsp;|&nbsp; 
                 Holidays: <b>${fmt(summary.holidays)}</b> &nbsp;|&nbsp;
                 Absent: <b>${fmt(summary.absent)}</b> &nbsp;|&nbsp;
-                LOP: <b>${fmt(summary.lop)}</b> &nbsp;|&nbsp;
+                Unpaid: <b>${fmt(summary.unpaid)}</b> &nbsp;|&nbsp;
                 Late Entry: <b>${fmt(summary.lateEntry)}</b>
             </div>
             <table>
@@ -124,7 +124,7 @@ const DetailedAttendancePage = () => {
                             <span className="h-1 w-1 bg-gray-300 rounded-full"></span>
                             <span className="flex items-center gap-1">Absent: <b className="text-rose-600 ml-1">{fmt(summary.absent)}</b></span>
                             <span className="h-1 w-1 bg-gray-300 rounded-full"></span>
-                            <span className="flex items-center gap-1">LOP: <b className="text-rose-900 ml-1">{fmt(summary.lop)}</b></span>
+                            <span className="flex items-center gap-1">Unpaid: <b className="text-rose-900 ml-1">{fmt(summary.unpaid)}</b></span>
                             <span className="h-1 w-1 bg-gray-300 rounded-full"></span>
                             <span className="flex items-center gap-1">Late: <b className="text-orange-600 ml-1">{fmt(summary.lateEntry)}</b></span>
                         </p>

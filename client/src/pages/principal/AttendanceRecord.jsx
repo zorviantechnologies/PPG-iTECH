@@ -552,8 +552,8 @@ const AttendanceRecord = () => {
     };
 
     const handleViewEmployee = (rec) => {
-        const rolePrefix = user?.role || 'admin';
-        navigate(`/${rolePrefix}/attendance/${encodeURIComponent(rec.emp_id)}/${startDate}/${endDate}`);
+        // Use the routePrefix determined from the current URL to ensure valid navigation
+        navigate(`/${routePrefix}/attendance/${encodeURIComponent(rec.emp_id)}/${startDate}/${endDate}`);
         window.dispatchEvent(new CustomEvent('closeSidebar'));
     };
 

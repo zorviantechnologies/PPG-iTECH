@@ -818,7 +818,7 @@ const EmployeeManagement = () => {
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-1 gap-4">
-                                            {selectedEmpCerts.map((cert) => (
+                                            {selectedEmpCerts.filter(c => !c.file_name).map((cert) => (
                                                 <div key={cert.id} className="p-6 bg-gray-50 border border-gray-100 rounded-3xl flex items-center justify-between hover:border-sky-200 hover:bg-sky-50/30 transition-all group">
                                                     <div className="flex items-center gap-4">
                                                         <div className="h-12 w-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-sky-500 group-hover:scale-110 transition-transform">
