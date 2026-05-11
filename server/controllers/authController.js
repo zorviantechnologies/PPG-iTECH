@@ -204,7 +204,8 @@ exports.updateProfile = async (req, res) => {
         aadhar, pan, account_no, bank_name, branch, ifsc, pin_code,
         pf_number, uan_number, permanent_address, communication_address,
         father_name, mother_name, marital_status, profile_pic, pin, emp_id,
-        emergency_contact
+        emergency_contact, personal_email, bank_account_name, other_experience,
+        spouse_name, children
     } = req.body;
 
     try {
@@ -228,7 +229,8 @@ exports.updateProfile = async (req, res) => {
                 father_name = $19, mother_name = $20, marital_status = $21,
                 profile_pic = COALESCE($22, profile_pic),
                 pin = COALESCE($23, pin), password = COALESCE($24, password),
-                emp_id = COALESCE($26, emp_id), emergency_contact = $27
+                emp_id = COALESCE($26, emp_id), emergency_contact = $27, personal_email = $28,
+                bank_account_name = $29, other_experience = $30, spouse_name = $31, children = $32
             WHERE id = $25
             RETURNING id, emp_id, name, role, profile_pic, department_id
         `;
@@ -241,7 +243,8 @@ exports.updateProfile = async (req, res) => {
             permanent_address || null, communication_address || null,
             father_name || null, mother_name || null, marital_status || null,
             profile_pic || null, pin || null, hashedPassword || null,
-            req.user.id, emp_id || null, emergency_contact || null
+            req.user.id, emp_id || null, emergency_contact || null, personal_email || null,
+            bank_account_name || null, other_experience || null, spouse_name || null, JSON.stringify(Array.isArray(children) ? children : [])
         ]);
 
         if (rows.length === 0) {

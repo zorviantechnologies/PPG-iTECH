@@ -7,6 +7,23 @@ import Swal from 'sweetalert2';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 
+const calculatePPGExperience = (doj) => {
+    if (!doj) return '0 years 0 months';
+    const start = new Date(doj);
+    const today = new Date();
+    if (start > today) return '0 years 0 months';
+    
+    let years = today.getFullYear() - start.getFullYear();
+    let months = today.getMonth() - start.getMonth();
+    
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
+    
+    return `${years} year${years !== 1 ? 's' : ''} ${months} month${months !== 1 ? 's' : ''}`;
+};
+
 const inputClass = "w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all font-bold text-gray-700 text-sm disabled:opacity-70 disabled:bg-gray-100/60 disabled:cursor-not-allowed disabled:text-gray-500 disabled:border-gray-50";
 const labelClass = "block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1";
 
@@ -48,9 +65,10 @@ const EmployeeFormPage = () => {
         aadhar: '', pan: '',
         account_no: '', bank_name: '', branch: '', ifsc: '', pin_code: '', pf_number: '', uan_number: '',
         permanent_address: '', communication_address: '',
-        father_name: '', mother_name: '', marital_status: 'Single',
         monthly_salary: '', experience: '',
-        pin: '', confirm_pin: '', emergency_contact: ''
+        pin: '', confirm_pin: '', emergency_contact: '',
+        personal_email: '', bank_account_name: '', other_experience: '',
+        spouse_name: '', children: []
     };
 
     const [formData, setFormData] = useState(defaultData);
@@ -230,14 +248,28 @@ const EmployeeFormPage = () => {
                 }
                 return {
                     ...prev,
-                    community: category,
+                    [name]: value,
                     role: newRole
                 };
             });
             return;
         }
-
         setFormData({ ...formData, [name]: value });
+    };
+
+    const handleChildChange = (index, value) => {
+        const newChildren = Array.isArray(formData.children) ? [...formData.children] : [];
+        newChildren[index] = value;
+        setFormData({ ...formData, children: newChildren });
+    };
+
+    const addChild = () => {
+        setFormData({ ...formData, children: [...(Array.isArray(formData.children) ? formData.children : []), ''] });
+    };
+
+    const removeChild = (index) => {
+        const newChildren = (Array.isArray(formData.children) ? formData.children : []).filter((_, i) => i !== index);
+        setFormData({ ...formData, children: newChildren });
     };
 
     const handleFileChange = (e) => {
@@ -520,8 +552,8 @@ const EmployeeFormPage = () => {
                 <div className="bg-white rounded-[40px] shadow-2xl border border-black/50 overflow-hidden transition-all duration-300 hover:scale-[1.01]">
                     <form onSubmit={handleSubmit} className="p-12">
                         <FormSection title="Personal Information" icon={<FaUser />}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="md:col-span-2 flex items-center gap-10 bg-sky-50/30 p-8 rounded-[32px] border border-sky-50 shadow-inner mb-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="md:col-span-2 lg:col-span-3 flex items-center gap-10 bg-sky-50/30 p-8 rounded-[32px] border border-sky-50 shadow-inner mb-4">
                                     <div className="relative group">
                                         <div className="w-32 h-32 rounded-[40px] border-4 border-white overflow-hidden bg-white shadow-2xl ring-4 ring-sky-50/50 group-hover:scale-105 transition-transform duration-500">
                                             <img src={formData.profile_pic || `https://ui-avatars.com/api/?name=${formData.name || 'User'}&background=3b82f6&color=fff&bold=true`} alt="Profile" className="w-full h-full object-cover" />
@@ -611,8 +643,12 @@ const EmployeeFormPage = () => {
                                     <input name="designation" value={formData.designation || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
                                 </div>
                                 <div>
-                                    <label className={labelClass}>Email Address</label>
+                                    <label className={labelClass}>Official Email ID</label>
                                     <input name="email" type="email" value={formData.email || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Personal Email ID</label>
+                                    <input name="personal_email" type="email" value={formData.personal_email || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Mobile Number</label>
@@ -650,12 +686,62 @@ const EmployeeFormPage = () => {
                                     <label className={labelClass}>Religion</label>
                                     <input name="religion" value={formData.religion || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
                                 </div>
+                                <div>
+                                    <label className={labelClass}>Father's Name</label>
+                                    <input name="father_name" value={formData.father_name || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Mother's Name</label>
+                                    <input name="mother_name" value={formData.mother_name || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Marital Status</label>
+                                    <select name="marital_status" value={formData.marital_status || 'Single'} onChange={handleChange} className={inputClass} disabled={!isAdmin}>
+                                        <option value="Single">Single</option>
+                                        <option value="Married">Married</option>
+                                        <option value="Divorced">Divorced</option>
+                                    </select>
+                                </div>
+                                {formData.marital_status === 'Married' && (
+                                    <div>
+                                        <label className={labelClass}>Spouse Name</label>
+                                        <input name="spouse_name" value={formData.spouse_name || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
+                                    </div>
+                                )}
+                                <div className="md:col-span-2 lg:col-span-3">
+                                    <label className={labelClass} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        Children Details
+                                        {isAdmin && (
+                                            <button type="button" onClick={addChild} className="h-6 w-6 bg-emerald-500 text-white rounded-lg flex items-center justify-center hover:bg-emerald-600 active:scale-90 transition-all">
+                                                <FaPlus size={10} />
+                                            </button>
+                                        )}
+                                    </label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {(Array.isArray(formData.children) ? formData.children : []).map((child, idx) => (
+                                            <div key={idx} className="flex gap-2">
+                                                <input 
+                                                    value={child} 
+                                                    onChange={(e) => handleChildChange(idx, e.target.value)} 
+                                                    className={inputClass} 
+                                                    placeholder={`Child ${idx + 1} Name`}
+                                                    disabled={!isAdmin}
+                                                />
+                                                {isAdmin && (
+                                                    <button type="button" onClick={() => removeChild(idx)} className="h-12 w-12 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center hover:bg-rose-100 active:scale-90 transition-all">
+                                                        <FaTrash size={14} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
 
                             </div>
                         </FormSection>
 
                         <FormSection title="" icon={null}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div>
                                     <label className={labelClass}>Aadhar Card Number</label>
                                     <input name="aadhar" value={formData.aadhar || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
@@ -664,13 +750,13 @@ const EmployeeFormPage = () => {
                                     <label className={labelClass}>PAN Card Number</label>
                                     <input name="pan" value={formData.pan || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
                                 </div>
-                                <div className="md:col-span-2">
+                                <div className="md:col-span-2 lg:col-span-3">
                                     <label className={labelClass}>Permanent Address</label>
-                                    <textarea name="permanent_address" value={formData.permanent_address || ''} onChange={handleChange} className={inputClass + " h-32 pt-4 resize-none"} disabled={!isAdmin} />
+                                    <textarea name="permanent_address" value={formData.permanent_address || ''} onChange={handleChange} className={inputClass + " h-24 pt-4 resize-none"} disabled={!isAdmin} />
                                 </div>
-                                <div className="md:col-span-2">
+                                <div className="md:col-span-2 lg:col-span-3">
                                     <label className={labelClass}>Communication Address</label>
-                                    <textarea name="communication_address" value={formData.communication_address || ''} onChange={handleChange} className={inputClass + " h-32 pt-4 resize-none"} disabled={!isAdmin} />
+                                    <textarea name="communication_address" value={formData.communication_address || ''} onChange={handleChange} className={inputClass + " h-24 pt-4 resize-none"} disabled={!isAdmin} />
                                 </div>
                                 <div>
                                     <label className={labelClass}>PIN Code</label>
@@ -684,7 +770,11 @@ const EmployeeFormPage = () => {
                         </FormSection>
 
                         <FormSection title="" icon={null}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div>
+                                    <label className={labelClass}>Bank Account Holder Name</label>
+                                    <input name="bank_account_name" value={formData.bank_account_name || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
+                                </div>
                                 <div>
                                     <label className={labelClass}>Bank Name</label>
                                     <input name="bank_name" value={formData.bank_name || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
@@ -714,9 +804,13 @@ const EmployeeFormPage = () => {
                                     <label className={labelClass}>Monthly Salary</label>
                                     <input name="monthly_salary" type="number" value={formData.monthly_salary || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
                                 </div>
-                                <div className="md:col-span-2">
-                                    <label className={labelClass}>Experience Description</label>
-                                    <input name="experience" value={formData.experience || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
+                                <div>
+                                    <label className={labelClass}>PPG Experience</label>
+                                    <input value={calculatePPGExperience(formData.doj)} className={inputClass} disabled />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Other College Experience</label>
+                                    <input name="other_experience" value={formData.other_experience || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
                                 </div>
                             </div>
                         </FormSection>
@@ -902,26 +996,7 @@ const EmployeeFormPage = () => {
                             </div>
                         </FormSection>
 
-                        <FormSection title="Family Relations" icon={<FaUsers />}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div>
-                                    <label className={labelClass}>Father's Name</label>
-                                    <input name="father_name" value={formData.father_name || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Mother's Name</label>
-                                    <input name="mother_name" value={formData.mother_name || ''} onChange={handleChange} className={inputClass} disabled={!isAdmin} />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Marital Status</label>
-                                    <select name="marital_status" value={formData.marital_status || 'Single'} onChange={handleChange} className={inputClass} disabled={!isAdmin}>
-                                        <option value="Single">Single</option>
-                                        <option value="Married">Married</option>
-                                        <option value="Divorced">Divorced</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </FormSection>
+
 
                         {(isWorkersCategory || existingCerts.length > 0) && (
                         <FormSection title="Certificates" icon={<FaCertificate />}>
@@ -1008,7 +1083,7 @@ const EmployeeFormPage = () => {
                         )}
 
                         <FormSection title="Account Security" icon={<FaLock />}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div className="md:col-span-2 bg-amber-50 p-8 rounded-[32px] border border-amber-100 mb-4">
                                     <p className="text-xs text-amber-800 font-bold leading-relaxed flex items-center gap-4">
                                         <div className="h-10 w-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
@@ -1040,7 +1115,7 @@ const EmployeeFormPage = () => {
                                 type="submit"
                                 className="px-12 py-5 bg-sky-600 text-white rounded-2xl shadow-2xl shadow-sky-100 hover:bg-sky-800 transition-all flex items-center gap-3 font-black uppercase tracking-widest text-[10px] active:scale-95 group"
                             >
-                                <FaSave className="group-hover:scale-110 transition-transform" /> {id ? 'Synchronize Record' : 'Commit to Database'}
+                                <FaSave className="group-hover:scale-110 transition-transform" /> {id ? 'Update Record' : 'Save'}
                             </button>
                         </div>
                     </form>

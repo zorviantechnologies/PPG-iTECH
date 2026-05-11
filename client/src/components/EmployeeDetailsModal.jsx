@@ -1,6 +1,23 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 
+const calculatePPGExperience = (doj) => {
+    if (!doj) return '0 years 0 months';
+    const start = new Date(doj);
+    const today = new Date();
+    if (start > today) return '0 years 0 months';
+    
+    let years = today.getFullYear() - start.getFullYear();
+    let months = today.getMonth() - start.getMonth();
+    
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
+    
+    return `${years} year${years !== 1 ? 's' : ''} ${months} month${months !== 1 ? 's' : ''}`;
+};
+
 const Section = ({ title, children }) => (
     <div className="mb-10">
         <h3 className="text-[10px] font-black text-sky-500 uppercase tracking-widest mb-6 px-4 py-2 bg-sky-50/50 rounded-lg inline-block">{title}</h3>
@@ -82,12 +99,14 @@ const EmployeeDetailsModal = ({ isOpen, onClose, employee, departments = [] }) =
                             <Detail label="Department" value={departmentName} />
                             <Detail label="Designation" value={employee.designation} />
                             <Detail label="Joining Date" value={employee.doj ? new Date(employee.doj).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A'} />
-                            <Detail label="Experience" value={employee.experience} />
+                            <Detail label="PPG Experience" value={calculatePPGExperience(employee.doj)} />
+                            <Detail label="Other Experience" value={employee.other_experience} />
                             <Detail label="Monthly Base Salary" value={employee.monthly_salary ? `₹${employee.monthly_salary}` : 'Confidential'} />
                         </Section>
 
                         <Section title="Communication Profile">
-                            <Detail label="Official Email" value={employee.email} />
+                            <Detail label="Official Email ID" value={employee.email} />
+                            <Detail label="Personal Email ID" value={employee.personal_email} />
                             <Detail label="Mobile (Primary)" value={employee.mobile} />
                             <Detail label="WhatsApp Connect" value={employee.whatsapp} />
                             <Detail label="Emergency Contact" value={employee.emergency_contact} />
@@ -113,6 +132,7 @@ const EmployeeDetailsModal = ({ isOpen, onClose, employee, departments = [] }) =
                         </Section>
 
                         <Section title="Bank Settlement Details">
+                            <Detail label="Account Holder" value={employee.bank_account_name} />
                             <Detail label="Bank Institution" value={employee.bank_name} />
                             <Detail label="Branch Identifier" value={employee.branch} />
                             <Detail label="IFSC Protocol" value={employee.ifsc} />
@@ -123,6 +143,12 @@ const EmployeeDetailsModal = ({ isOpen, onClose, employee, departments = [] }) =
                             <Detail label="Father's Legal Name" value={employee.father_name} />
                             <Detail label="Mother's Legal Name" value={employee.mother_name} />
                             <Detail label="Current Marital Status" value={employee.marital_status} />
+                            {employee.marital_status === 'Married' && <Detail label="Spouse Name" value={employee.spouse_name} />}
+                            {Array.isArray(employee.children) && employee.children.length > 0 && (
+                                <div className="md:col-span-full">
+                                    <Detail label="Children Details" value={employee.children.join(', ')} />
+                                </div>
+                            )}
                         </Section>
                     </div>
 

@@ -74,6 +74,26 @@ const initDB = async () => {
         await queryWithRetry('ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact VARCHAR(20)');
         console.log('--- Users Table Emergency Contact Column Verified ---');
 
+        // Ensure users table has personal_email column
+        await queryWithRetry('ALTER TABLE users ADD COLUMN IF NOT EXISTS personal_email VARCHAR(100)');
+        console.log('--- Users Table Personal Email Column Verified ---');
+
+        // Ensure users table has bank_account_name column
+        await queryWithRetry('ALTER TABLE users ADD COLUMN IF NOT EXISTS bank_account_name VARCHAR(100)');
+        console.log('--- Users Table Bank Account Name Column Verified ---');
+
+        // Ensure users table has other_experience column
+        await queryWithRetry('ALTER TABLE users ADD COLUMN IF NOT EXISTS other_experience TEXT');
+        console.log('--- Users Table Other Experience Column Verified ---');
+
+        // Ensure users table has spouse_name column
+        await queryWithRetry('ALTER TABLE users ADD COLUMN IF NOT EXISTS spouse_name VARCHAR(100)');
+        console.log('--- Users Table Spouse Name Column Verified ---');
+
+        // Ensure users table has children column
+        await queryWithRetry('ALTER TABLE users ADD COLUMN IF NOT EXISTS children JSONB DEFAULT \'[]\'::jsonb');
+        console.log('--- Users Table Children Column Verified ---');
+
         // Ensure feedback messages table exists
         await queryWithRetry(`
                 CREATE TABLE IF NOT EXISTS feedback_messages (

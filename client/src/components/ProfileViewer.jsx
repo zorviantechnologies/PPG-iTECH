@@ -6,6 +6,23 @@ import Swal from 'sweetalert2';
 import { useAuth } from '../context/AuthContext';
 import { runPrintWindow } from '../utils/printUtils';
 
+const calculatePPGExperience = (doj) => {
+    if (!doj) return '0 years 0 months';
+    const start = new Date(doj);
+    const today = new Date();
+    if (start > today) return '0 years 0 months';
+    
+    let years = today.getFullYear() - start.getFullYear();
+    let months = today.getMonth() - start.getMonth();
+    
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
+    
+    return `${years} year${years !== 1 ? 's' : ''} ${months} month${months !== 1 ? 's' : ''}`;
+};
+
 const inputClass = "w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all font-bold text-gray-700 text-sm";
 
 const InfoRow = ({ icon, label, value, editing, name, onChange, type = 'text' }) => (
@@ -122,6 +139,11 @@ const ProfileViewer = ({ user, onClose }) => {
                 mother_name: user.mother_name || '',
                 marital_status: user.marital_status || '',
                 emergency_contact: user.emergency_contact || '',
+                personal_email: user.personal_email || '',
+                bank_account_name: user.bank_account_name || '',
+                other_experience: user.other_experience || '',
+                spouse_name: user.spouse_name || '',
+                children: Array.isArray(user.children) ? user.children : [],
             });
         }
     }, [user]);
@@ -368,9 +390,11 @@ const ProfileViewer = ({ user, onClose }) => {
                             <div class="section-title">Official Overview</div>
                             <div class="grid">
                                 <div class="info-item"><span class="info-label">Current Department</span><span class="info-value">${user.department_name || '-'}</span></div>
-                                <div class="info-item"><span class="info-label">Official Email</span><span class="info-value" style="text-transform: lowercase;">${user.email || '-'}</span></div>
+                                <div class="info-item"><span class="info-label">Official Email ID</span><span class="info-value" style="text-transform: lowercase;">${user.email || '-'}</span></div>
+                                <div class="info-item"><span class="info-label">Personal Email ID</span><span class="info-value" style="text-transform: lowercase;">${user.personal_email || '-'}</span></div>
                                 <div class="info-item"><span class="info-label">Date of Joining</span><span class="info-value">${user.doj || '-'}</span></div>
-                                <div class="info-item"><span class="info-label">Total Experience</span><span class="info-value">${user.experience || '-'}</span></div>
+                                <div class="info-item"><span class="info-label">PPG Experience</span><span class="info-value">${calculatePPGExperience(user.doj)}</span></div>
+                                <div class="info-item"><span class="info-label">Other Experience</span><span class="info-value">${user.other_experience || '-'}</span></div>
                             </div>
                         </div>
                         <div class="section">
@@ -397,14 +421,22 @@ const ProfileViewer = ({ user, onClose }) => {
                             <div class="grid">
                                 <div class="info-item"><span class="info-label">Aadhar Number</span><span class="info-value">${user.aadhar || '-'}</span></div>
                                 <div class="info-item"><span class="info-label">PAN Number</span><span class="info-value">${user.pan || '-'}</span></div>
-                                <div class="info-item"><span class="info-label">Father's Name</span><span class="info-value">${user.father_name || '-'}</span></div>
-                                <div class="info-item"><span class="info-label">Mother's Name</span><span class="info-value">${user.mother_name || '-'}</span></div>
+                                <div class="info-item"><span class="info-label">Father's Legal Name</span><span class="info-value">${user.father_name || '-'}</span></div>
+                                <div class="info-item"><span class="info-label">Mother's Legal Name</span><span class="info-value">${user.mother_name || '-'}</span></div>
                                 <div class="info-item"><span class="info-label">Marital Status</span><span class="info-value">${user.marital_status || '-'}</span></div>
+                                ${user.marital_status === 'Married' ? `<div class="info-item"><span class="info-label">Spouse Name</span><span class="info-value">${user.spouse_name || '-'}</span></div>` : ''}
+                                ${Array.isArray(user.children) && user.children.length > 0 ? `
+                                    <div class="info-item" style="grid-column: span 2;">
+                                        <span class="info-label">Children Details</span>
+                                        <div class="info-value">${user.children.join(', ')}</div>
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                         <div class="section">
                             <div class="section-title">Financial &amp; Statutory Info</div>
                             <div class="grid">
+                                <div class="info-item"><span class="info-label">Bank Account Holder</span><span class="info-value">${user.bank_account_name || '-'}</span></div>
                                 <div class="info-item"><span class="info-label">Primary Bank</span><span class="info-value">${user.bank_name || '-'}</span></div>
                                 <div class="info-item"><span class="info-label">Account Details</span><span class="info-value">${user.account_no || '-'}</span></div>
                                 <div class="info-item"><span class="info-label">IFSC Code</span><span class="info-value">${user.ifsc || '-'}</span></div>
@@ -625,6 +657,8 @@ const ProfileViewer = ({ user, onClose }) => {
                                         setIsEditingProfile(false);
                                         setFormData({
                                             mobile: user.mobile || '', whatsapp: user.whatsapp || '', email: user.email || '', emergency_contact: user.emergency_contact || '',
+                                                bank_account_name: user.bank_account_name || '', other_experience: user.other_experience || '',
+                                            spouse_name: user.spouse_name || '', children: Array.isArray(user.children) ? user.children : [],
                                             blood_group: user.blood_group || '', religion: user.religion || '', nationality: user.nationality || '',
                                             community: user.community || '',
                                             aadhar: user.aadhar || '', pan: user.pan || '',
@@ -669,7 +703,8 @@ const ProfileViewer = ({ user, onClose }) => {
                                     type="text"
                                 />
                             )}
-                            <InfoRow icon={<FaEnvelope />} label="Email Address" value={isEditingProfile ? formData.email : user.email} editing={isEditingProfile} name="email" onChange={handleChange} />
+                            <InfoRow icon={<FaEnvelope />} label="Official Email ID" value={isEditingProfile ? formData.email : user.email} editing={isEditingProfile} name="email" onChange={handleChange} />
+                            <InfoRow icon={<FaEnvelope />} label="Personal Email ID" value={isEditingProfile ? formData.personal_email : user.personal_email} editing={isEditingProfile} name="personal_email" onChange={handleChange} />
                             <InfoRow icon={<FaBuilding />} label="Department" value={user.department_name} />
                             <InfoRow icon={<FaBriefcase />} label="Designation" value={user.designation || user.role} />
 
@@ -707,14 +742,54 @@ const ProfileViewer = ({ user, onClose }) => {
                                             <InfoRow icon={<FaUser />} label="Father's Name" value={isEditingProfile ? formData.father_name : user.father_name} editing={isEditingProfile} name="father_name" onChange={handleChange} />
                                             <InfoRow icon={<FaUser />} label="Mother's Name" value={isEditingProfile ? formData.mother_name : user.mother_name} editing={isEditingProfile} name="mother_name" onChange={handleChange} />
                                             <InfoRow icon={<FaHeart />} label="Marital Status" value={isEditingProfile ? formData.marital_status : user.marital_status} editing={isEditingProfile} name="marital_status" onChange={handleChange} />
+                                            {user.marital_status === 'Married' && (
+                                                <InfoRow icon={<FaHeart />} label="Spouse Name" value={isEditingProfile ? formData.spouse_name : user.spouse_name} editing={isEditingProfile} name="spouse_name" onChange={handleChange} />
+                                            )}
+                                            {Array.isArray(user.children) && user.children.length > 0 && !isEditingProfile && (
+                                                <InfoRow icon={<FaUsers />} label="Children" value={user.children.join(', ')} />
+                                            )}
+                                            {isEditingProfile && (
+                                                <div className="md:col-span-2 mt-4 p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Children Details</h4>
+                                                        <button type="button" onClick={() => setFormData({ ...formData, children: [...(formData.children || []), ''] })} className="h-8 w-8 bg-emerald-500 text-white rounded-xl flex items-center justify-center hover:bg-emerald-600 transition-all active:scale-90 shadow-lg shadow-emerald-100">
+                                                            <FaPlus size={12} />
+                                                        </button>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(formData.children || []).map((child, idx) => (
+                                                            <div key={idx} className="flex gap-2">
+                                                                <input 
+                                                                    value={child} 
+                                                                    onChange={(e) => {
+                                                                        const newChildren = [...formData.children];
+                                                                        newChildren[idx] = e.target.value;
+                                                                        setFormData({ ...formData, children: newChildren });
+                                                                    }} 
+                                                                    className={inputClass} 
+                                                                    placeholder={`Child ${idx + 1}`}
+                                                                />
+                                                                <button type="button" onClick={() => {
+                                                                    const newChildren = formData.children.filter((_, i) => i !== idx);
+                                                                    setFormData({ ...formData, children: newChildren });
+                                                                }} className="h-10 w-10 bg-white border border-gray-200 text-rose-500 rounded-xl flex items-center justify-center hover:bg-rose-50 hover:border-rose-100 transition-all">
+                                                                    <FaTrash size={12} />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             {/* Career & Financial */}
                                             <div className="col-span-full">
                                                 <SectionHeader title="Career & Financials" />
                                             </div>
                                             <InfoRow icon={<FaCalendarAlt />} label="Date of Joining" value={user.doj} />
-                                            <InfoRow icon={<FaSuitcase />} label="Experience" value={user.experience} />
+                                            <InfoRow icon={<FaSuitcase />} label="PPG Experience" value={calculatePPGExperience(user.doj)} />
+                                            <InfoRow icon={<FaSuitcase />} label="Other Experience" value={isEditingProfile ? formData.other_experience : user.other_experience} editing={isEditingProfile} name="other_experience" onChange={handleChange} />
                                             <InfoRow icon={<FaMoneyBillWave />} label="Monthly Salary" value={user.monthly_salary ? `₹${parseFloat(user.monthly_salary).toLocaleString()}` : 'N/A'} />
+                                            <InfoRow icon={<FaUserCircle />} label="Account Holder" value={isEditingProfile ? formData.bank_account_name : user.bank_account_name} editing={isEditingProfile} name="bank_account_name" onChange={handleChange} />
                                             <InfoRow icon={<FaUniversity />} label="Bank Name" value={isEditingProfile ? formData.bank_name : user.bank_name} editing={isEditingProfile} name="bank_name" onChange={handleChange} />
                                             <InfoRow icon={<FaCreditCard />} label="Account Number" value={isEditingProfile ? formData.account_no : user.account_no} editing={isEditingProfile} name="account_no" onChange={handleChange} />
                                             {isEditingProfile ? (
