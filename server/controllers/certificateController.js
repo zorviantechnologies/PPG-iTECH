@@ -26,16 +26,17 @@ exports.uploadCertificate = async (req, res) => {
 
         const { certificate_name, file_name, file_type, file_data, handled_by } = req.body;
 
-        if (!certificate_name || !file_name || !file_type || !file_data) {
-            return res.status(400).json({ message: 'All fields are required' });
+        if (!certificate_name) {
+            return res.status(400).json({ message: 'Certificate name is required' });
         }
 
-        const finalHandledBy = handled_by || (['admin', 'accounts', 'management'].includes(req.user.role) ? 'management' : 'employee');
+        const role = req.user.role;
+        const finalHandledBy = handled_by || (['admin', 'management', 'principal', 'hod', 'accounts'].includes(role) ? 'management' : 'employee');
 
         const { rows } = await pool.query(
             `INSERT INTO certificates (user_id, certificate_name, file_name, file_type, file_data, handled_by)
              VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, certificate_name, file_name, file_type, handled_by, created_at`,
-            [userId, certificate_name, file_name, file_type, file_data, finalHandledBy]
+            [userId, certificate_name, file_name || null, file_type || null, file_data || null, finalHandledBy]
         );
 
         res.status(201).json(rows[0]);

@@ -29,6 +29,9 @@ const EmployeeManagement = () => {
     const [selectedEmpCerts, setSelectedEmpCerts] = useState([]);
     const [certModalLoading, setCertModalLoading] = useState(false);
     const [currentCertEmp, setCurrentCertEmp] = useState(null);
+    const [newStatusName, setNewStatusName] = useState('');
+    const [newStatusHandler, setNewStatusHandler] = useState('management');
+    const [addingStatus, setAddingStatus] = useState(false);
 
     useEffect(() => {
         fetchEmployees();
@@ -149,6 +152,27 @@ const EmployeeManagement = () => {
             Swal.fire('Error', 'Failed to fetch certificates', 'error');
         } finally {
             setCertModalLoading(false);
+        }
+    };
+
+    const handleAddCertStatus = async () => {
+        if (!newStatusName.trim()) {
+            return Swal.fire('Error', 'Please enter a certificate name', 'error');
+        }
+        setAddingStatus(true);
+        try {
+            await api.post(`/certificates/${currentCertEmp.id}`, {
+                certificate_name: newStatusName.trim(),
+                handled_by: newStatusHandler
+            });
+            const { data } = await api.get(`/certificates/${currentCertEmp.id}`);
+            setSelectedEmpCerts(data);
+            setNewStatusName('');
+            Swal.fire({ icon: 'success', title: 'Added!', text: 'Certificate status updated.', timer: 1200, showConfirmButton: false });
+        } catch (error) {
+            Swal.fire('Error', 'Failed to add status', 'error');
+        } finally {
+            setAddingStatus(false);
         }
     };
 
@@ -481,7 +505,7 @@ const EmployeeManagement = () => {
                                     <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-sky-50">Employee</th>
                                     <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-sky-50">Role & Department</th>
                                     <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-sky-50">Contact Info</th>
-                                    <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-sky-50">Certificates</th>
+                                    <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-sky-50">Certificates Status</th>
                                     <th className="p-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] border-b border-sky-50 text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -548,18 +572,10 @@ const EmployeeManagement = () => {
                                                     <button
                                                         onClick={(e) => handleViewCertificates(e, emp)}
                                                         className="h-10 w-10 bg-sky-50 text-sky-600 rounded-xl hover:bg-sky-600 hover:text-white transition-all shadow-sm flex items-center justify-center active:scale-90 group/btn relative"
-                                                        title="View Certificates"
+                                                        title="View Certificates Status"
                                                     >
                                                         <FaCertificate className="group-hover/btn:scale-110 transition-transform" />
-                                                        {emp.cert_count > 0 && (
-                                                            <span className="absolute -top-1 -right-1 h-4 w-4 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center ring-2 ring-white">
-                                                                {emp.cert_count}
-                                                            </span>
-                                                        )}
                                                     </button>
-                                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                        {emp.cert_count || 0} File{emp.cert_count !== 1 ? 's' : ''}
-                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="p-6">
@@ -753,7 +769,38 @@ const EmployeeManagement = () => {
                                     </button>
                                 </div>
 
-                                <div className="p-10 max-h-[60vh] overflow-y-auto no-scrollbar">
+                                <div className="p-10 max-h-[70vh] overflow-y-auto no-scrollbar">
+                                    {/* Add Status Form */}
+                                    <div className="mb-10 p-8 bg-sky-50/50 rounded-[32px] border border-sky-100/50">
+                                        <label className="block text-[10px] font-black text-sky-600 uppercase tracking-widest mb-4 ml-1">Log New Certificate Status</label>
+                                        <div className="flex flex-col gap-4">
+                                            <input 
+                                                type="text"
+                                                placeholder="Enter Certificate Name (e.g. Master Degree, 10th Marksheet)"
+                                                value={newStatusName}
+                                                onChange={(e) => setNewStatusName(e.target.value)}
+                                                className="w-full p-4 bg-white border border-sky-100 rounded-2xl outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all font-bold text-gray-700 text-sm"
+                                            />
+                                            <div className="flex gap-4">
+                                                <select 
+                                                    value={newStatusHandler}
+                                                    onChange={(e) => setNewStatusHandler(e.target.value)}
+                                                    className="flex-1 p-4 bg-white border border-sky-100 rounded-2xl outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all font-bold text-gray-700 text-sm appearance-none"
+                                                >
+                                                    <option value="management">Handled by Management</option>
+                                                    <option value="employee">Handled by Employee</option>
+                                                </select>
+                                                <button 
+                                                    onClick={handleAddCertStatus}
+                                                    disabled={addingStatus}
+                                                    className="px-8 bg-sky-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-sky-700 transition-all active:scale-95 disabled:opacity-50"
+                                                >
+                                                    {addingStatus ? 'Updating...' : 'Add Status'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     {certModalLoading ? (
                                         <div className="py-20 flex justify-center">
                                             <div className="h-8 w-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin" />
@@ -761,7 +808,7 @@ const EmployeeManagement = () => {
                                     ) : selectedEmpCerts.length === 0 ? (
                                         <div className="py-20 text-center opacity-20 grayscale flex flex-col items-center gap-4">
                                             <FaCertificate size={48} className="text-gray-400" />
-                                            <p className="text-sm font-black text-gray-600 uppercase tracking-widest">No digitized credentials detected</p>
+                                            <p className="text-sm font-black text-gray-600 uppercase tracking-widest">No certificate records found</p>
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-1 gap-4">
@@ -774,31 +821,61 @@ const EmployeeManagement = () => {
                                                         <div>
                                                             <p className="text-sm font-black text-gray-800 tracking-tight">{cert.certificate_name}</p>
                                                             <div className="flex items-center gap-3 mt-1">
-                                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">{cert.file_name}</span>
                                                                 <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-[0.1em] ${cert.handled_by === 'management' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                                                    Handled by: {cert.handled_by || 'Employee'}
+                                                                    {cert.handled_by === 'management' ? 'Handled by Management' : 'Handled by Employee'}
                                                                 </span>
+                                                                {cert.file_name && (
+                                                                    <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest flex items-center gap-1">
+                                                                        <FaCertificate size={8} /> Digitized File Attached
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <button 
-                                                        onClick={async () => {
-                                                            try {
-                                                                const { data } = await api.get(`/certificates/file/${cert.id}`);
-                                                                const link = document.createElement('a');
-                                                                link.href = data.file_data;
-                                                                link.download = data.file_name;
-                                                                document.body.appendChild(link);
-                                                                link.click();
-                                                                document.body.removeChild(link);
-                                                            } catch (err) {
-                                                                Swal.fire('Error', 'Failed to download file', 'error');
-                                                            }
-                                                        }}
-                                                        className="h-10 px-6 bg-white border border-gray-100 rounded-xl shadow-sm text-[10px] font-black uppercase tracking-widest text-sky-600 hover:bg-sky-600 hover:text-white transition-all active:scale-95"
-                                                    >
-                                                        Download
-                                                    </button>
+                                                    {cert.file_name ? (
+                                                        <button 
+                                                            onClick={async () => {
+                                                                try {
+                                                                    const { data } = await api.get(`/certificates/file/${cert.id}`);
+                                                                    const link = document.createElement('a');
+                                                                    link.href = data.file_data;
+                                                                    link.download = data.file_name;
+                                                                    document.body.appendChild(link);
+                                                                    link.click();
+                                                                    document.body.removeChild(link);
+                                                                } catch (err) {
+                                                                    Swal.fire('Error', 'Failed to download file', 'error');
+                                                                }
+                                                            }}
+                                                            className="h-10 px-6 bg-white border border-gray-100 rounded-xl shadow-sm text-[10px] font-black uppercase tracking-widest text-sky-600 hover:bg-sky-600 hover:text-white transition-all active:scale-95"
+                                                        >
+                                                            Download
+                                                        </button>
+                                                    ) : (
+                                                        <button 
+                                                            onClick={async () => {
+                                                                const result = await Swal.fire({
+                                                                    title: 'Remove Status?',
+                                                                    text: "This certificate log will be deleted.",
+                                                                    icon: 'warning',
+                                                                    showCancelButton: true,
+                                                                    confirmButtonColor: '#ef4444'
+                                                                });
+                                                                if (result.isConfirmed) {
+                                                                    try {
+                                                                        await api.delete(`/certificates/${cert.id}`);
+                                                                        const { data } = await api.get(`/certificates/${currentCertEmp.id}`);
+                                                                        setSelectedEmpCerts(data);
+                                                                    } catch (err) {
+                                                                        Swal.fire('Error', 'Failed to delete status', 'error');
+                                                                    }
+                                                                }
+                                                            }}
+                                                            className="h-10 px-6 bg-white border border-gray-100 rounded-xl shadow-sm text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-500 hover:text-white transition-all active:scale-95"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
