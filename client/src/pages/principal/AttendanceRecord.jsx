@@ -549,7 +549,7 @@ const AttendanceRecord = () => {
                         >
                             Summary View
                         </button>
-                        {(user?.role === 'admin' || user?.role === 'management') && (
+                        {(user?.role === 'admin' || user?.role === 'management' || user?.role === 'accounts') && (
                             <>
                                 <button
                                     onClick={() => {

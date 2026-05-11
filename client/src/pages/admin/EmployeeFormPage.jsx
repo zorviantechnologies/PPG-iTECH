@@ -53,7 +53,7 @@ const EmployeeFormPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-    const isAdmin = user?.role === 'admin' || user?.role === 'management';
+    const isAdmin = user?.role === 'admin' || user?.role === 'management' || user?.role === 'accounts';
 
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);

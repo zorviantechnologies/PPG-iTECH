@@ -99,7 +99,7 @@ const LoginRoute = () => {
 
   if (isManagement) return <Navigate to="/management" replace />;
     if (user) {
-      const roleMap = { admin: '/admin', principal: '/principal', hod: '/hod', staff: '/staff', accounts: '/staff' };
+      const roleMap = { admin: '/admin', principal: '/principal', hod: '/hod', staff: '/staff', accounts: '/admin' };
       return <Navigate to={roleMap[user.role] || '/login'} replace />;
     }
   return <Login />;
@@ -216,7 +216,7 @@ const AppContent = () => {
       <Route path="/login" element={<LoginRoute />} />
 
       <Route path="/admin/*" element={
-        <ProtectedRoute allowedRoles={['admin']}>
+        <ProtectedRoute allowedRoles={['admin', 'accounts']}>
           <Routes>
             <Route path="/" element={<AdminDashboard />} />
             <Route path="employees" element={<EmployeeManagement />} />

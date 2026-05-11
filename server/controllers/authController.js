@@ -26,7 +26,7 @@ exports.loginUser = async (req, res) => {
     try {
         // queryWithRetry now handles transient "Max Clients" errors automatically
         const { rows } = await queryWithRetry(
-            "SELECT * FROM users WHERE LOWER(emp_id) = LOWER($1) AND role IN ('admin', 'principal', 'hod', 'staff')",
+            "SELECT * FROM users WHERE LOWER(emp_id) = LOWER($1) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts')",
             [trimmedEmpId]
         );
         const user = rows[0];

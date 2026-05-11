@@ -146,7 +146,7 @@ const Header = () => {
             0
         );
 
-        if (!conversationId || role === 'admin') return null;
+        if (!conversationId || ['admin', 'accounts'].includes(role)) return null;
 
         const params = new URLSearchParams({ conversationId: String(conversationId) });
         if (messageId) params.set('messageId', String(messageId));
@@ -411,7 +411,7 @@ const Header = () => {
                 }
                 break;
             case 'purchase':
-                if (role === 'admin') {
+                if (['admin', 'accounts'].includes(role)) {
                     navigate('/admin/purchase');
                 } else if (role === 'principal') {
                     navigate('/principal/purchase');
@@ -432,7 +432,7 @@ const Header = () => {
                 break;
             }
             case 'attendance':
-                if (role === 'admin') navigate('/admin/attendance');
+                if (['admin', 'accounts'].includes(role)) navigate('/admin/attendance');
                 else if (role === 'principal') navigate('/principal/attendance');
                 else if (role === 'hod') navigate('/hod/attendance');
                 else navigate('/staff/timetables');

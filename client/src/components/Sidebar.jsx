@@ -56,6 +56,17 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
       { label: 'Calendar', path: '/admin/calendar', icon: <FaCalendarDay /> },
       { label: 'Purchase Requests', path: '/admin/purchase', icon: <FaShoppingBag /> },
     ],
+    accounts: [
+      { label: 'Dashboard', path: '/admin', icon: <FaTachometerAlt /> },
+      { label: 'Employee Management', path: '/admin/employees', icon: <FaUsers /> },
+      { label: 'Department Management', path: '/admin/departments', icon: <FaBuilding /> },
+      { label: 'Salary Management', path: '/admin/payroll', icon: <FaMoneyBillWave /> },
+      { label: 'Attendance Records', path: '/admin/attendance', icon: <FaCalendarCheck /> },
+      { label: 'Leave Balances', path: '/admin/leave-limits', icon: <FaClipboardCheck /> },
+      { label: 'Timetable Setup', path: '/admin/timetable-setup', icon: <FaCalendarAlt /> },
+      { label: 'Calendar', path: '/admin/calendar', icon: <FaCalendarDay /> },
+      { label: 'Purchase Requests', path: '/admin/purchase', icon: <FaShoppingBag /> },
+    ],
     principal: [
       { label: 'Dashboard', path: '/principal', icon: <FaTachometerAlt /> },
       { label: 'Attendance Records', path: '/principal/attendance', icon: <FaCalendarCheck /> },
@@ -119,7 +130,7 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
   const activeClass = "bg-white/70 text-sky-600 shadow-sm backdrop-blur-md transform scale-[1.02] transition-all duration-300 border border-white/50";
   const inactiveClass = "text-gray-500 hover:bg-white/40 hover:text-sky-600 transition-all duration-300";
 
-  const roleName = userRole === 'hod' ? 'Head of Department' : userRole === 'admin' ? 'Administrator' : userRole === 'principal' ? 'Principal' : userRole === 'management' ? 'Management' : 'Staff Member';
+  const roleName = userRole === 'hod' ? 'Head of Department' : userRole === 'admin' ? 'Administrator' : userRole === 'accounts' ? 'Accounts Manager' : userRole === 'principal' ? 'Principal' : userRole === 'management' ? 'Management' : 'Staff Member';
 
   return (
     <div

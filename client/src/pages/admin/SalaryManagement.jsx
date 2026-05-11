@@ -318,10 +318,10 @@ const SalaryManagement = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const canInstitutionWide = user?.role === 'admin' || user?.role === 'management';
+    const canInstitutionWide = user?.role === 'admin' || user?.role === 'management' || user?.role === 'accounts';
     const isHistoryPage = /\/payroll\/history$/.test(location.pathname);
     const isPersonalView = !canInstitutionWide;
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.role === 'admin' || user?.role === 'accounts';
     const isManagement = user?.role === 'management';
     // Live salary page (admin): hide Status & Actions. History page: show both. Personal views: always show.
     const showStatusColumn = isHistoryPage || isPersonalView;

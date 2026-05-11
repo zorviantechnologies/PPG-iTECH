@@ -687,7 +687,7 @@ const ProfileViewer = ({ user, onClose }) => {
                                 icon={<FaIdBadge />} 
                                 label="Employee ID" 
                                 value={isEditingProfile ? (formData.emp_id || user.emp_id) : user.emp_id} 
-                                editing={isEditingProfile && (authUser.role === 'admin' || authUser.role === 'management')}
+                                editing={isEditingProfile && (['admin', 'accounts'].includes(authUser.role) || authUser.role === 'management')}
                                 name="emp_id"
                                 onChange={handleChange}
                             />
@@ -697,7 +697,7 @@ const ProfileViewer = ({ user, onClose }) => {
                                     icon={<FaIdBadge />} 
                                     label="PIN" 
                                     value={isEditingProfile ? (formData.pin || user.pin) : (user.pin || '****')} 
-                                    editing={isEditingProfile && (authUser.role === 'admin' || (authUser.role === 'management' && user.role === 'management'))}
+                                    editing={isEditingProfile && (['admin', 'accounts'].includes(authUser.role) || (authUser.role === 'management' && user.role === 'management'))}
                                     name="pin"
                                     onChange={handleChange}
                                     type="text"
@@ -722,13 +722,13 @@ const ProfileViewer = ({ user, onClose }) => {
                                     <InfoRow icon={<FaPhone />} label="Emergency Contact" value={isEditingProfile ? formData.emergency_contact : user.emergency_contact} editing={isEditingProfile} name="emergency_contact" onChange={handleChange} />
                                     <InfoRow icon={<FaTint />} label="Blood Group" value={isEditingProfile ? formData.blood_group : user.blood_group} editing={isEditingProfile} name="blood_group" onChange={handleChange} />
                                     <InfoRow icon={<FaGlobe />} label="Nationality" value={isEditingProfile ? formData.nationality : user.nationality} editing={isEditingProfile} name="nationality" onChange={handleChange} />
-                                    {(isOwnProfile || authUser.role === 'admin' || authUser.role === 'management') && (
+                                    {(isOwnProfile || ['admin', 'accounts'].includes(authUser.role) || authUser.role === 'management') && (
                                         <InfoRow icon={<FaHandsHelping />} label="Religion" value={isEditingProfile ? formData.religion : user.religion} editing={isEditingProfile} name="religion" onChange={handleChange} />
                                     )}
                                     {isEditingProfile ? (
                                         <InfoRow icon={<FaUsers />} label="Community" value={formData.community} editing={true} name="community" onChange={handleChange} />
                                     ) : (
-                                        (isOwnProfile || authUser.role === 'admin' || authUser.role === 'management') && (
+                                        (isOwnProfile || ['admin', 'accounts'].includes(authUser.role) || authUser.role === 'management') && (
                                             <InfoRow icon={<FaUsers />} label="Community" value={user.community || ''} />
                                         )
                                     )}
