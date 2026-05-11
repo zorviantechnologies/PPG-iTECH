@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import Layout from '../../components/Layout';
 import api from '../../utils/api';
-import { FaFileDownload, FaFilter, FaSearch, FaEye, FaCalendarAlt, FaSync, FaTimes, FaUserTimes } from 'react-icons/fa';
+import { FaFileDownload, FaFilter, FaSearch, FaEye, FaCalendarAlt, FaSync, FaTimes, FaUserTimes, FaEdit, FaSave } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 import { motion, AnimatePresence } from 'framer-motion';
 import { finalizePrintWindow } from '../../utils/printUtils';
 import { useSocket } from '../../context/SocketContext';
@@ -44,6 +45,8 @@ const AttendanceRecord = () => {
         if (hash === 'hod-core' || hash === 'staff-core' || hash === 'principal-core') return 'table';
         return 'summary';
     });
+    const [editingPunch, setEditingPunch] = useState(null); // { record_id, in_time, out_time, status, remarks }
+    const [isUpdating, setIsUpdating] = useState(false);
 
     // Helper function to expand leave type abbreviations in status
     const expandStatusName = (status) => {
@@ -80,18 +83,14 @@ const AttendanceRecord = () => {
         } else {
             const map = {
                 'Present': 'P', 'Absent': 'A', 'OD': 'OD', 'ML': 'ML',
-                'CL': 'CL', 'Comp Leave': 'COMP', 'Holiday': 'H',
-                'LOP': 'LOP'
+                'CL': 'CL', 'Comp Leave': 'COMP', 'Holiday': 'H'
             };
             abbr = map[status] || status;
         }
         
         const isHalfDay = (remarks || '').toLowerCase().includes('0.5') || (remarks || '').toLowerCase().includes('half day');
         if (isLate) {
-            let label = '';
-            if (abbr === 'P') label = 'LE';
-            else if (abbr === 'LOP') label = 'LOP (LE)';
-            else label = `${abbr} (LE)`;
+            let label = abbr === 'P' ? 'LE' : `${abbr} (LE)`;
             return isHalfDay ? `${label} (0.5)` : label;
         }
         return isHalfDay ? `${abbr} (0.5)` : abbr;
@@ -106,7 +105,6 @@ const AttendanceRecord = () => {
         
         if (status.includes('Present')) return 'text-emerald-700 bg-emerald-50';
         if (status === 'Absent') return 'text-rose-700 bg-rose-50';
-        if (status === 'LOP') return 'text-rose-800 bg-rose-100';
         if (status === 'Holiday') return 'text-gray-500 bg-gray-100';
         
         if (status === 'OD' || remarks.includes('OD') || remarks.includes('On Duty')) return 'text-sky-700 bg-sky-50';
@@ -130,7 +128,7 @@ const AttendanceRecord = () => {
                     department_name: rec.department_name,
                     profile_pic: rec.profile_pic,
                     records: {},
-                    totals: { P: 0, A: 0, LOP: 0, CL: 0, ML: 0, COMP: 0, OD: 0, H: 0, LE: 0 }
+                    totals: { P: 0, A: 0, CL: 0, ML: 0, COMP: 0, OD: 0, H: 0, LE: 0 }
                 };
             }
             groups[rec.emp_id].records[rec.date] = rec;
@@ -147,7 +145,7 @@ const AttendanceRecord = () => {
             if (status.includes('Present')) groups[rec.emp_id].totals.P += unit;
             else if (status.includes('Absent')) groups[rec.emp_id].totals.A += unit;
             else if (status.includes('Holiday')) groups[rec.emp_id].totals.H += unit;
-            else if (status.includes('LOP')) groups[rec.emp_id].totals.LOP += unit;
+            else if (status.includes('Holiday')) groups[rec.emp_id].totals.H += unit;
             
             // Map leave types from status or remarks
             if ((status.includes('CL') || remarks.includes('CL') || remarks.includes('Casual Leave')) && !status.includes('Comp') && !remarks.includes('Comp')) {
@@ -314,6 +312,38 @@ const AttendanceRecord = () => {
         .replace(/'/g, '&#39;');
 
 
+    const handleUpdatePunch = async (e) => {
+        e.preventDefault();
+        if (!editingPunch) return;
+        
+        setIsUpdating(true);
+        try {
+            await api.put(`/attendance/${editingPunch.record_id}`, {
+                in_time: editingPunch.in_time,
+                out_time: editingPunch.out_time,
+                status: editingPunch.status,
+                remarks: editingPunch.remarks
+            });
+            Swal.fire({
+                icon: 'success',
+                title: 'Updated',
+                text: 'Attendance record has been updated successfully.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+            setEditingPunch(null);
+            fetchAttendance();
+        } catch (error) {
+            console.error(error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || 'Failed to update record.'
+            });
+        } finally {
+            setIsUpdating(false);
+        }
+    };
 
 
 
@@ -412,7 +442,7 @@ const AttendanceRecord = () => {
             if (viewMode === 'summary') {
                 title = 'Attendance Summary report';
                 listItems = summaryRecords;
-                listHeadings = ['#', 'Emp ID', 'Name', 'Role', 'P', 'A', 'LOP', 'CL', 'ML', 'Comp', 'OD', 'LE'];
+                listHeadings = ['#', 'Emp ID', 'Name', 'Role', 'P', 'A', 'CL', 'ML', 'Comp', 'OD', 'LE'];
                 getListRowData = (rec, idx) => [
                     idx + 1,
                     rec.emp_id,
@@ -420,9 +450,6 @@ const AttendanceRecord = () => {
                     rec.role,
                     formatDayCount(rec.total_present),
                     formatDayCount(rec.total_actual_absent ?? (Number(rec.total_absent || 0) + (rec.total_computed_absent || 0))),
-                    formatDayCount(rec.total_lop),
-                    formatDayCount(rec.total_cl),
-                    formatDayCount(rec.total_ml),
                     formatDayCount(rec.total_comp),
                     formatDayCount(rec.total_od),
                     formatDayCount(rec.total_late)
@@ -499,7 +526,6 @@ const AttendanceRecord = () => {
         const colors = {
             'Present': 'bg-emerald-50 text-emerald-600 border-emerald-100',
             'Absent': 'bg-rose-50 text-rose-600 border-rose-100',
-            'LOP': 'bg-rose-100 text-rose-800 border-rose-200',
             'OD': 'bg-sky-50 text-sky-600 border-sky-100',
             'Leave': 'bg-amber-50 text-amber-600 border-amber-100',
             'Comp Leave': 'bg-amber-50 text-amber-600 border-amber-100',
@@ -740,7 +766,6 @@ const AttendanceRecord = () => {
                                             <th className="p-5 text-xs font-black uppercase tracking-widest bg-gray-50/50">Role</th>
                                             <th className="p-5 text-xs font-black uppercase tracking-widest bg-gray-50/50 text-center">Present</th>
                                             <th className="p-5 text-xs font-black uppercase tracking-widest bg-gray-50/50 text-center">Absent</th>
-                                            <th className="p-5 text-xs font-black uppercase tracking-widest bg-gray-50/50 text-center">LOP</th>
                                             <th className="p-5 text-xs font-black uppercase tracking-widest bg-gray-50/50 text-center">CL</th>
                                             <th className="p-5 text-xs font-black uppercase tracking-widest bg-gray-50/50 text-center">ML</th>
                                             <th className="p-5 text-xs font-black uppercase tracking-widest bg-gray-50/50 text-center">Comp</th>
@@ -761,7 +786,7 @@ const AttendanceRecord = () => {
                                                 <td className="p-5 text-sm font-black text-center text-rose-500">
                                                     {formatDayCount(rec.total_actual_absent ?? (Number(rec.total_absent || 0) + (rec.total_computed_absent || 0)))}
                                                 </td>
-                                                <td className="p-5 text-sm font-black text-center text-rose-800">{formatDayCount(rec.total_lop)}</td>
+                                                
                                                 <td className="p-5 text-sm font-black text-center text-amber-500">{formatDayCount(rec.total_cl)}</td>
                                                 <td className="p-5 text-sm font-black text-center text-orange-500">{formatDayCount(rec.total_ml)}</td>
                                                 <td className="p-5 text-sm font-black text-center text-violet-500">{formatDayCount(rec.total_comp)}</td>
@@ -796,7 +821,7 @@ const AttendanceRecord = () => {
                                 {[
                                     { code: 'P', label: 'Present', cls: 'text-emerald-700 bg-emerald-50' },
                                     { code: 'A', label: 'Absent', cls: 'text-rose-700 bg-rose-50' },
-                                    { code: 'LOP', label: 'Loss of Pay', cls: 'text-rose-800 bg-rose-100' },
+                                    
                                     { code: 'OD', label: 'On Duty', cls: 'text-sky-700 bg-sky-50' },
                                     { code: 'ML', label: 'Medical Leave', cls: 'text-amber-700 bg-amber-50' },
                                     { code: 'CL', label: 'Casual Leave', cls: 'text-amber-700 bg-amber-50' },
@@ -889,11 +914,27 @@ const AttendanceRecord = () => {
                                                     {uniqueDates.map(date => {
                                                         const rec = emp.records[date];
                                                         return (
-                                                            <td key={date} className="border border-gray-200 px-1 py-2 h-11 text-center align-middle">
+                                                            <td key={date} className="border border-gray-200 px-1 py-2 h-11 text-center align-middle group relative">
                                                                 {rec ? (
-                                                                    <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-black leading-none ${getStatusCellColor(rec)}`}>
-                                                                        {abbreviateStatus(rec)}
-                                                                    </span>
+                                                                    <div className="flex flex-col items-center gap-1">
+                                                                        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-black leading-none ${getStatusCellColor(rec)}`}>
+                                                                            {abbreviateStatus(rec)}
+                                                                        </span>
+                                                                        {(user?.role === 'accounts' || user?.role === 'admin') && (
+                                                                            <button
+                                                                                onClick={() => setEditingPunch({
+                                                                                    record_id: rec.id || rec.record_id,
+                                                                                    in_time: rec.in_time || '',
+                                                                                    out_time: rec.out_time || '',
+                                                                                    status: rec.status || 'Present',
+                                                                                    remarks: rec.remarks || ''
+                                                                                })}
+                                                                                className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-white shadow-md border border-gray-200 rounded-full text-sky-500 hover:text-sky-700 transition-all z-30"
+                                                                            >
+                                                                                <FaEdit size={10} />
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
                                                                 ) : (
                                                                     <span className="text-gray-300 text-[10px]">&mdash;</span>
                                                                 )}
@@ -978,6 +1019,111 @@ const AttendanceRecord = () => {
                             exit={{ opacity: 0, y: -20 }}
                         >
                             <BiometricMonitor onDataChange={setBiometricRecords} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Edit Punch Modal */}
+                <AnimatePresence>
+                    {editingPunch && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+                        >
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden border border-gray-100"
+                            >
+                                <div className="bg-sky-600 px-8 py-6 text-white">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
+                                                <FaEdit size={20} />
+                                            </div>
+                                            <h2 className="text-xl font-black tracking-tight">Edit Punch Times</h2>
+                                        </div>
+                                        <button onClick={() => setEditingPunch(null)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                                            <FaTimes size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <form onSubmit={handleUpdatePunch} className="p-8 space-y-6">
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Punch In</label>
+                                            <input
+                                                type="time"
+                                                value={editingPunch.in_time}
+                                                onChange={(e) => setEditingPunch({ ...editingPunch, in_time: e.target.value })}
+                                                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all font-bold text-gray-700 text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Punch Out</label>
+                                            <input
+                                                type="time"
+                                                value={editingPunch.out_time}
+                                                onChange={(e) => setEditingPunch({ ...editingPunch, out_time: e.target.value })}
+                                                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all font-bold text-gray-700 text-sm"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Status</label>
+                                        <select
+                                            value={editingPunch.status}
+                                            onChange={(e) => setEditingPunch({ ...editingPunch, status: e.target.value })}
+                                            className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all font-bold text-gray-700 text-sm appearance-none"
+                                        >
+                                            <option value="Present">Present</option>
+                                            <option value="Absent">Absent</option>
+                                            <option value="CL">Casual Leave</option>
+                                            <option value="ML">Medical Leave</option>
+                                            <option value="OD">On Duty</option>
+                                            <option value="Comp Leave">Comp Leave</option>
+                                            <option value="Holiday">Holiday</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Remarks</label>
+                                        <textarea
+                                            value={editingPunch.remarks}
+                                            onChange={(e) => setEditingPunch({ ...editingPunch, remarks: e.target.value })}
+                                            rows={3}
+                                            className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all font-bold text-gray-700 text-sm resize-none"
+                                            placeholder="Add any specific notes here..."
+                                        />
+                                    </div>
+
+                                    <div className="flex gap-4 pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setEditingPunch(null)}
+                                            className="flex-1 py-4 border border-gray-200 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-50 transition-all"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={isUpdating}
+                                            className="flex-1 py-4 bg-sky-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-sky-700 transition-all shadow-lg shadow-sky-100 flex items-center justify-center gap-2 disabled:opacity-50"
+                                        >
+                                            {isUpdating ? (
+                                                <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            ) : (
+                                                <FaSave />
+                                            )}
+                                            {isUpdating ? 'Saving...' : 'Save Changes'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </motion.div>
                         </motion.div>
                     )}
                 </AnimatePresence>

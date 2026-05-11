@@ -238,7 +238,6 @@ const ensureSalarySchema = async () => {
             year INTEGER,
             total_present NUMERIC(10, 2),
             total_leave NUMERIC(10, 2),
-            total_lop NUMERIC(10, 2),
             calculated_salary NUMERIC(12, 2),
             status VARCHAR(30),
             with_pay_count NUMERIC(10, 2),
@@ -290,7 +289,7 @@ const classifyStatusCategory = (statusText, remarksText, paidSet, unpaidSet) => 
     // Present markers
     const presentMarkers = new Set(['present', 'p']);
     if (presentMarkers.has(norm)) return 'present';
-    // Unpaid / LOP markers
+    // Unpaid markers
     if (unpaidSet.has(norm)) return 'withoutpay';
     // Everything else in paid set = With Pay (CL, ML, OD, Holiday, Leave, etc.)
     if (paidSet.has(norm)) return 'withpay';
@@ -447,7 +446,6 @@ const computeSalaryMetrics = ({ monthlySalary, rawDeductions, deductions, workin
         ? computeDeductions({ rawDeductions, grossSalary, conveyance })
         : { total: Math.max(0, Number(deductions || 0)), esiGross: 0, employeeEsi: 0 };
     const deductionsApplied = Math.max(0, Number(computed.total || 0));
-    const lopDays = Math.max(0, Number(unpaidDays || 0));
     const netSalary = Math.max(0, grossSalary - deductionsApplied);
 
     return {
@@ -459,7 +457,6 @@ const computeSalaryMetrics = ({ monthlySalary, rawDeductions, deductions, workin
         conveyance,
         grossSalary,
         payableDays: normalizedPayable,
-        lopDays,
         deductionsApplied,
         netSalary,
         esiGross: computed.esiGross || 0,
@@ -505,7 +502,7 @@ exports.calculateSalary = async (req, res) => {
         emp_id,
         forceRecalculateAll = false,
         paidStatuses = ['Present', 'CL', 'ML', 'Comp Leave', 'OD', 'Leave', 'Holiday'],
-        unpaidStatuses = ['Absent', 'LOP'],
+        unpaidStatuses = ['Absent'],
         fromDate,
         toDate
     } = req.body;
@@ -615,23 +612,22 @@ exports.calculateSalary = async (req, res) => {
                         year = $3,
                         total_present = $4,
                         total_leave = $5,
-                        total_lop = $6,
-                        calculated_salary = $7,
-                        with_pay_count = $8,
-                        without_pay_count = $9,
-                        deductions_applied = $10,
-                        esi_gross = $11,
-                        employee_esi = $12,
-                        gross_salary = $13,
-                        total_days_in_period = $14,
-                        from_date = $15::date,
-                        to_date = $16::date,
-                        status = $17,
-                        paid_at = $18,
-                        present_days = $19,
-                        with_pay_days = $20,
-                        without_pay_days = $21,
-                        total_payable_days = $22
+                        calculated_salary = $6,
+                        with_pay_count = $7,
+                        without_pay_count = $8,
+                        deductions_applied = $9,
+                        esi_gross = $10,
+                        employee_esi = $11,
+                        gross_salary = $12,
+                        total_days_in_period = $13,
+                        from_date = $14::date,
+                        to_date = $15::date,
+                        status = $16,
+                        paid_at = $17,
+                        present_days = $18,
+                        with_pay_days = $19,
+                        without_pay_days = $20,
+                        total_payable_days = $21
                     WHERE id = $1
                 `, [
                     existing[0].id,
@@ -639,7 +635,6 @@ exports.calculateSalary = async (req, res) => {
                     period.year,
                     breakdown.present_days,       // total_present
                     breakdown.with_pay_days,      // total_leave
-                    breakdown.without_pay_days,   // total_lop
                     metrics.netSalary.toFixed(2),
                     breakdown.with_pay_days,      // with_pay_count (fixed: was total_payable_days)
                     breakdown.without_pay_days,   // without_pay_count
@@ -661,17 +656,17 @@ exports.calculateSalary = async (req, res) => {
                 // INSERT a brand-new salary record
                 await queryWithRetry(`
                     INSERT INTO salary_records (
-                        emp_id, month, year, total_present, total_leave, total_lop,
+                        emp_id, month, year, total_present, total_leave,
                         calculated_salary, status, with_pay_count, without_pay_count,
                         deductions_applied, esi_gross, employee_esi, gross_salary,
                         total_days_in_period, from_date, to_date,
                         present_days, with_pay_days, without_pay_days, total_payable_days
                     ) VALUES (
-                        $1, $2, $3, $4, $5, $6,
-                        $7, 'Pending', $8, $9,
-                        $10, $11, $12, $13,
-                        $14, $15::date, $16::date,
-                        $17, $18, $19, $20
+                        $1, $2, $3, $4, $5,
+                        $6, 'Pending', $7, $8,
+                        $9, $10, $11, $12,
+                        $13, $14, $15,
+                        $16, $17, $18, $19
                     )
                 `, [
                     userEmpId,
@@ -679,9 +674,8 @@ exports.calculateSalary = async (req, res) => {
                     period.year,
                     breakdown.present_days,
                     breakdown.with_pay_days,
-                    breakdown.without_pay_days,
                     metrics.netSalary.toFixed(2),
-                    breakdown.with_pay_days,      // with_pay_count (fixed: was total_payable_days)
+                    breakdown.with_pay_days,
                     breakdown.without_pay_days,
                     metrics.deductionsApplied.toFixed(2),
                     metrics.esiGross.toFixed(2),
@@ -708,7 +702,6 @@ exports.calculateSalary = async (req, res) => {
                 without_pay_days: breakdown.without_pay_days,
                 total_payable_days: breakdown.total_payable_days,
                 payable_days: breakdown.total_payable_days,
-                total_lop: breakdown.without_pay_days,
                 range_days: totalDaysInPeriod,
                 gross_salary: metrics.grossSalary.toFixed(2),
                 deductions_applied: metrics.deductionsApplied.toFixed(2),
@@ -744,7 +737,7 @@ exports.getSalaryRecords = async (req, res) => {
         const effectivePaidStatuses = Array.from(new Set([...(Array.isArray(paidStatuses) ? paidStatuses : []), 'Holiday', 'Weekend']));
         const unpaidStatuses = req.query.unpaidStatuses
             ? JSON.parse(req.query.unpaidStatuses)
-            : ['Absent', 'LOP'];
+            : ['Absent'];
         const period = buildPeriod({ month, year, fromDate, toDate });
         const effectiveCalcTo = getEffectiveCalcTo(period.toDate);
         const scopeWide = isInstitutionWideRole(req.user.role);
@@ -758,7 +751,6 @@ exports.getSalaryRecords = async (req, res) => {
                     merged.year,
                     merged.total_present,
                     merged.total_leave,
-                    merged.total_lop,
                     merged.calculated_salary,
                     merged.status,
                     merged.with_pay_count,
@@ -787,7 +779,6 @@ exports.getSalaryRecords = async (req, res) => {
                         s.year,
                         s.total_present,
                         s.total_leave,
-                        s.total_lop,
                         s.calculated_salary,
                         s.status,
                         s.with_pay_count,
@@ -814,7 +805,6 @@ exports.getSalaryRecords = async (req, res) => {
                         h.year,
                         h.total_present,
                         h.total_leave,
-                        h.total_lop,
                         h.calculated_salary,
                         h.status,
                         h.with_pay_count,
@@ -963,7 +953,6 @@ exports.getSalaryRecords = async (req, res) => {
                     calculated_salary: previewMetrics.netSalary.toFixed(2),
                     total_present: breakdown.present_days,
                     total_leave: breakdown.with_pay_days,
-                    total_lop: breakdown.without_pay_days,
                     present_days: breakdown.present_days,
                     with_pay_days: breakdown.with_pay_days,
                     without_pay_days: breakdown.without_pay_days,
@@ -1010,7 +999,6 @@ exports.getSalaryRecords = async (req, res) => {
                         deductions: u.deductions,
                         total_present: breakdown.present_days,
                         total_leave: breakdown.with_pay_days,
-                        total_lop: breakdown.without_pay_days,
                         present_days: breakdown.present_days,
                         with_pay_days: breakdown.with_pay_days,
                         without_pay_days: breakdown.without_pay_days,
@@ -1068,7 +1056,6 @@ exports.getSalaryRecords = async (req, res) => {
                 calculated_salary: metrics.netSalary.toFixed(2),
                 total_present: breakdown.present_days,
                 total_leave: breakdown.with_pay_days,
-                total_lop: breakdown.without_pay_days,
                 present_days: breakdown.present_days,
                 with_pay_days: breakdown.with_pay_days,
                 without_pay_days: breakdown.without_pay_days,
@@ -1377,7 +1364,6 @@ exports.getSalaryTimeline = async (req, res) => {
                 merged.year,
                 merged.total_present,
                 merged.total_leave,
-                merged.total_lop,
                 merged.calculated_salary,
                 merged.status,
                 merged.with_pay_count,
@@ -1406,7 +1392,6 @@ exports.getSalaryTimeline = async (req, res) => {
                     s.year,
                     s.total_present,
                     s.total_leave,
-                    s.total_lop,
                     s.calculated_salary,
                     s.status,
                     s.with_pay_count,
@@ -1433,7 +1418,6 @@ exports.getSalaryTimeline = async (req, res) => {
                     h.year,
                     h.total_present,
                     h.total_leave,
-                    h.total_lop,
                     h.calculated_salary,
                     h.status,
                     h.with_pay_count,
@@ -1468,7 +1452,6 @@ exports.getSalaryTimeline = async (req, res) => {
             esi_gross: parseFloat(r.esi_gross) || 0,
             employee_esi: parseFloat(r.employee_esi) || 0,
             total_present: parseFloat(r.total_present) || 0,
-            total_lop: parseFloat(r.total_lop) || 0,
             with_pay_count: parseFloat(r.with_pay_count) || 0,
             without_pay_count: parseFloat(r.without_pay_count) || 0,
             total_days_in_period: parseInt(r.total_days_in_period, 10) || 0

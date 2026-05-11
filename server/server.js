@@ -107,6 +107,21 @@ const initDB = async () => {
                 )
             `);
         console.log('--- Feedback Messages Table Verified ---');
+
+        // Ensure certificates table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS certificates (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                certificate_name VARCHAR(255) NOT NULL,
+                file_name VARCHAR(255),
+                file_type VARCHAR(100),
+                file_data TEXT,
+                handled_by VARCHAR(20) DEFAULT 'employee',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('--- Certificates Table Verified ---');
     } catch (err) {
         console.error('Database Initialization Error:', err);
     }

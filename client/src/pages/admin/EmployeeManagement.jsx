@@ -638,7 +638,7 @@ const EmployeeManagement = () => {
                                 initial={{ scale: 0.95, opacity: 0, y: 30 }}
                                 animate={{ scale: 1, opacity: 1, y: 0 }}
                                 exit={{ scale: 0.95, opacity: 0, y: 30 }}
-                                className="relative w-[95%] h-[95vh] bg-white rounded-[40px] shadow-2xl overflow-hidden border border-gray-100 flex flex-col"
+                                className="relative w-full h-full bg-white shadow-2xl overflow-hidden flex flex-col"
                             >
                                 <div className="p-10 border-b border-gray-50 flex justify-between items-center bg-rose-50/30">
                                     <div>
@@ -677,9 +677,15 @@ const EmployeeManagement = () => {
                                             const monthName = new Date(0, selectedBirthdayMonth - 1).toLocaleString('en-US', { month: 'long' });
                                             const monthEmployees = employees.filter(e => {
                                                 if (!e.dob) return false;
-                                                const bMonth = new Date(e.dob).getMonth() + 1;
+                                                const d = new Date(e.dob);
+                                                if (isNaN(d.getTime())) return false;
+                                                const bMonth = d.getMonth() + 1;
                                                 return bMonth === selectedBirthdayMonth;
-                                            }).sort((a, b) => new Date(a.dob).getDate() - new Date(b.dob).getDate());
+                                            }).sort((a, b) => {
+                                                const dA = new Date(a.dob).getDate();
+                                                const dB = new Date(b.dob).getDate();
+                                                return dA - dB;
+                                            });
 
                                             if (monthEmployees.length === 0) {
                                                 return (
@@ -747,7 +753,7 @@ const EmployeeManagement = () => {
                                 initial={{ scale: 0.95, opacity: 0, y: 30 }}
                                 animate={{ scale: 1, opacity: 1, y: 0 }}
                                 exit={{ scale: 0.95, opacity: 0, y: 30 }}
-                                className="relative w-[95%] h-[95vh] bg-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col"
+                                className="relative w-full h-full bg-white shadow-2xl overflow-hidden flex flex-col"
                             >
                                 <div className="p-10 border-b border-gray-50 flex justify-between items-center bg-sky-50/30">
                                     <div className="flex items-center gap-4">
@@ -755,7 +761,7 @@ const EmployeeManagement = () => {
                                             <FaCertificate size={24} />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl font-black text-gray-800 tracking-tight">Personnel Credentials</h2>
+                                            <h2 className="text-2xl font-black text-gray-800 tracking-tight">Personnel Certificates Status</h2>
                                             <p className="text-[10px] font-black text-sky-500 uppercase tracking-widest mt-1">
                                                 {currentCertEmp?.name} • {currentCertEmp?.emp_id}
                                             </p>

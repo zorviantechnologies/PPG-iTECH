@@ -68,7 +68,7 @@ const normalizeDateOnly = (v) => {
 // Prefer new granular fields; fall back to legacy aggregated fields using logical OR so exactly 0 doesn't hide legacy values
 const getPresentDays = (row) => Number(row?.present_days || row?.total_present || 0) || 0;
 const getWithPayDays = (row) => Number(row?.with_pay_days || row?.with_pay_count || row?.total_present || 0) || 0;
-const getWithoutPayDays = (row) => Number(row?.without_pay_days || row?.without_pay_count || row?.total_lop || 0) || 0;
+const getWithoutPayDays = (row) => Number(row?.without_pay_days || row?.without_pay_count || 0) || 0;
 const getTotalPayableDays = (row) => Number(row?.total_payable_days || row?.with_pay_count || row?.total_present || 0) || 0;
 
 const isSameCycle = (row, cycle) => {
@@ -282,16 +282,16 @@ const normalizeSalaryRow = (row) => {
     normalized.monthly_salary = Number(row.monthly_salary ?? row.monthlySalary ?? row.fixed_salary ?? row.fixedSalary ?? 0) || 0;
     normalized.gross_salary = Number(row.gross_salary ?? row.grossSalary ?? row.earned_salary ?? row.earnedSalary ?? normalized.monthly_salary) || 0;
     normalized.total_present = Number(row.total_present ?? row.totalPresent ?? row.with_pay_count ?? row.withPayCount ?? 0) || 0;
-    normalized.total_lop = Number(row.total_lop ?? row.totalLop ?? row.without_pay_count ?? row.withoutPayCount ?? 0) || 0;
+    normalized.total_lop = Number(row.without_pay_count ?? row.withoutPayCount ?? 0) || 0;
     normalized.with_pay_count = Number(row.with_pay_count ?? row.withPayCount ?? normalized.total_present) || 0;
-    normalized.without_pay_count = Number(row.without_pay_count ?? row.withoutPayCount ?? normalized.total_lop) || 0;
+    normalized.without_pay_count = Number(row.without_pay_count ?? row.withoutPayCount ?? 0) || 0;
     normalized.total_days_in_period = Number(row.total_days_in_period ?? row.totalDaysInPeriod ?? row.total_days ?? row.totalDays ?? 0) || 0;
     normalized.deductions_applied = Number(row.deductions_applied ?? row.deductionsApplied ?? row.total_deductions ?? row.totalDeductions ?? 0) || 0;
     normalized.calculated_salary = Number(row.calculated_salary ?? row.calculatedSalary ?? row.net_salary ?? row.netSalary ?? 0) || 0;
     // New granular breakdown fields - carefully fallback to legacy values if the new fields are exactly 0 (which happens due to DB DEFAULT 0 on old records)
     normalized.present_days = Number(row.present_days || row.total_present || 0) || 0;
     normalized.with_pay_days = Number(row.with_pay_days || row.with_pay_count || row.total_present || 0) || 0;
-    normalized.without_pay_days = Number(row.without_pay_days || row.without_pay_count || row.total_lop || 0) || 0;
+    normalized.without_pay_days = Number(row.without_pay_days || row.without_pay_count || 0) || 0;
     normalized.total_payable_days = Number(row.total_payable_days || row.with_pay_count || row.total_present || 0) || 0;
 
     normalized.status = String(row.status ?? row.salary_status ?? row.salaryStatus ?? 'Pending');
@@ -360,7 +360,7 @@ const SalaryManagement = () => {
     });
     const [unpaidStatuses, setUnpaidStatuses] = useState(() => {
         const saved = localStorage.getItem('salary_unpaid_statuses');
-        return saved ? JSON.parse(saved) : ['Absent', 'LOP'];
+        return saved ? JSON.parse(saved) : ['Absent'];
     });
     const refreshOnReturnRef = useRef(true);
     const autoRefreshInFlightRef = useRef(false);
@@ -713,7 +713,7 @@ const SalaryManagement = () => {
                         </div>
                     </div>
                     <div>
-                        <label class="block font-bold text-gray-600 mb-2">Statuses without Pay (LOP)</label>
+                        <label class="block font-bold text-gray-600 mb-2">Statuses without Pay</label>
                         <div id="swal-unpaid-list" class="max-h-52 overflow-y-auto border border-gray-200 rounded-lg px-3 py-2 bg-gray-50">
                             ${renderStatusCheckboxes(allStatuses, 'unpaid')}
                         </div>

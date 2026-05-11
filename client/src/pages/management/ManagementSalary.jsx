@@ -206,7 +206,7 @@ const ManagementSalary = () => {
                             <td style="text-align:right">-</td>
                         </tr>
                         <tr>
-                            <td>Loss of Pay (LOP) Deduction</td>
+                            <td>Unpaid Days Deduction</td>
                             <td style="text-align:right">${s.total_lop || 0} Days</td>
                             <td style="text-align:right; color:#e11d48">- ₹${(Number(s.monthly_salary) - Number(s.calculated_salary)).toLocaleString()}</td>
                         </tr>
@@ -420,7 +420,7 @@ const ManagementSalary = () => {
                                                         <div className="flex gap-4 text-[9px] font-black uppercase tracking-widest">
                                                             <span className="text-purple-500 bg-purple-50 px-2 py-1 rounded-md" title="Total Payable Days">PAID: {s.total_present}</span>
                                                             <span className="text-gray-400 bg-gray-50 px-2 py-1 rounded-md" title="Total Days in Month">MONTH: {new Date(s.year, s.month, 0).getDate()}</span>
-                                                            <span className="text-rose-500 bg-rose-50 px-2 py-1 rounded-md" title="Loss of Pay Days">LOP: {s.total_lop || 0}</span>
+                                                            <span className="text-rose-500 bg-rose-50 px-2 py-1 rounded-md" title="Unpaid Days">UNPAID: {s.total_lop || 0}</span>
                                                         </div>
                                                         <div className="w-32 bg-gray-100 h-1.5 rounded-full overflow-hidden shadow-inner p-px">
                                                             <motion.div

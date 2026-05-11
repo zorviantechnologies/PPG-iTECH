@@ -187,6 +187,52 @@ exports.getAttendance = async (req, res) => {
     }
 };
 
+// @desc    Update attendance record (Punch In/Out)
+// @route   PUT /api/attendance/:recordId
+// @access  Private (Accounts/Admin)
+exports.updateAttendance = async (req, res) => {
+    try {
+        const { recordId } = req.params;
+        const { in_time, out_time, status, remarks } = req.body;
+
+        // Validation: Only accounts and admin can edit
+        if (req.user.role !== 'accounts' && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Only accounts or admin can edit attendance' });
+        }
+
+        // Fetch existing record to get emp_id and date (needed for rebuild/sync)
+        const { rows: existing } = await pool.query('SELECT emp_id, date FROM attendance_records WHERE id = $1', [recordId]);
+        if (existing.length === 0) {
+            return res.status(404).json({ message: 'Record not found' });
+        }
+
+        const { emp_id, date } = existing[0];
+        const dateStr = new Date(date).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+        // Update the record
+        await pool.query(
+            `UPDATE attendance_records 
+             SET in_time = $1, out_time = $2, status = $3, remarks = $4, updated_at = NOW()
+             WHERE id = $5`,
+            [in_time || null, out_time || null, status, remarks, recordId]
+        );
+
+        // Also update biometric_attendance summary table for consistency
+        await pool.query(
+            `INSERT INTO biometric_attendance (user_id, date, intime, outtime)
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT (user_id, date)
+             DO UPDATE SET intime = EXCLUDED.intime, outtime = EXCLUDED.outtime`,
+            [emp_id, dateStr, in_time || null, out_time || null]
+        );
+
+        res.json({ message: 'Attendance updated successfully' });
+    } catch (error) {
+        console.error('updateAttendance ERROR:', error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
 // @desc    Get attendance summary (Counts)
 // @route   GET /api/attendance/summary
 // @access  Private
@@ -282,7 +328,7 @@ exports.getAttendanceSummary = async (req, res) => {
                             (CASE WHEN TRIM(split_part(au.status_text, '+', 1)) ILIKE 'Present' THEN au.split_unit ELSE 0 END)
                             +
                             (CASE WHEN TRIM(split_part(au.status_text, '+', 2)) ILIKE 'Present' THEN au.split_unit ELSE 0 END)
-                        WHEN au.status_text ILIKE '%Present%' AND au.status_text NOT ILIKE '%Absent%' AND au.status_text NOT ILIKE '%LOP%' THEN au.unit_value
+                        WHEN au.status_text ILIKE '%Present%' AND au.status_text NOT ILIKE '%Absent%' THEN au.unit_value
                         ELSE 0 
                     END
                 ), 0) as total_present,
@@ -342,17 +388,6 @@ exports.getAttendanceSummary = async (req, res) => {
                         ELSE 0
                     END
                 ), 0) as total_od,
-                COALESCE(SUM(
-                    CASE
-                        WHEN au.status_text ILIKE '%+%' THEN
-                            (CASE WHEN TRIM(split_part(au.status_text, '+', 1)) ILIKE 'LOP' THEN au.split_unit ELSE 0 END)
-                            +
-                            (CASE WHEN TRIM(split_part(au.status_text, '+', 2)) ILIKE 'LOP' THEN au.split_unit ELSE 0 END)
-                        WHEN au.status_text ILIKE '%LOP%' OR au.remarks_text ILIKE '%LOP%' OR au.remarks_text ILIKE '%Loss of Pay%'
-                        THEN au.unit_value
-                        ELSE 0
-                    END
-                ), 0) as total_lop,
                 COALESCE(SUM(CASE WHEN au.status_text ILIKE '%Late%' OR au.remarks_text ILIKE '%Late Entry%' THEN 1 ELSE 0 END), 0) as total_late,
                 COALESCE(
                     SUM(
@@ -433,7 +468,7 @@ exports.getAttendanceTrend = async (req, res) => {
                 TO_CHAR(date, 'Mon YYYY') as month_name,
                 SUM(CASE WHEN status::text LIKE '%Present%' THEN 1 ELSE 0 END) as present,
                 SUM(CASE WHEN status::text LIKE '%Leave%' OR status::text LIKE '%Comp Leave%' OR remarks LIKE '%Comp Leave:%' OR status::text LIKE '%CL%' OR remarks LIKE '%CL:%' OR status::text LIKE '%ML%' OR remarks LIKE '%ML:%' THEN 1 ELSE 0 END) as "leave",
-                SUM(CASE WHEN status::text LIKE '%Absent%' OR status::text LIKE '%LOP%' THEN 1 ELSE 0 END) as lop
+                SUM(CASE WHEN status::text LIKE '%Absent%' THEN 1 ELSE 0 END) as absent
             FROM attendance_records
             WHERE date >= CURRENT_DATE - INTERVAL '6 months'
             GROUP BY TO_CHAR(date, 'YYYY-MM'), month_name
@@ -473,7 +508,7 @@ exports.getAttendanceStatusOptions = async (req, res) => {
         `;
 
         const { rows } = await queryWithRetry(query, params);
-        const defaults = ['Present', 'CL', 'ML', 'Comp Leave', 'OD', 'Leave', 'Holiday', 'Weekend', 'Absent', 'LOP'];
+        const defaults = ['Present', 'CL', 'ML', 'Comp Leave', 'OD', 'Leave', 'Holiday', 'Weekend', 'Absent'];
         const merged = Array.from(new Set([
             ...defaults,
             ...rows.map((r) => String(r.status || '').trim()).filter(Boolean)

@@ -490,47 +490,12 @@ const rebuildAttendanceFromBiometricTimeline = async (normalizedEmpId, dateStr, 
             let isEarlyExit = false;
             let isLateCovered = true;
             let isEarlyCovered = true;
-            let lateLopUnits = 0;
-            let earlyLopUnits = 0;
-
-            if (inMins > LATE_GRACE_IN_MINS) {
-                isLateEntry = true;
-                isLateCovered = segments.filter(s => s.type !== 'Present' && s.type !== 'Permission').some(s => s.fromMins <= STD_IN_MINS && s.toMins >= inMins);
-                flags.push(`Late Entry (${physIn})`);
-                if (!isLateCovered) {
-                    // If late after 9:00 and not covered by leave, mark as LOP
-                    lateLopUnits = inMins <= MORNING_HALF_DAY_END_MINS ? 0.5 : 1;
-                    if (lateLopUnits === 0.5) flags.push('Late LOP (Morning)');
-                    else flags.push('Late LOP (Full Day)');
-                }
-            }
-
-            if (outMins < STD_OUT_MINS && outMins > inMins) {
-                isEarlyExit = true;
-                isEarlyCovered = segments.filter(s => s.type !== 'Present' && s.type !== 'Permission').some(s => s.fromMins <= outMins && s.toMins >= STD_OUT_MINS);
-                flags.push(`Early Exit (${physOut})`);
-                if (!isEarlyCovered) {
-                    earlyLopUnits = outMins >= EVENING_HALF_DAY_START_MINS ? 0.5 : 1;
-                    if (earlyLopUnits === 0.5) flags.push('Early Exit LOP (Evening)');
-                    else flags.push('Early Exit LOP (Full Day)');
-                }
-            }
-
-            const lopUnits = Math.min(1, lateLopUnits + earlyLopUnits);
-
-            if (lopUnits >= 1) {
-                dbStatus = leaveInfo ? `LOP + ${leaveInfo}` : 'LOP';
-            } else if (lopUnits === 0.5) {
-                // Check if it was Late Entry specifically
-                if (isLateEntry && !isLateCovered) {
-                    dbStatus = leaveInfo ? `LOP (Late) + ${leaveInfo}` : 'LOP (Late Entry) + Present';
-                } else if (isEarlyExit && !isEarlyCovered) {
-                    dbStatus = leaveInfo ? `LOP (Early) + ${leaveInfo}` : 'LOP (Early Exit) + Present';
-                } else {
-                    dbStatus = 'LOP + Present';
-                }
+            if (isLateEntry) {
+                dbStatus = leaveInfo ? `Present (Late) + ${leaveInfo}` : 'Present (Late Entry)';
+            } else if (isEarlyExit) {
+                dbStatus = leaveInfo ? `Present (Early) + ${leaveInfo}` : 'Present (Early Exit)';
             } else {
-                dbStatus = leaveInfo ? (isLateEntry ? `Present (Late) + ${leaveInfo}` : `Present + ${leaveInfo}`) : (isLateEntry ? 'Present (Late Entry)' : 'Present');
+                dbStatus = leaveInfo ? `Present + ${leaveInfo}` : 'Present';
             }
         }
     } else {
@@ -542,12 +507,10 @@ const rebuildAttendanceFromBiometricTimeline = async (normalizedEmpId, dateStr, 
         else dbStatus = 'Absent';
     }
 
-    // MAP TO VALID DATABASE ENUM VALUES (Present, LOP, Absent, CL, ML, OD, etc.)
-    // Detailed info like "LOP (Late) + CL" must go in remarks because the status column is a strict ENUM.
+    // MAP TO VALID DATABASE ENUM VALUES (Present, Absent, CL, ML, OD, etc.)
+    // Detailed info like "Present (Late) + CL" must go in remarks because the status column is a strict ENUM.
     let enumStatus = 'Present';
-    if (dbStatus.includes('LOP')) {
-        enumStatus = 'LOP';
-    } else if (dbStatus.includes('Absent')) {
+    if (dbStatus.includes('Absent')) {
         enumStatus = 'Absent';
     } else if (dbStatus.includes('CL')) {
         enumStatus = 'CL';

@@ -59,10 +59,10 @@ const AttendanceHistory = ({ empId, month: propMonth, startDate, endDate, recent
                  
                  // Summations of units
                  const absent = data.filter(r => String(r.status).includes('Absent')).reduce((acc, r) => acc + getUnit(r), 0);
-                 const lop = data.filter(r => String(r.status).includes('LOP') || String(r.remarks).includes('LOP') || String(r.remarks).includes('Loss of Pay')).reduce((acc, r) => acc + getUnit(r), 0);
+                 const unpaid = data.filter(r => String(r.status).includes('Unpaid') || String(r.remarks).includes('Unpaid')).reduce((acc, r) => acc + getUnit(r), 0);
                  const lateEntry = data.filter(r => String(r.remarks).includes('Late Entry') || String(r.status).includes('Late Entry')).length;
                  
-                 onLoadSummary({ workingDays, holidays, absent, lop, lateEntry });
+                 onLoadSummary({ workingDays, holidays, absent, unpaid, lateEntry });
             }
         }
     }, [empId, propMonth, startDate, endDate, recentOnly, statusFilter, onLoadSummary]);
@@ -96,7 +96,7 @@ const AttendanceHistory = ({ empId, month: propMonth, startDate, endDate, recent
             if (statusFilter === 'ML') return s.includes('ML') || rem.includes('ML') || rem.includes('Medical');
             if (statusFilter === 'Comp Leave') return s.includes('Comp Leave') || rem.includes('Comp Leave') || rem.includes('Comp');
             if (statusFilter === 'Late Entry') return rem.includes('Late Entry');
-            if (statusFilter === 'LOP') return s.includes('LOP') || rem.includes('LOP') || rem.includes('Loss of Pay');
+            if (statusFilter === 'Unpaid') return s.includes('Unpaid') || s.includes('LOP') || rem.includes('LOP') || rem.includes('Loss of Pay');
             return s.includes(statusFilter) || rem.includes(statusFilter);
         })
         : recentOnly ? records : records;
@@ -114,7 +114,7 @@ const AttendanceHistory = ({ empId, month: propMonth, startDate, endDate, recent
         const s = status.toUpperCase();
         if (s.includes('PRESENT')) return <FaCheckCircle className="text-emerald-500" />;
         if (s.includes('ABSENT')) return <FaTimesCircle className="text-rose-500" />;
-        if (s.includes('LOP')) return <FaTimesCircle className="text-rose-700" />;
+        if (s.includes('LOP') || s.includes('UNPAID')) return <FaTimesCircle className="text-rose-700" />;
         if (s.includes('OD')) return <FaBus className="text-sky-500" />;
         if (status === 'Late Entry') return <FaClock className="text-orange-500" />;
         return <FaCalendarAlt className="text-amber-500" />;
@@ -128,7 +128,7 @@ const AttendanceHistory = ({ empId, month: propMonth, startDate, endDate, recent
     //
     // When a statusFilter is active, extract ONLY the relevant part:
     //  - Late Entry  → show only the Alerts section (or any 'Late Entry' mention)
-    //  - LOP         → show only Working Hours (key indicator of LOP reason)
+    //  - Unpaid      → show only Working Hours (key indicator of why it was marked unpaid)
     //  - OD/CL/ML/Comp Leave → show matching Approved Segments entry
     //  - Present     → show Working Hours
     //  - Absent      → show '—' (no attendance data)
@@ -169,8 +169,8 @@ const AttendanceHistory = ({ empId, month: propMonth, startDate, endDate, recent
             return wh ? `Working Hours: ${wh}` : '—';
         }
 
-        if (statusFilter === 'LOP') {
-            // Show working hours (explains why LOP happened) + any alerts
+        if (statusFilter === 'Unpaid') {
+            // Show working hours (explains why it was marked unpaid) + any alerts
             const wh = getSection('Working Hours');
             const alerts = getSection('Alerts');
             const parts = [];
@@ -303,7 +303,7 @@ const AttendanceHistory = ({ empId, month: propMonth, startDate, endDate, recent
                                             <span className={`text-[9px] font-black uppercase tracking-widest ${
                                                 isLateEntry(record) ? 'text-orange-600' :
                                                 String(record.status).toUpperCase().includes('PRESENT') ? 'text-emerald-600' :
-                                                String(record.status).toUpperCase().includes('LOP') ? 'text-rose-700' :
+                                                (String(record.status).toUpperCase().includes('LOP') || String(record.status).toUpperCase().includes('UNPAID')) ? 'text-rose-700' :
                                                 String(record.status).toUpperCase().includes('ABSENT') ? 'text-rose-500' :
                                                 String(record.status).toUpperCase().includes('OD') ? 'text-sky-600' : 'text-amber-500'
                                                 }`}>
@@ -317,7 +317,7 @@ const AttendanceHistory = ({ empId, month: propMonth, startDate, endDate, recent
                                                         : record.status
                                                 )}
                                                 {(record.in_time && record.out_time && 
-                                                  !['Present', 'Absent', 'Holiday', 'Weekend', 'LOP'].includes(record.status) &&
+                                                  !['Present', 'Absent', 'Holiday', 'Weekend', 'LOP', 'Unpaid'].includes(record.status) &&
                                                   !String(record.status).startsWith('Present +')
                                                 ) && (
                                                     <span className="ml-1 opacity-70">
