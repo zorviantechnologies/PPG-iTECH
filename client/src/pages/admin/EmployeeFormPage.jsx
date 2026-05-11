@@ -80,7 +80,12 @@ const EmployeeFormPage = () => {
             { value: 'hod', label: 'HOD' },
             { value: 'principal', label: 'Principal' }
         ]
-        : [{ value: 'staff', label: 'Staff' }];
+        : selectedCategory === 'Non-Teaching'
+            ? [
+                { value: 'staff', label: 'Staff' },
+                { value: 'accounts', label: 'Accounts' }
+            ]
+            : [{ value: 'staff', label: 'Staff' }];
 
     useEffect(() => {
         fetchDepartments();
@@ -212,11 +217,21 @@ const EmployeeFormPage = () => {
 
         if (name === 'community') {
             const category = normalizeEmployeeCategory(value);
-            setFormData(prev => ({
-                ...prev,
-                community: category,
-                role: category === 'Teaching' ? prev.role : 'staff'
-            }));
+            setFormData(prev => {
+                let newRole = prev.role;
+                if (category === 'Teaching') {
+                    if (!['staff', 'hod', 'principal'].includes(newRole)) newRole = 'staff';
+                } else if (category === 'Non-Teaching') {
+                    if (!['staff', 'accounts'].includes(newRole)) newRole = 'staff';
+                } else {
+                    newRole = 'staff';
+                }
+                return {
+                    ...prev,
+                    community: category,
+                    role: newRole
+                };
+            });
             return;
         }
 
@@ -398,6 +413,7 @@ const EmployeeFormPage = () => {
             let userId = formData.id;
             const payload = {
                 ...formData,
+                role: formData.role || 'staff',
                 community: normalizeEmployeeCategory(formData.community),
                 department_id: formData.department_id || '',
                 deductions: serializeDeductions()
@@ -562,11 +578,14 @@ const EmployeeFormPage = () => {
                                     <label className={labelClass}>User Role</label>
                                     <select
                                         name="role"
-                                        value={isTeachingCategory ? (formData.role || 'staff') : 'staff'}
+                                        value={formData.role || 'staff'}
                                         onChange={handleChange}
                                         className={inputClass}
-                                        disabled={!isAdmin || !isTeachingCategory}
+                                        disabled={!isAdmin || (!isTeachingCategory && selectedCategory !== 'Non-Teaching')}
                                     >
+                                        {!isTeachingCategory && selectedCategory === 'Non-Teaching' && (
+                                            <option value="">Select Role (Optional)</option>
+                                        )}
                                         {roleOptions.map((opt) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}

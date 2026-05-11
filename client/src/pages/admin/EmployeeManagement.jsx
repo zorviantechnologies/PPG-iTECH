@@ -357,6 +357,7 @@ const EmployeeManagement = () => {
                                 <option value="principal">principal</option>
                                 <option value="hod">hod</option>
                                 <option value="staff">staff</option>
+                                <option value="accounts">accounts</option>
                             </select>
                             <FaFilter className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
                         </div>

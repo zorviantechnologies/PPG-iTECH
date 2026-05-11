@@ -98,10 +98,10 @@ const LoginRoute = () => {
     sessionStorage.getItem('managementAccess') === 'true';
 
   if (isManagement) return <Navigate to="/management" replace />;
-  if (user) {
-    const roleMap = { admin: '/admin', principal: '/principal', hod: '/hod', staff: '/staff' };
-    return <Navigate to={roleMap[user.role] || '/login'} replace />;
-  }
+    if (user) {
+      const roleMap = { admin: '/admin', principal: '/principal', hod: '/hod', staff: '/staff', accounts: '/staff' };
+      return <Navigate to={roleMap[user.role] || '/login'} replace />;
+    }
   return <Login />;
 };
 
@@ -307,7 +307,7 @@ const AppContent = () => {
       } />
 
       <Route path="/staff/*" element={
-        <ProtectedRoute allowedRoles={['staff']}>
+        <ProtectedRoute allowedRoles={['staff', 'accounts']}>
           <Routes>
             <Route path="/" element={<StaffDashboard />} />
             <Route path="leaves" element={<StaffLeaveApply />} />
