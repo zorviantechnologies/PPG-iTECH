@@ -37,6 +37,7 @@ import SalaryManagement from './pages/admin/SalaryManagement';
 import SalaryReports from './pages/admin/SalaryReports';
 import EmployeeSalaryView from './pages/admin/EmployeeSalaryView';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminPurchase from './pages/admin/AdminPurchase';
 import AdminCalendar from './pages/admin/AdminCalendar';
 import LeaveLimitation from './pages/admin/LeaveLimitation';
 import TimetableSetup from './pages/admin/TimetableSetup';
@@ -233,6 +234,7 @@ const AppContent = () => {
             <Route path="purchase" element={<AdminPurchase />} />
             <Route path="purchase/new" element={<PurchaseRequestPage />} />
             <Route path="attendance" element={<PrincipalAttendance />} />
+            <Route path="attendance/accounts-view" element={<AccountsAttendancePage />} />
             <Route path="attendance/monthly-summary" element={<AttendanceMonthlySummaryPage />} />
             <Route path="attendance/:empId/:month" element={<DetailedAttendancePage />} />
             <Route path="attendance/:empId/:startDate/:endDate" element={<DetailedAttendancePage />} />
