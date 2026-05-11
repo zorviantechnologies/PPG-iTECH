@@ -27,7 +27,7 @@ exports.getAttendance = async (req, res) => {
             const safeLimit = Math.min(Math.max(parseInt(limit || '10', 10), 1), 100);
 
             const params = [];
-            let userFilter = "u.role IN ('principal', 'hod', 'staff')";
+            let userFilter = "u.role IN ('principal', 'hod', 'staff', 'accounts')";
 
             if (role) {
                 userFilter += ` AND u.role = $${params.push(role)}`;
@@ -36,7 +36,8 @@ exports.getAttendance = async (req, res) => {
                 userFilter += ` AND u.department_id = $${params.push(department_id)}`;
             }
             if (emp_id) {
-                userFilter += ` AND u.emp_id = $${params.push(emp_id)}`;
+                // When a specific emp_id is requested, drop the role restriction and just fetch that employee
+                userFilter = `u.emp_id = $${params.push(emp_id)}`;
             }
             if (req.user.role === 'staff') {
                 userFilter += ` AND u.emp_id = $${params.push(req.user.emp_id)}`;
@@ -119,7 +120,7 @@ exports.getAttendance = async (req, res) => {
         if (end > today) end = today;
 
         const params = [start, end];
-        let userFilter = 'u.role IN (\'principal\', \'hod\', \'staff\')';
+        let userFilter = "u.role IN ('principal', 'hod', 'staff', 'accounts')";
         const userParams = [];
 
         if (role) {
@@ -131,7 +132,8 @@ exports.getAttendance = async (req, res) => {
             params.push(department_id);
         }
         if (emp_id) {
-            userFilter += ' AND u.emp_id = $' + (userParams.push(emp_id) + 2);
+            // When fetching a specific employee, bypass role restrictions entirely
+            userFilter = 'u.emp_id = $' + (userParams.push(emp_id) + 2);
             params.push(emp_id);
         }
 
@@ -187,56 +189,96 @@ exports.getAttendance = async (req, res) => {
     }
 };
 
-// @desc    Update attendance record (Punch In/Out)
+// @desc    Update attendance record (Punch In/Out) - creates if missing
 // @route   PUT /api/attendance/:recordId
 // @access  Private (Accounts/Admin)
 exports.updateAttendance = async (req, res) => {
     try {
         const { recordId } = req.params;
-        const { in_time, out_time, status, remarks } = req.body;
+        const { in_time, out_time, status, remarks, emp_id: bodyEmpId, date: bodyDate } = req.body;
 
         // Validation: Only accounts and admin can edit
         if (req.user.role !== 'accounts' && req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Only accounts or admin can edit attendance' });
         }
 
-        // Fetch existing record to get emp_id and date (needed for rebuild/sync)
-        const { rows: existing } = await pool.query('SELECT emp_id, date, status as old_status FROM attendance_records WHERE id = $1', [recordId]);
-        if (existing.length === 0) {
-            return res.status(404).json({ message: 'Record not found' });
+        let emp_id, dateStr, finalStatus;
+
+        // Check if this is a "new" record (generated absent row with no DB id)
+        const isNew = !recordId || recordId === 'new' || recordId === 'null' || recordId === 'undefined';
+
+        if (!isNew) {
+            // Fetch existing record to get emp_id and date
+            const { rows: existing } = await pool.query(
+                'SELECT emp_id, date, status as old_status FROM attendance_records WHERE id = $1',
+                [recordId]
+            );
+
+            if (existing.length === 0) {
+                // Record was deleted or never saved — treat as new
+                if (!bodyEmpId || !bodyDate) {
+                    return res.status(404).json({ message: 'Record not found and no emp_id/date provided to create one.' });
+                }
+                emp_id = bodyEmpId;
+                dateStr = bodyDate;
+            } else {
+                emp_id = existing[0].emp_id;
+                dateStr = new Date(existing[0].date).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+            }
+        } else {
+            // Creating a brand new record (editing a generated row)
+            if (!bodyEmpId || !bodyDate) {
+                return res.status(400).json({ message: 'emp_id and date are required to create a new attendance record.' });
+            }
+            emp_id = bodyEmpId;
+            dateStr = bodyDate;
         }
 
-        const { emp_id, date, old_status } = existing[0];
-        const dateStr = new Date(date).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-
-        let finalStatus = status;
-        // Auto-status logic: if in_time and out_time are set, and status is Absent or Unpaid (neutral term for LOP), change to Present
-        if (in_time && out_time && (!status || status === 'Absent' || status === 'Unpaid' || status === 'Loss of Pay' || status === 'LOP')) {
+        // Auto-status logic
+        finalStatus = status;
+        if (in_time && out_time && (!status || ['Absent', 'Unpaid', 'Loss of Pay', 'LOP'].includes(status))) {
             finalStatus = 'Present';
         }
 
-        // Update the record
-        await pool.query(
-            `UPDATE attendance_records 
-             SET in_time = $1, out_time = $2, status = $3, remarks = $4, updated_at = NOW()
-             WHERE id = $5`,
-            [in_time || null, out_time || null, finalStatus, remarks, recordId]
-        );
+        if (!isNew && recordId !== 'null' && recordId !== 'undefined') {
+            // UPDATE existing record
+            await pool.query(
+                `UPDATE attendance_records 
+                 SET in_time = $1, out_time = $2, status = $3, remarks = $4, updated_at = NOW()
+                 WHERE id = $5`,
+                [in_time || null, out_time || null, finalStatus, remarks || null, recordId]
+            );
+        } else {
+            // INSERT new record (upsert by emp_id + date)
+            await pool.query(
+                `INSERT INTO attendance_records (emp_id, date, in_time, out_time, status, remarks)
+                 VALUES ($1, $2, $3, $4, $5, $6)
+                 ON CONFLICT (emp_id, date)
+                 DO UPDATE SET in_time = EXCLUDED.in_time, out_time = EXCLUDED.out_time,
+                               status = EXCLUDED.status, remarks = EXCLUDED.remarks, updated_at = NOW()`,
+                [emp_id, dateStr, in_time || null, out_time || null, finalStatus, remarks || null]
+            );
+        }
 
         // Also update biometric_attendance summary table for consistency across all reports
-        await pool.query(
-            `INSERT INTO biometric_attendance (user_id, date, intime, outtime)
-             VALUES ($1, $2, $3, $4)
-             ON CONFLICT (user_id, date)
-             DO UPDATE SET intime = EXCLUDED.intime, outtime = EXCLUDED.outtime`,
-            [emp_id, dateStr, in_time || null, out_time || null]
-        );
+        try {
+            await pool.query(
+                `INSERT INTO biometric_attendance (user_id, date, intime, outtime)
+                 VALUES ($1, $2, $3, $4)
+                 ON CONFLICT (user_id, date)
+                 DO UPDATE SET intime = EXCLUDED.intime, outtime = EXCLUDED.outtime`,
+                [emp_id, dateStr, in_time || null, out_time || null]
+            );
+        } catch (bioErr) {
+            // biometric_attendance sync is best-effort — don't fail the whole request
+            console.warn('biometric_attendance sync skipped:', bioErr.message);
+        }
 
         // Emit update via socket to all connected clients
         const io = req.app.get('io');
         if (io) {
             io.emit('calendar_updated');
-            io.emit('attendance_updated', { recordId, emp_id, date: dateStr });
+            io.emit('attendance_updated', { emp_id, date: dateStr });
         }
 
         res.json({ message: 'Attendance updated successfully', status: finalStatus });

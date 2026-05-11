@@ -21,14 +21,17 @@ const AccountsAttendancePage = () => {
     useEffect(() => {
         const fetchEmployees = async () => {
             try {
-                const { data } = await api.get('/users');
+                const { data } = await api.get('/employees');
                 // Filter for staff, hod, principal and sort ascending
-                const filtered = data
-                    .filter(u => ['staff', 'hod', 'principal'].includes(u.role))
+                // Some users might have 'accounts' or 'admin' role but they usually don't have attendance records.
+                // We show all legitimate employees that require attendance tracking.
+                const filtered = (data || [])
+                    .filter(u => ['staff', 'hod', 'principal', 'accounts'].includes(u.role))
                     .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                 setEmployees(filtered);
             } catch (error) {
-                console.error(error);
+                console.error('Error fetching employees:', error);
+                setEmployees([]);
             } finally {
                 setLoading(false);
             }
@@ -37,11 +40,12 @@ const AccountsAttendancePage = () => {
     }, []);
 
     const filteredEmployees = useMemo(() => {
-        if (!searchTerm) return employees;
-        const low = searchTerm.toLowerCase();
+        const low = searchTerm.toLowerCase().trim();
+        if (!low) return employees;
         return employees.filter(e => 
             (e.name || '').toLowerCase().includes(low) || 
-            (e.emp_id || '').toLowerCase().includes(low)
+            (e.emp_id || '').toLowerCase().includes(low) ||
+            (e.role || '').toLowerCase().includes(low)
         );
     }, [employees, searchTerm]);
 
@@ -51,25 +55,31 @@ const AccountsAttendancePage = () => {
         
         setIsUpdating(true);
         try {
-            await api.put(`/attendance/${editingPunch.id}`, {
-                in_time: editingPunch.in_time,
-                out_time: editingPunch.out_time,
+            // Use 'new' when record_id is null (generated Absent row — not yet in DB)
+            const recordId = editingPunch.id || 'new';
+            
+            await api.put(`/attendance/${recordId}`, {
+                in_time: editingPunch.in_time || null,
+                out_time: editingPunch.out_time || null,
                 status: editingPunch.status,
-                remarks: editingPunch.remarks
+                remarks: editingPunch.remarks,
+                // Required for creating new records when editing generated Absent rows
+                emp_id: editingPunch.emp_id,
+                date: editingPunch.date
             });
             
             Swal.fire({
                 icon: 'success',
-                title: 'Updated',
-                text: 'Attendance record updated successfully.',
+                title: 'Updated!',
+                text: 'Attendance record saved successfully.',
                 timer: 1500,
                 showConfirmButton: false
             });
             setEditingPunch(null);
-            // The AttendanceHistory component will auto-refresh via Socket.io
         } catch (error) {
             console.error(error);
-            Swal.fire('Error', 'Failed to update attendance', 'error');
+            const msg = error?.response?.data?.message || 'Failed to update attendance';
+            Swal.fire('Error', msg, 'error');
         } finally {
             setIsUpdating(false);
         }
@@ -112,27 +122,37 @@ const AccountsAttendancePage = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {filteredEmployees.map((emp) => (
-                                    <motion.div
-                                        key={emp.id}
-                                        whileHover={{ y: -5 }}
-                                        onClick={() => setSelectedEmp(emp)}
-                                        className="bg-white p-6 rounded-[32px] border border-gray-50 shadow-xl shadow-sky-500/5 hover:shadow-sky-500/10 transition-all cursor-pointer group"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-16 w-16 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-2xl font-black shadow-inner group-hover:bg-sky-600 group-hover:text-white transition-all">
-                                                {emp.name?.[0]?.toUpperCase() || <FaUser />}
+                                {filteredEmployees.length > 0 ? (
+                                    filteredEmployees.map((emp) => (
+                                        <motion.div
+                                            key={emp.id}
+                                            whileHover={{ y: -5 }}
+                                            onClick={() => setSelectedEmp(emp)}
+                                            className="bg-white p-6 rounded-[32px] border border-gray-50 shadow-xl shadow-sky-500/5 hover:shadow-sky-500/10 transition-all cursor-pointer group"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-16 w-16 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-2xl font-black shadow-inner group-hover:bg-sky-600 group-hover:text-white transition-all">
+                                                    {emp.name?.[0]?.toUpperCase() || <FaUser />}
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-black text-gray-800 tracking-tight group-hover:text-sky-600 transition-colors">{emp.name}</h3>
+                                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{emp.emp_id}</p>
+                                                    <span className="inline-block mt-2 px-3 py-1 bg-gray-50 text-gray-400 text-[9px] font-black uppercase tracking-widest rounded-full group-hover:bg-sky-50 group-hover:text-sky-600 transition-colors">
+                                                        {emp.role}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h3 className="text-lg font-black text-gray-800 tracking-tight group-hover:text-sky-600 transition-colors">{emp.name}</h3>
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{emp.emp_id}</p>
-                                                <span className="inline-block mt-2 px-3 py-1 bg-gray-50 text-gray-400 text-[9px] font-black uppercase tracking-widest rounded-full group-hover:bg-sky-50 group-hover:text-sky-600 transition-colors">
-                                                    {emp.role}
-                                                </span>
-                                            </div>
+                                        </motion.div>
+                                    ))
+                                ) : (
+                                    <div className="col-span-full py-20 flex flex-col items-center justify-center text-center">
+                                        <div className="h-24 w-24 rounded-full bg-gray-50 flex items-center justify-center text-gray-300 mb-6 border-4 border-white shadow-inner">
+                                            <FaSearch size={40} />
                                         </div>
-                                    </motion.div>
-                                ))}
+                                        <h3 className="text-xl font-black text-gray-800 tracking-tight mb-2">No Employees Found</h3>
+                                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Try searching for a different name or employee ID</p>
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     ) : (
@@ -177,12 +197,13 @@ const AccountsAttendancePage = () => {
                                 month={selectedMonth}
                                 recentOnly={false}
                                 onEditRecord={(record) => setEditingPunch({
-                                    id: record.record_id || record.id,
+                                    id: record.record_id || null,
+                                    emp_id: record.emp_id || selectedEmp.emp_id,
                                     in_time: record.in_time ? record.in_time.slice(0, 5) : '',
                                     out_time: record.out_time ? record.out_time.slice(0, 5) : '',
-                                    status: record.status,
-                                    remarks: record.remarks,
-                                    date: record.date
+                                    status: record.status || 'Absent',
+                                    remarks: record.remarks || '',
+                                    date: typeof record.date === 'string' ? record.date.slice(0, 10) : new Date(record.date).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
                                 })}
                             />
                             
