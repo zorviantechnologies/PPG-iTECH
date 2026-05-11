@@ -500,7 +500,7 @@ const EmployeeFormPage = () => {
                 const validCerts = certificates.filter(c => c.certificate_name && c.file_data);
                 for (const cert of validCerts) {
                     try {
-                        await api.post(`/certificates/${userId}`, cert);
+                        await api.post(`/certificates/${userId}`, { ...cert, handled_by: 'management' });
                     } catch (certErr) {
                         console.error('Certificate upload failed:', certErr);
                     }

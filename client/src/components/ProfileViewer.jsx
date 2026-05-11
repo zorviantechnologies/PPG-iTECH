@@ -239,22 +239,42 @@ const ProfileViewer = ({ user, onClose }) => {
         if (!certName.trim() || !certFile) {
             return Swal.fire('Missing Info', 'Please enter certificate name and select a file.', 'warning');
         }
+        
+        if (certFile.size > 10 * 1024 * 1024) {
+            return Swal.fire('File Too Large', 'Please select a file smaller than 10MB.', 'warning');
+        }
+
         setUploadingCert(true);
         try {
-            const fd = new FormData();
-            fd.append('certificate_name', certName.trim());
-            fd.append('certificate', certFile);
-            await api.post(`/certificates/${user.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-            Swal.fire({ icon: 'success', title: 'Uploaded!', text: 'Certificate added successfully.', timer: 1500, showConfirmButton: false });
-            setCertName('');
-            setCertFile(null);
-            setShowCertForm(false);
-            if (certFileRef.current) certFileRef.current.value = '';
-            const { data } = await api.get(`/certificates/${user.id}`);
-            setCertificates(data);
-        } catch {
-            Swal.fire('Error', 'Failed to upload certificate.', 'error');
-        } finally {
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                try {
+                    const payload = {
+                        certificate_name: certName.trim(),
+                        file_name: certFile.name,
+                        file_type: certFile.type,
+                        file_data: reader.result,
+                        handled_by: 'employee'
+                    };
+                    
+                    await api.post(`/certificates/${user.id}`, payload);
+                    Swal.fire({ icon: 'success', title: 'Uploaded!', text: 'Certificate added successfully.', timer: 1500, showConfirmButton: false });
+                    setCertName('');
+                    setCertFile(null);
+                    setShowCertForm(false);
+                    if (certFileRef.current) certFileRef.current.value = '';
+                    const { data } = await api.get(`/certificates/${user.id}`);
+                    setCertificates(data);
+                } catch (err) {
+                    Swal.fire('Error', 'Failed to upload certificate.', 'error');
+                } finally {
+                    setUploadingCert(false);
+                }
+            };
+            reader.readAsDataURL(certFile);
+        } catch (err) {
+            console.error(err);
+            Swal.fire('Error', 'Failed to read file.', 'error');
             setUploadingCert(false);
         }
     };
@@ -888,7 +908,12 @@ const ProfileViewer = ({ user, onClose }) => {
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-black text-gray-800 tracking-tight">{cert.certificate_name}</p>
-                                                        <p className="text-[9px] font-bold text-gray-400">{cert.file_name}</p>
+                                                        <div className="flex items-center gap-3">
+                                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{cert.file_name}</p>
+                                                            <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-[0.1em] ${cert.handled_by === 'management' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                                                {cert.handled_by || 'Employee'}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">

@@ -1,10 +1,22 @@
 const { pool } = require('../config/db');
 
+const ensureCertificateSchema = async () => {
+    try {
+        await pool.query(`
+            ALTER TABLE certificates 
+            ADD COLUMN IF NOT EXISTS handled_by VARCHAR(20) DEFAULT 'employee'
+        `);
+    } catch (err) {
+        console.error('Schema migration error (certificates):', err);
+    }
+};
+
 // @desc    Upload a certificate for an employee
 // @route   POST /api/certificates/:userId
 // @access  Private (Admin or Self)
 exports.uploadCertificate = async (req, res) => {
     try {
+        await ensureCertificateSchema();
         const { userId } = req.params;
 
         // Allow admin to upload for anyone, others can only upload for themselves
@@ -12,16 +24,18 @@ exports.uploadCertificate = async (req, res) => {
             return res.status(403).json({ message: 'You can only upload certificates for your own profile' });
         }
 
-        const { certificate_name, file_name, file_type, file_data } = req.body;
+        const { certificate_name, file_name, file_type, file_data, handled_by } = req.body;
 
         if (!certificate_name || !file_name || !file_type || !file_data) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
+        const finalHandledBy = handled_by || (['admin', 'accounts', 'management'].includes(req.user.role) ? 'management' : 'employee');
+
         const { rows } = await pool.query(
-            `INSERT INTO certificates (user_id, certificate_name, file_name, file_type, file_data)
-             VALUES ($1, $2, $3, $4, $5) RETURNING id, certificate_name, file_name, file_type, created_at`,
-            [userId, certificate_name, file_name, file_type, file_data]
+            `INSERT INTO certificates (user_id, certificate_name, file_name, file_type, file_data, handled_by)
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, certificate_name, file_name, file_type, handled_by, created_at`,
+            [userId, certificate_name, file_name, file_type, file_data, finalHandledBy]
         );
 
         res.status(201).json(rows[0]);
@@ -36,10 +50,11 @@ exports.uploadCertificate = async (req, res) => {
 // @access  Private (Admin, Principal, HOD, Self)
 exports.getCertificates = async (req, res) => {
     try {
+        await ensureCertificateSchema();
         const { userId } = req.params;
 
         const { rows } = await pool.query(
-            `SELECT id, certificate_name, file_name, file_type, created_at
+            `SELECT id, certificate_name, file_name, file_type, handled_by, created_at
              FROM certificates WHERE user_id = $1 ORDER BY created_at DESC`,
             [userId]
         );

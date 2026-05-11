@@ -301,7 +301,8 @@ exports.getEmployees = async (req, res) => {
         }
 
         let query = `
-            SELECT ${selectCols}
+            SELECT ${selectCols},
+                   (SELECT COUNT(*) FROM certificates WHERE user_id = u.id) as cert_count
             FROM users u
             LEFT JOIN departments d ON u.department_id = d.id
         `;
