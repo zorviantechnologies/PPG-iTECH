@@ -108,7 +108,7 @@ const initDB = async () => {
             `);
         console.log('--- Feedback Messages Table Verified ---');
 
-        // Ensure certificates table exists
+        // Ensure certificates table exists and has correct schema
         await queryWithRetry(`
             CREATE TABLE IF NOT EXISTS certificates (
                 id SERIAL PRIMARY KEY,
@@ -121,6 +121,17 @@ const initDB = async () => {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+
+        // Migration: Ensure existing tables allow NULL for file columns (for text-only logs)
+        try {
+            await queryWithRetry(`ALTER TABLE certificates ALTER COLUMN file_name DROP NOT NULL`);
+            await queryWithRetry(`ALTER TABLE certificates ALTER COLUMN file_type DROP NOT NULL`);
+            await queryWithRetry(`ALTER TABLE certificates ALTER COLUMN file_data DROP NOT NULL`);
+            // Ensure handled_by exists if the table was created by an older script
+            await queryWithRetry(`ALTER TABLE certificates ADD COLUMN IF NOT EXISTS handled_by VARCHAR(20) DEFAULT 'employee'`);
+        } catch (migErr) {
+            console.log('Certificates migration info:', migErr.message);
+        }
         console.log('--- Certificates Table Verified ---');
     } catch (err) {
         console.error('Database Initialization Error:', err);
