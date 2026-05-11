@@ -201,23 +201,29 @@ exports.updateAttendance = async (req, res) => {
         }
 
         // Fetch existing record to get emp_id and date (needed for rebuild/sync)
-        const { rows: existing } = await pool.query('SELECT emp_id, date FROM attendance_records WHERE id = $1', [recordId]);
+        const { rows: existing } = await pool.query('SELECT emp_id, date, status as old_status FROM attendance_records WHERE id = $1', [recordId]);
         if (existing.length === 0) {
             return res.status(404).json({ message: 'Record not found' });
         }
 
-        const { emp_id, date } = existing[0];
+        const { emp_id, date, old_status } = existing[0];
         const dateStr = new Date(date).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+        let finalStatus = status;
+        // Auto-status logic: if in_time and out_time are set, and status is Absent or Unpaid (neutral term for LOP), change to Present
+        if (in_time && out_time && (!status || status === 'Absent' || status === 'Unpaid' || status === 'Loss of Pay' || status === 'LOP')) {
+            finalStatus = 'Present';
+        }
 
         // Update the record
         await pool.query(
             `UPDATE attendance_records 
              SET in_time = $1, out_time = $2, status = $3, remarks = $4, updated_at = NOW()
              WHERE id = $5`,
-            [in_time || null, out_time || null, status, remarks, recordId]
+            [in_time || null, out_time || null, finalStatus, remarks, recordId]
         );
 
-        // Also update biometric_attendance summary table for consistency
+        // Also update biometric_attendance summary table for consistency across all reports
         await pool.query(
             `INSERT INTO biometric_attendance (user_id, date, intime, outtime)
              VALUES ($1, $2, $3, $4)
@@ -226,7 +232,14 @@ exports.updateAttendance = async (req, res) => {
             [emp_id, dateStr, in_time || null, out_time || null]
         );
 
-        res.json({ message: 'Attendance updated successfully' });
+        // Emit update via socket to all connected clients
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('calendar_updated');
+            io.emit('attendance_updated', { recordId, emp_id, date: dateStr });
+        }
+
+        res.json({ message: 'Attendance updated successfully', status: finalStatus });
     } catch (error) {
         console.error('updateAttendance ERROR:', error);
         res.status(500).json({ message: 'Server Error', error: error.message });

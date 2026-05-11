@@ -1,15 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FaCalendarAlt, FaClock, FaHistory, FaCheckCircle, FaTimesCircle, FaBus } from 'react-icons/fa';
+import { FaCalendarAlt, FaClock, FaHistory, FaCheckCircle, FaTimesCircle, FaBus, FaEdit } from 'react-icons/fa';
 import api from '../utils/api';
 import { useSocket } from '../context/SocketContext';
 import { formatTo12Hr } from '../utils/timeFormatter';
+import { useAuth } from '../context/AuthContext';
 
-const AttendanceHistory = ({ empId, month: propMonth, startDate, endDate, recentOnly = true, statusFilter = null, onLoadSummary = null }) => {
+const AttendanceHistory = ({ empId, month: propMonth, startDate, endDate, recentOnly = true, statusFilter = null, onLoadSummary = null, onEditRecord = null }) => {
     const [records, setRecords] = useState([]);
     const [holidayDateSet, setHolidayDateSet] = useState(new Set());
     const [loading, setLoading] = useState(true);
     const socket = useSocket();
+    const { user } = useAuth();
+
+    const canEdit = (user?.role === 'accounts' || user?.role === 'admin') && onEditRecord;
 
     const fetchAttendance = useCallback(async () => {
         let data;
@@ -285,10 +289,16 @@ const AttendanceHistory = ({ empId, month: propMonth, startDate, endDate, recent
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: idx * 0.05 }}
-                                    className="hover:bg-sky-50/30 transition-colors group"
+                                    className={`hover:bg-sky-50/30 transition-colors group ${canEdit ? 'cursor-pointer' : ''}`}
+                                    onClick={() => canEdit && onEditRecord(record)}
                                 >
                                     <td className="px-8 py-5">
                                         <div className="flex items-center gap-3">
+                                            {canEdit && (
+                                                <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute left-2 text-sky-500">
+                                                    <FaEdit size={12} />
+                                                </div>
+                                            )}
                                             <div className="h-8 w-8 rounded-lg bg-gray-50 text-gray-400 flex items-center justify-center text-xs group-hover:bg-white transition-colors border border-gray-100">
                                                 <FaCalendarAlt />
                                             </div>

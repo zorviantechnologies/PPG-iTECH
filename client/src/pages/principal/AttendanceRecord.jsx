@@ -603,6 +603,14 @@ const AttendanceRecord = () => {
                         >
                             Monthly Summary
                         </button>
+                        {(user?.role === 'accounts' || user?.role === 'admin') && (
+                            <button
+                                onClick={() => navigate(`/${routePrefix}/attendance/accounts-view`)}
+                                className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-sky-600 text-white shadow-lg shadow-sky-100 hover:bg-sky-700"
+                            >
+                                Accounts View
+                            </button>
+                        )}
                     </div>
                 </div>
 
