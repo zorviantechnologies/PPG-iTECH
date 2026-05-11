@@ -155,11 +155,11 @@ exports.createEmployee = async (req, res) => {
     const {
         emp_id, emp_code, pin, role, name, email, department_id, designation,
         dob, doj, gender, mobile, profile_pic,
-        blood_group, religion, nationality, caste, community, whatsapp,
+        blood_group, religion, nationality, community, whatsapp,
         aadhar, pan, account_no, bank_name, branch, ifsc, pin_code,
         pf_number, uan_number, permanent_address, communication_address,
         father_name, mother_name, marital_status, monthly_salary, experience,
-        deductions
+        deductions, emergency_contact
     } = req.body;
 
     // Trim critical fields
@@ -183,10 +183,10 @@ exports.createEmployee = async (req, res) => {
             INSERT INTO users (
                 emp_id, emp_code, pin, role, name, email, department_id, designation,
                 dob, doj, gender, mobile, profile_pic,
-                blood_group, religion, nationality, caste, community, whatsapp,
+                blood_group, religion, nationality, community, whatsapp,
                 aadhar, pan, account_no, bank_name, branch, ifsc, pin_code,
                 pf_number, uan_number, permanent_address, communication_address,
-                father_name, mother_name, marital_status, monthly_salary, experience, password, deductions
+                father_name, mother_name, marital_status, monthly_salary, experience, password, deductions, emergency_contact
             ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 
                 $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37
@@ -196,11 +196,11 @@ exports.createEmployee = async (req, res) => {
         await pool.query(query, [
             trimmedEmpId, emp_code || null, trimmedPin, role, name, email || null, department_id || null, designation || null,
             dob || null, doj || null, gender || 'Male', mobile || null, profile_pic || null,
-            blood_group || null, religion || null, nationality || 'Indian', caste || null, community || null, whatsapp || null,
+            blood_group || null, religion || null, nationality || 'Indian', community || null, whatsapp || null,
             aadhar || null, pan || null, account_no || null, bank_name || null, branch || null, ifsc || null, pin_code || null,
             pf_number || null, uan_number || null, permanent_address || null, communication_address || null,
             father_name || null, mother_name || null, marital_status || 'Single', monthly_salary || 0, experience || null, hashedPassword,
-            deductions || null
+            deductions || null, emergency_contact || null
         ]);
 
         // Broadcast real-time employee update to all connected clients
@@ -356,10 +356,11 @@ exports.getEmployeeById = async (req, res) => {
         // Explicit columns instead of * to reduce egress
         const fullUserCols = `
             u.id, u.emp_id, u.emp_code, u.name, u.role, u.email, u.mobile, u.department_id, u.designation,
-            u.dob, u.doj, u.gender, u.profile_pic, u.blood_group, u.religion, u.nationality, u.caste,
+            u.dob, u.doj, u.gender, u.profile_pic, u.blood_group, u.religion, u.nationality,
             u.community, u.whatsapp, u.aadhar, u.pan, u.account_no, u.bank_name, u.branch, u.ifsc,
             u.pin_code, u.pf_number, u.uan_number, u.permanent_address, u.communication_address,
             u.father_name, u.mother_name, u.marital_status, u.monthly_salary, u.experience, u.deductions,
+            u.emergency_contact,
             COALESCE(u.employment_status, 'active') as employment_status,
             TO_CHAR(u.dob, 'YYYY-MM-DD') as dob_formatted,
             TO_CHAR(u.doj, 'YYYY-MM-DD') as doj_formatted,
@@ -409,10 +410,10 @@ exports.updateEmployee = async (req, res) => {
     const {
         name, emp_code, role, department_id, designation,
         mobile, email, dob, doj, gender, profile_pic,
-        blood_group, religion, nationality, caste, community, whatsapp,
+        blood_group, religion, nationality, community, whatsapp,
         aadhar, pan, account_no, bank_name, branch, ifsc, pin_code,
         pf_number, uan_number, permanent_address, communication_address,
-        father_name, mother_name, marital_status, monthly_salary, experience, pin, deductions
+        father_name, mother_name, marital_status, monthly_salary, experience, pin, deductions, emergency_contact
     } = req.body;
 
     try {
@@ -429,22 +430,22 @@ exports.updateEmployee = async (req, res) => {
             UPDATE users SET 
                 name = $1, emp_code = $2, role = $3, department_id = $4, designation = $5, 
                 mobile = $6, email = $7, dob = $8, doj = $9, gender = $10, profile_pic = $11,
-                blood_group = $12, religion = $13, nationality = $14, caste = $15, community = $16, whatsapp = $17,
-                aadhar = $18, pan = $19, account_no = $20, bank_name = $21, branch = $22, ifsc = $23, pin_code = $24,
-                pf_number = $25, uan_number = $26, permanent_address = $27, communication_address = $28,
-                father_name = $29, mother_name = $30, marital_status = $31, monthly_salary = $32, experience = $33, 
-                pin = $34, password = COALESCE($35, password), deductions = $36
+                blood_group = $12, religion = $13, nationality = $14, community = $15, whatsapp = $16,
+                aadhar = $17, pan = $18, account_no = $19, bank_name = $20, branch = $21, ifsc = $22, pin_code = $23,
+                pf_number = $24, uan_number = $25, permanent_address = $26, communication_address = $27,
+                father_name = $28, mother_name = $29, marital_status = $30, monthly_salary = $31, experience = $32, 
+                pin = $33, password = COALESCE($34, password), deductions = $35, emergency_contact = $36
             WHERE id = $37
         `;
 
         await pool.query(query, [
             name, emp_code || null, role, department_id || null, designation || null,
             mobile || null, email || null, dob || null, doj || null, gender || 'Male', profile_pic || null,
-            blood_group || null, religion || null, nationality || 'Indian', caste || null, community || null, whatsapp || null,
+            blood_group || null, religion || null, nationality || 'Indian', community || null, whatsapp || null,
             aadhar || null, pan || null, account_no || null, bank_name || null, branch || null, ifsc || null, pin_code || null,
             pf_number || null, uan_number || null, permanent_address || null, communication_address || null,
             father_name || null, mother_name || null, marital_status || 'Single', monthly_salary || 0, experience || null,
-            pin || null, hashedPassword || null, deductions || null,
+            pin || null, hashedPassword || null, deductions || null, emergency_contact || null,
             req.params.id
         ]);
 

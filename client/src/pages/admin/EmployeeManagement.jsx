@@ -132,7 +132,6 @@ const EmployeeManagement = () => {
         employee_name: emp.name || '',
         role: emp.role || '',
         category: emp.community || '',
-        caste: emp.caste || '',
         department: emp.department_name || '',
         designation: emp.designation || '',
         email: emp.email || '',
@@ -189,7 +188,6 @@ const EmployeeManagement = () => {
                 <td>${escapeHtml(r.phone)}</td>
                 <td class="excel-only">${escapeHtml(r.emp_code)}</td>
                 <td class="excel-only">${escapeHtml(r.category)}</td>
-                <td class="excel-only">${escapeHtml(r.caste)}</td>
                 <td class="excel-only">${escapeHtml(r.whatsapp)}</td>
                 <td class="excel-only">${escapeHtml(r.dob)}</td>
                 <td class="excel-only">${escapeHtml(r.doj)}</td>
@@ -257,7 +255,6 @@ const EmployeeManagement = () => {
                 <th>Phone</th>
                 <th class="excel-only">Emp Code</th>
                 <th class="excel-only">Category</th>
-                <th class="excel-only">Caste</th>
                 <th class="excel-only">WhatsApp</th>
                 <th class="excel-only">DOB</th>
                 <th class="excel-only">DOJ</th>

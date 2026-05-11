@@ -70,6 +70,10 @@ const initDB = async () => {
         await queryWithRetry('ALTER TABLE users ADD COLUMN IF NOT EXISTS deductions JSONB DEFAULT \'[]\'');
         console.log('--- Users Table Deductions Column Verified ---');
 
+        // Ensure users table has emergency_contact column
+        await queryWithRetry('ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact VARCHAR(20)');
+        console.log('--- Users Table Emergency Contact Column Verified ---');
+
         // Ensure feedback messages table exists
         await queryWithRetry(`
                 CREATE TABLE IF NOT EXISTS feedback_messages (

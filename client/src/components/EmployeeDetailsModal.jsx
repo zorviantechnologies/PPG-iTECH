@@ -90,6 +90,7 @@ const EmployeeDetailsModal = ({ isOpen, onClose, employee, departments = [] }) =
                             <Detail label="Official Email" value={employee.email} />
                             <Detail label="Mobile (Primary)" value={employee.mobile} />
                             <Detail label="WhatsApp Connect" value={employee.whatsapp} />
+                            <Detail label="Emergency Contact" value={employee.emergency_contact} />
                             <Detail label="Permanent Address" value={employee.permanent_address} />
                             <Detail label="Communication Address" value={employee.communication_address} />
                             <Detail label="Regional PIN Code" value={employee.pin_code} />
@@ -101,7 +102,7 @@ const EmployeeDetailsModal = ({ isOpen, onClose, employee, departments = [] }) =
                             <Detail label="Blood Group Matrix" value={employee.blood_group} />
                             <Detail label="Religion/Faith" value={employee.religion} />
                             <Detail label="Nationality" value={employee.nationality} />
-                            <Detail label="Caste/Category" value={employee.caste || 'N/A'} />
+                            <Detail label="Category" value={employee.community || 'N/A'} />
                         </Section>
 
                         <Section title="Government & Legal IDs">

@@ -106,7 +106,6 @@ const ProfileViewer = ({ user, onClose }) => {
                 blood_group: user.blood_group || '',
                 religion: user.religion || '',
                 nationality: user.nationality || '',
-                caste: user.caste || '',
                 community: user.community || '',
                 aadhar: user.aadhar || '',
                 pan: user.pan || '',
@@ -122,6 +121,7 @@ const ProfileViewer = ({ user, onClose }) => {
                 father_name: user.father_name || '',
                 mother_name: user.mother_name || '',
                 marital_status: user.marital_status || '',
+                emergency_contact: user.emergency_contact || '',
             });
         }
     }, [user]);
@@ -380,8 +380,9 @@ const ProfileViewer = ({ user, onClose }) => {
                                 <div class="info-item"><span class="info-label">Gender / Blood Group</span><span class="info-value">${user.gender || '-'} / ${user.blood_group || '-'}</span></div>
                                 <div class="info-item"><span class="info-label">Mobile Contact</span><span class="info-value">${user.mobile || '-'}</span></div>
                                 <div class="info-item"><span class="info-label">WhatsApp Contact</span><span class="info-value">${user.whatsapp || '-'}</span></div>
+                                <div class="info-item"><span class="info-label">Emergency Contact</span><span class="info-value">${user.emergency_contact || '-'}</span></div>
                                 <div class="info-item"><span class="info-label">Nationality / Religion</span><span class="info-value">${user.nationality || '-'} / ${user.religion || '-'}</span></div>
-                                <div class="info-item"><span class="info-label">Community &amp; Caste</span><span class="info-value">${user.community || '-'} ${user.caste ? `(${user.caste})` : ''}</span></div>
+                                <div class="info-item"><span class="info-label">Community</span><span class="info-value">${user.community || '-'}</span></div>
                             </div>
                         </div>
                         <div class="section">
@@ -623,9 +624,9 @@ const ProfileViewer = ({ user, onClose }) => {
                                     onClick={() => {
                                         setIsEditingProfile(false);
                                         setFormData({
-                                            mobile: user.mobile || '', whatsapp: user.whatsapp || '', email: user.email || '',
+                                            mobile: user.mobile || '', whatsapp: user.whatsapp || '', email: user.email || '', emergency_contact: user.emergency_contact || '',
                                             blood_group: user.blood_group || '', religion: user.religion || '', nationality: user.nationality || '',
-                                            caste: user.caste || '', community: user.community || '',
+                                            community: user.community || '',
                                             aadhar: user.aadhar || '', pan: user.pan || '',
                                             account_no: user.account_no || '', bank_name: user.bank_name || '', branch: user.branch || '',
                                             ifsc: user.ifsc || '', pin_code: user.pin_code || '',
@@ -683,19 +684,17 @@ const ProfileViewer = ({ user, onClose }) => {
                                     <InfoRow icon={<FaVenusMars />} label="Gender" value={user.gender} />
                                      <InfoRow icon={<FaPhone />} label="Mobile Number" value={isEditingProfile ? formData.mobile : user.mobile} editing={isEditingProfile} name="mobile" onChange={handleChange} />
                                     <InfoRow icon={<FaWhatsapp />} label="WhatsApp" value={isEditingProfile ? formData.whatsapp : user.whatsapp} editing={isEditingProfile} name="whatsapp" onChange={handleChange} />
+                                    <InfoRow icon={<FaPhone />} label="Emergency Contact" value={isEditingProfile ? formData.emergency_contact : user.emergency_contact} editing={isEditingProfile} name="emergency_contact" onChange={handleChange} />
                                     <InfoRow icon={<FaTint />} label="Blood Group" value={isEditingProfile ? formData.blood_group : user.blood_group} editing={isEditingProfile} name="blood_group" onChange={handleChange} />
                                     <InfoRow icon={<FaGlobe />} label="Nationality" value={isEditingProfile ? formData.nationality : user.nationality} editing={isEditingProfile} name="nationality" onChange={handleChange} />
                                     {(isOwnProfile || authUser.role === 'admin' || authUser.role === 'management') && (
                                         <InfoRow icon={<FaHandsHelping />} label="Religion" value={isEditingProfile ? formData.religion : user.religion} editing={isEditingProfile} name="religion" onChange={handleChange} />
                                     )}
                                     {isEditingProfile ? (
-                                        <>
-                                            <InfoRow icon={<FaUsers />} label="Community" value={formData.community} editing={true} name="community" onChange={handleChange} />
-                                            <InfoRow icon={<FaUsers />} label="Caste" value={formData.caste} editing={true} name="caste" onChange={handleChange} />
-                                        </>
+                                        <InfoRow icon={<FaUsers />} label="Community" value={formData.community} editing={true} name="community" onChange={handleChange} />
                                     ) : (
                                         (isOwnProfile || authUser.role === 'admin' || authUser.role === 'management') && (
-                                            <InfoRow icon={<FaUsers />} label="Community / Caste" value={`${user.community || ''} ${user.caste ? `(${user.caste})` : ''}`} />
+                                            <InfoRow icon={<FaUsers />} label="Community" value={user.community || ''} />
                                         )
                                     )}
 

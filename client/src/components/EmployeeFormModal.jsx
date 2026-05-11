@@ -9,12 +9,14 @@ const labelClass = "block text-[10px] font-black text-gray-400 uppercase trackin
 
 const FormSection = ({ title, icon, children }) => (
     <div className="mb-12 border-b border-gray-50 pb-12 last:border-0 last:pb-0">
-        <div className="flex items-center gap-4 mb-8">
-            <div className="h-10 w-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
-                {icon}
+        {title && (
+            <div className="flex items-center gap-4 mb-8">
+                <div className="h-10 w-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                    {icon}
+                </div>
+                <h3 className="text-xl font-black text-gray-800 tracking-tight uppercase">{title}</h3>
             </div>
-            <h3 className="text-xl font-black text-gray-800 tracking-tight uppercase">{title}</h3>
-        </div>
+        )}
         {children}
     </div>
 );
@@ -23,13 +25,13 @@ const EmployeeFormModal = ({ isOpen, onClose, employee, onSave, departments }) =
     const defaultData = {
         emp_id: '', emp_code: '', name: '', role: 'staff', department_id: '', designation: '',
         email: '', mobile: '', profile_pic: '', dob: '', doj: '', gender: 'Male',
-        blood_group: '', religion: '', nationality: 'Indian', caste: '', community: '', whatsapp: '',
+        blood_group: '', religion: '', nationality: 'Indian', community: '', whatsapp: '',
         aadhar: '', pan: '',
         account_no: '', bank_name: '', branch: '', ifsc: '', pin_code: '', pf_number: '', uan_number: '',
         permanent_address: '', communication_address: '',
         father_name: '', mother_name: '', marital_status: 'Single',
         monthly_salary: '', experience: '',
-        pin: '', confirm_pin: ''
+        pin: '', confirm_pin: '', emergency_contact: ''
     };
 
     const [formData, setFormData] = useState(defaultData);
@@ -227,8 +229,16 @@ const EmployeeFormModal = ({ isOpen, onClose, employee, onSave, departments }) =
                                     <input name="whatsapp" value={formData.whatsapp || ''} onChange={handleChange} className={inputClass} />
                                 </div>
                                 <div>
+                                    <label className={labelClass}>Emergency Contact Number</label>
+                                    <input name="emergency_contact" value={formData.emergency_contact || ''} onChange={handleChange} className={inputClass} />
+                                </div>
+                                <div>
                                     <label className={labelClass}>Date of Birth</label>
                                     <input name="dob" type="date" value={formData.dob || ''} onChange={handleChange} className={inputClass} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Date of Joining</label>
+                                    <input name="doj" type="date" value={formData.doj || ''} onChange={handleChange} className={inputClass} />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Gender</label>
@@ -246,10 +256,7 @@ const EmployeeFormModal = ({ isOpen, onClose, employee, onSave, departments }) =
                                     <label className={labelClass}>Religion</label>
                                     <input name="religion" value={formData.religion || ''} onChange={handleChange} className={inputClass} />
                                 </div>
-                                <div>
-                                    <label className={labelClass}>Caste</label>
-                                    <input name="caste" value={formData.caste || ''} onChange={handleChange} className={inputClass} />
-                                </div>
+
                                 <div>
                                     <label className={labelClass}>Community</label>
                                     <input name="community" value={formData.community || ''} onChange={handleChange} className={inputClass} />
@@ -257,7 +264,7 @@ const EmployeeFormModal = ({ isOpen, onClose, employee, onSave, departments }) =
                             </div>
                         </FormSection>
 
-                        <FormSection title="Government Identifiers" icon={<FaMapMarkerAlt />}>
+                        <FormSection title="" icon={null}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
                                     <label className={labelClass}>Aadhar Card Number</label>
@@ -286,7 +293,7 @@ const EmployeeFormModal = ({ isOpen, onClose, employee, onSave, departments }) =
                             </div>
                         </FormSection>
 
-                        <FormSection title="Bank & Salary Details" icon={<FaUniversity />}>
+                        <FormSection title="" icon={null}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
                                     <label className={labelClass}>Bank Name</label>
@@ -313,10 +320,6 @@ const EmployeeFormModal = ({ isOpen, onClose, employee, onSave, departments }) =
                                     <input name="uan_number" value={formData.uan_number || ''} onChange={handleChange} className={inputClass} />
                                 </div>
                                 <div className="md:col-span-2 h-px bg-gray-100 my-4"></div>
-                                <div>
-                                    <label className={labelClass}>Date of Joining</label>
-                                    <input name="doj" type="date" value={formData.doj || ''} onChange={handleChange} className={inputClass} />
-                                </div>
                                 <div>
                                     <label className={labelClass}>Monthly Salary</label>
                                     <input name="monthly_salary" type="number" value={formData.monthly_salary || ''} onChange={handleChange} className={inputClass} />

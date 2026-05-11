@@ -200,10 +200,11 @@ exports.updateProfilePic = async (req, res) => {
 // @access  Private
 exports.updateProfile = async (req, res) => {
     const {
-        mobile, whatsapp, email, blood_group, religion, nationality, caste, community,
+        mobile, whatsapp, email, blood_group, religion, nationality, community,
         aadhar, pan, account_no, bank_name, branch, ifsc, pin_code,
         pf_number, uan_number, permanent_address, communication_address,
-        father_name, mother_name, marital_status, profile_pic, pin, emp_id
+        father_name, mother_name, marital_status, profile_pic, pin, emp_id,
+        emergency_contact
     } = req.body;
 
     try {
@@ -220,27 +221,27 @@ exports.updateProfile = async (req, res) => {
         const query = `
             UPDATE users SET 
                 mobile = $1, whatsapp = $2, email = $3, blood_group = $4, religion = $5,
-                nationality = $6, caste = $7, community = $8,
-                aadhar = $9, pan = $10, account_no = $11, bank_name = $12, branch = $13,
-                ifsc = $14, pin_code = $15, pf_number = $16, uan_number = $17,
-                permanent_address = $18, communication_address = $19,
-                father_name = $20, mother_name = $21, marital_status = $22,
-                profile_pic = COALESCE($23, profile_pic),
-                pin = COALESCE($24, pin), password = COALESCE($25, password),
-                emp_id = COALESCE($27, emp_id)
-            WHERE id = $26
+                nationality = $6, community = $7,
+                aadhar = $8, pan = $9, account_no = $10, bank_name = $11, branch = $12,
+                ifsc = $13, pin_code = $14, pf_number = $15, uan_number = $16,
+                permanent_address = $17, communication_address = $18,
+                father_name = $19, mother_name = $20, marital_status = $21,
+                profile_pic = COALESCE($22, profile_pic),
+                pin = COALESCE($23, pin), password = COALESCE($24, password),
+                emp_id = COALESCE($26, emp_id), emergency_contact = $27
+            WHERE id = $25
             RETURNING id, emp_id, name, role, profile_pic, department_id
         `;
 
         const { rows } = await queryWithRetry(query, [
             mobile || null, whatsapp || null, email || null, blood_group || null, religion || null,
-            nationality || 'Indian', caste || null, community || null,
+            nationality || 'Indian', community || null,
             aadhar || null, pan || null, account_no || null, bank_name || null, branch || null,
             ifsc || null, pin_code || null, pf_number || null, uan_number || null,
             permanent_address || null, communication_address || null,
             father_name || null, mother_name || null, marital_status || null,
             profile_pic || null, pin || null, hashedPassword || null,
-            req.user.id, emp_id || null
+            req.user.id, emp_id || null, emergency_contact || null
         ]);
 
         if (rows.length === 0) {
