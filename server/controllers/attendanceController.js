@@ -248,14 +248,13 @@ exports.updateAttendance = async (req, res) => {
         // Always use UPSERT (ON CONFLICT by emp_id and date) to ensure manual edits work 
         // regardless of whether we have a serial ID or if it's a new record.
         await queryWithRetry(
-            `INSERT INTO attendance_records (emp_id, date, in_time, out_time, status, remarks, updated_at)
-             VALUES ($1, $2, $3, $4, $5, $6, NOW())
+            `INSERT INTO attendance_records (emp_id, date, in_time, out_time, status, remarks)
+             VALUES ($1, $2, $3, $4, $5, $6)
              ON CONFLICT (emp_id, date)
              DO UPDATE SET in_time = EXCLUDED.in_time, 
                            out_time = EXCLUDED.out_time,
                            status = EXCLUDED.status, 
-                           remarks = EXCLUDED.remarks, 
-                           updated_at = NOW()`,
+                           remarks = EXCLUDED.remarks`,
             [emp_id, dateStr, in_time || null, out_time || null, finalStatus, remarks || null]
         );
 
@@ -283,7 +282,7 @@ exports.updateAttendance = async (req, res) => {
     } catch (error) {
         console.error('updateAttendance ERROR:', error);
         res.status(500).json({ 
-            message: 'Server Error', 
+            message: 'Server Error: ' + error.message + '\n' + (error.stack || ''), 
             error: error.message,
             detail: error.detail || null 
         });
