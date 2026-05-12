@@ -202,67 +202,66 @@ exports.updateAttendance = async (req, res) => {
             return res.status(403).json({ message: 'Only accounts or admin can edit attendance' });
         }
 
-        let emp_id, dateStr, finalStatus;
+        let emp_id = bodyEmpId;
+        let dateStr = bodyDate;
+        let finalStatus = status;
+
+        // Normalize and Map status to valid ENUM values (Present, Absent, CL, ML, OD, Comp Leave, LOP, Holiday, Weekend)
+        if (finalStatus === 'Unpaid' || finalStatus === 'Loss of Pay' || finalStatus === 'Loss Of Pay') finalStatus = 'LOP';
+        if (finalStatus === 'Casual Leave') finalStatus = 'CL';
+        if (finalStatus === 'Medical Leave') finalStatus = 'ML';
+        if (finalStatus === 'On Duty') finalStatus = 'OD';
 
         // Check if this is a "new" record (generated absent row with no DB id)
         const isNew = !recordId || recordId === 'new' || recordId === 'null' || recordId === 'undefined';
 
         if (!isNew) {
-            // Fetch existing record to get emp_id and date
-            const { rows: existing } = await pool.query(
+            // Fetch existing record to get emp_id and date if not provided in body
+            const { rows: existing } = await queryWithRetry(
                 'SELECT emp_id, date, status as old_status FROM attendance_records WHERE id = $1',
                 [recordId]
             );
 
-            if (existing.length === 0) {
-                // Record was deleted or never saved — treat as new
-                if (!bodyEmpId || !bodyDate) {
-                    return res.status(404).json({ message: 'Record not found and no emp_id/date provided to create one.' });
-                }
-                emp_id = bodyEmpId;
-                dateStr = bodyDate;
-            } else {
+            if (existing.length > 0) {
                 emp_id = existing[0].emp_id;
-                dateStr = new Date(existing[0].date).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+                // Safely format the date from DB
+                const dbDate = existing[0].date;
+                dateStr = typeof dbDate === 'string' ? dbDate.slice(0, 10) : new Date(dbDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
             }
-        } else {
-            // Creating a brand new record (editing a generated row)
-            if (!bodyEmpId || !bodyDate) {
-                return res.status(400).json({ message: 'emp_id and date are required to create a new attendance record.' });
-            }
-            emp_id = bodyEmpId;
-            dateStr = bodyDate;
+        }
+
+        if (!emp_id || !dateStr) {
+            return res.status(400).json({ message: 'emp_id and date are required to update attendance.' });
         }
 
         // Auto-status logic
-        finalStatus = status;
-        if (in_time && out_time && (!status || ['Absent', 'Unpaid', 'Loss of Pay', 'LOP'].includes(status))) {
+        if (in_time && out_time && (!finalStatus || ['Absent', 'LOP', 'Unpaid'].includes(finalStatus))) {
             finalStatus = 'Present';
         }
 
-        if (!isNew && recordId !== 'null' && recordId !== 'undefined') {
-            // UPDATE existing record
-            await pool.query(
-                `UPDATE attendance_records 
-                 SET in_time = $1, out_time = $2, status = $3, remarks = $4, updated_at = NOW()
-                 WHERE id = $5`,
-                [in_time || null, out_time || null, finalStatus, remarks || null, recordId]
-            );
-        } else {
-            // INSERT new record (upsert by emp_id + date)
-            await pool.query(
-                `INSERT INTO attendance_records (emp_id, date, in_time, out_time, status, remarks)
-                 VALUES ($1, $2, $3, $4, $5, $6)
-                 ON CONFLICT (emp_id, date)
-                 DO UPDATE SET in_time = EXCLUDED.in_time, out_time = EXCLUDED.out_time,
-                               status = EXCLUDED.status, remarks = EXCLUDED.remarks, updated_at = NOW()`,
-                [emp_id, dateStr, in_time || null, out_time || null, finalStatus, remarks || null]
-            );
+        // Final safety check for enum values
+        const validStatuses = ['Present', 'Absent', 'CL', 'ML', 'OD', 'Comp Leave', 'LOP', 'Holiday', 'Weekend'];
+        if (!validStatuses.includes(finalStatus)) {
+            finalStatus = 'Present';
         }
+
+        // Always use UPSERT (ON CONFLICT by emp_id and date) to ensure manual edits work 
+        // regardless of whether we have a serial ID or if it's a new record.
+        await queryWithRetry(
+            `INSERT INTO attendance_records (emp_id, date, in_time, out_time, status, remarks, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, NOW())
+             ON CONFLICT (emp_id, date)
+             DO UPDATE SET in_time = EXCLUDED.in_time, 
+                           out_time = EXCLUDED.out_time,
+                           status = EXCLUDED.status, 
+                           remarks = EXCLUDED.remarks, 
+                           updated_at = NOW()`,
+            [emp_id, dateStr, in_time || null, out_time || null, finalStatus, remarks || null]
+        );
 
         // Also update biometric_attendance summary table for consistency across all reports
         try {
-            await pool.query(
+            await queryWithRetry(
                 `INSERT INTO biometric_attendance (user_id, date, intime, outtime)
                  VALUES ($1, $2, $3, $4)
                  ON CONFLICT (user_id, date)
@@ -270,11 +269,10 @@ exports.updateAttendance = async (req, res) => {
                 [emp_id, dateStr, in_time || null, out_time || null]
             );
         } catch (bioErr) {
-            // biometric_attendance sync is best-effort — don't fail the whole request
             console.warn('biometric_attendance sync skipped:', bioErr.message);
         }
 
-        // Emit update via socket to all connected clients
+        // Emit update via socket
         const io = req.app.get('io');
         if (io) {
             io.emit('calendar_updated');
@@ -284,9 +282,14 @@ exports.updateAttendance = async (req, res) => {
         res.json({ message: 'Attendance updated successfully', status: finalStatus });
     } catch (error) {
         console.error('updateAttendance ERROR:', error);
-        res.status(500).json({ message: 'Server Error', error: error.message });
+        res.status(500).json({ 
+            message: 'Server Error', 
+            error: error.message,
+            detail: error.detail || null 
+        });
     }
 };
+
 
 // @desc    Get attendance summary (Counts)
 // @route   GET /api/attendance/summary
@@ -509,7 +512,7 @@ exports.getAttendanceSummary = async (req, res) => {
         res.json(rows);
     } catch (error) {
         console.error('getAttendanceSummary ERROR:', error);
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
 

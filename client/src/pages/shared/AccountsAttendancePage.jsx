@@ -284,7 +284,7 @@ const AccountsAttendancePage = () => {
                                         >
                                             <option value="Present">Present</option>
                                             <option value="Absent">Absent</option>
-                                            <option value="Unpaid">Unpaid</option>
+                                            <option value="LOP">Unpaid (LOP)</option>
                                             <option value="OD">On Duty</option>
                                             <option value="CL">Casual Leave</option>
                                             <option value="ML">Medical Leave</option>
