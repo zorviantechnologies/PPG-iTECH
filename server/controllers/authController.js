@@ -24,7 +24,7 @@ exports.googleLogin = async (req, res) => {
     try {
         // Only allow users with registered official/personal email id to log in
         const { rows } = await queryWithRetry(
-            "SELECT * FROM users WHERE (LOWER(email) = LOWER($1) OR LOWER(personal_email) = LOWER($1) OR LOWER(emp_id) = LOWER($1)) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
+            "SELECT * FROM users WHERE (LOWER(TRIM(email)) = LOWER(TRIM($1)) OR LOWER(TRIM(personal_email)) = LOWER(TRIM($1)) OR LOWER(TRIM(emp_id)) = LOWER(TRIM($1))) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
             [trimmedEmail]
         );
         const user = rows[0];
@@ -44,7 +44,7 @@ exports.googleLogin = async (req, res) => {
             });
         } else {
             await logActivity(null, 'FAILED_LOGIN', { email: trimmedEmail, reason: 'No registered official employee email found' }, req.ip);
-            res.status(401).json({ message: 'Access Denied: The provided email is not registered as an official employee email in PPG iTech Hub.' });
+            res.status(401).json({ message: `Access Denied: The email '${trimmedEmail}' is not registered as an official employee email in PPG iTech Hub.` });
         }
     } catch (error) {
         console.error('Google Login Error:', error);
@@ -59,10 +59,9 @@ exports.googleLogin = async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 exports.loginUser = async (req, res) => {
-    const { email, emp_id, pin, password } = req.body;
+    const { email, emp_id } = req.body;
 
     const identifier = (email || emp_id)?.trim();
-    const trimmedPin = (pin || password)?.trim();
 
     if (!identifier) {
         return res.status(400).json({ message: 'Please enter your registered employee email address' });
@@ -71,59 +70,27 @@ exports.loginUser = async (req, res) => {
     try {
         // Look up by registered official email, personal email, or employee ID
         const { rows } = await queryWithRetry(
-            "SELECT * FROM users WHERE (LOWER(email) = LOWER($1) OR LOWER(personal_email) = LOWER($1) OR LOWER(emp_id) = LOWER($1)) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
+            "SELECT * FROM users WHERE (LOWER(TRIM(email)) = LOWER(TRIM($1)) OR LOWER(TRIM(personal_email)) = LOWER(TRIM($1)) OR LOWER(TRIM(emp_id)) = LOWER(TRIM($1))) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
             [identifier]
         );
         const user = rows[0];
 
         if (user) {
-            let isMatch = false;
+            await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email || user.personal_email }, req.ip);
 
-            if (trimmedPin) {
-                // Check hashed password (priority) or hashed pin column if legacy
-                if (user.password) {
-                    isMatch = await bcrypt.compare(trimmedPin, user.password);
-                }
-                if (!isMatch && user.pin) {
-                    isMatch = (user.pin === trimmedPin);
-                    
-                    // Auto-upgrade to hashed password on successful plain-text login
-                    if (isMatch) {
-                        const hashed = await bcrypt.hash(trimmedPin, 10);
-                        await queryWithRetry('UPDATE users SET password = $1 WHERE id = $2', [hashed, user.id]);
-                        console.log(`Auto-migrated password for user ${user.emp_id}`);
-                    }
-                }
-            } else {
-                // If user account has no password/PIN set in DB, allow direct email authentication
-                if (!user.password && !user.pin) {
-                    isMatch = true;
-                } else {
-                    await logActivity(user.id, 'FAILED_LOGIN', { emp_id: user.emp_id, email_id: user.email, reason: 'PIN/Password required' }, req.ip);
-                    return res.status(401).json({ message: 'Please enter your Password or PIN to log in' });
-                }
-            }
-
-            if (isMatch) {
-                await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email || user.personal_email }, req.ip);
-
-                res.json({
-                    id: user.id,
-                    emp_id: user.emp_id,
-                    name: user.name,
-                    role: user.role,
-                    department_id: user.department_id,
-                    profile_pic: user.profile_pic,
-                    email: user.email || user.personal_email,
-                    token: generateToken(user.id),
-                });
-            } else {
-                await logActivity(user.id, 'FAILED_LOGIN', { emp_id: user.emp_id, email_id: user.email, reason: 'Invalid Password/PIN' }, req.ip);
-                res.status(401).json({ message: 'Invalid credentials. Please check your email and Password/PIN.' });
-            }
+            return res.json({
+                id: user.id,
+                emp_id: user.emp_id,
+                name: user.name,
+                role: user.role,
+                department_id: user.department_id,
+                profile_pic: user.profile_pic,
+                email: user.email || user.personal_email,
+                token: generateToken(user.id),
+            });
         } else {
             await logActivity(null, 'FAILED_LOGIN', { identifier, reason: 'Unknown Employee Email' }, req.ip);
-            res.status(401).json({ message: 'Access Denied: The provided email address is not registered in the database.' });
+            return res.status(401).json({ message: `Access Denied: The email '${identifier}' is not registered in the database.` });
         }
     } catch (error) {
         console.error('Login Error:', error);
