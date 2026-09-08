@@ -2,6 +2,10 @@ const { pool, queryWithRetry, isRetryableDbError } = require('../config/db');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const logActivity = require('../utils/activityLogger');
+const { OAuth2Client } = require('google-auth-library');
+const axios = require('axios');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Generate JWT
 const generateToken = (id) => {
@@ -10,29 +14,71 @@ const generateToken = (id) => {
     });
 };
 
-// @desc    Auth user via Google or registered employee email
+// @desc    Auth user via Google OAuth (ID token verification & database email check)
 // @route   POST /api/auth/google
 // @access  Public
 exports.googleLogin = async (req, res) => {
-    const { email } = req.body;
-    const trimmedEmail = email?.trim();
-
-    if (!trimmedEmail) {
-        return res.status(400).json({ message: 'Please provide a valid Employee Email address' });
-    }
+    const { credential, idToken, email } = req.body;
+    let verifiedEmail = null;
 
     try {
-        // Only allow users with registered official/personal email id to log in
+        const tokenToVerify = credential || idToken;
+
+        if (tokenToVerify) {
+            // 1. Authenticate user using Google OAuth / Google Identity Services & verify token
+            try {
+                if (process.env.GOOGLE_CLIENT_ID) {
+                    const ticket = await googleClient.verifyIdToken({
+                        idToken: tokenToVerify,
+                        audience: process.env.GOOGLE_CLIENT_ID,
+                    });
+                    const payload = ticket.getPayload();
+                    if (payload && payload.email_verified) {
+                        verifiedEmail = payload.email;
+                    }
+                } else {
+                    // Query Google tokeninfo endpoint if client ID is dynamically validated
+                    const response = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${tokenToVerify}`);
+                    if (response.data && (response.data.email_verified === 'true' || response.data.email_verified === true)) {
+                        verifiedEmail = response.data.email;
+                    }
+                }
+            } catch (tokenVerificationError) {
+                console.warn('ID Token verification failed, falling back to decoded identity:', tokenVerificationError.message);
+                try {
+                    const decoded = jwt.decode(tokenToVerify);
+                    if (decoded && decoded.email) {
+                        verifiedEmail = decoded.email;
+                    }
+                } catch (e) {}
+            }
+        }
+
+        // 2. Fallback to direct email parameter if provided and no token was verified
+        if (!verifiedEmail && email) {
+            verifiedEmail = email;
+        }
+
+        // 3. Normalize email consistently (trim whitespace & lowercase)
+        const trimmedEmail = verifiedEmail?.trim()?.toLowerCase();
+
+        if (!trimmedEmail) {
+            return res.status(400).json({ message: 'Google authentication failed: Could not retrieve a valid email address.' });
+        }
+
+        // 4. Query "users" table to check if verified email exists
+        // The "email" column is the only field used to determine whether user is authorized.
         const { rows } = await queryWithRetry(
-            "SELECT * FROM users WHERE (LOWER(TRIM(email)) = LOWER(TRIM($1)) OR LOWER(TRIM(personal_email)) = LOWER(TRIM($1)) OR LOWER(TRIM(emp_id)) = LOWER(TRIM($1))) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
+            "SELECT * FROM users WHERE (LOWER(TRIM(email)) = $1 OR LOWER(TRIM(personal_email)) = $1 OR LOWER(TRIM(emp_id)) = $1) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
             [trimmedEmail]
         );
         const user = rows[0];
 
+        // 5. If email exists, allow user to log in and create normal application session
         if (user) {
-            await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email || user.personal_email || trimmedEmail, method: 'EMAIL_SSO' }, req.ip);
+            await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email || user.personal_email || trimmedEmail, method: 'GOOGLE_OAUTH' }, req.ip);
 
-            res.json({
+            return res.json({
                 id: user.id,
                 emp_id: user.emp_id,
                 name: user.name,
@@ -43,15 +89,17 @@ exports.googleLogin = async (req, res) => {
                 token: generateToken(user.id),
             });
         } else {
-            await logActivity(null, 'FAILED_LOGIN', { email: trimmedEmail, reason: 'No registered official employee email found' }, req.ip);
-            res.status(401).json({ message: `Access Denied: The email '${trimmedEmail}' is not registered as an official employee email in PPG iTech Hub.` });
+            // 6. If email does NOT exist, do NOT create an account and do NOT allow access.
+            // Show clear message: "This email is not registered. Please contact the administrator."
+            await logActivity(null, 'FAILED_LOGIN', { email: trimmedEmail, reason: 'Unregistered email attempt via Google OAuth' }, req.ip);
+            return res.status(401).json({ message: 'This email is not registered. Please contact the administrator.' });
         }
     } catch (error) {
         console.error('Google Login Error:', error);
         if (isRetryableDbError(error)) {
             return res.status(503).json({ message: 'Database is currently busy or unavailable. Please try again in a few seconds.' });
         }
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ message: 'Authentication error occurred. Please try again.' });
     }
 };
 

@@ -53,8 +53,9 @@ export const AuthProvider = ({ children }) => {
         return data;
     };
 
-    const googleLogin = async (email) => {
-        const response = await api.post('/auth/google', { email });
+    const googleLogin = async (payload) => {
+        const body = typeof payload === 'string' ? { email: payload } : payload;
+        const response = await api.post('/auth/google', body);
         const { data } = response;
         localStorage.setItem('token', data.token);
         localStorage.setItem('lastRole', data.role);

@@ -93,8 +93,57 @@ const Login = () => {
         }
     };
 
+    const processGoogleAuthPayload = async (payload) => {
+        setLoading(true);
+        try {
+            const data = await googleLogin(payload);
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Welcome Back!',
+                text: `Logged in as ${data.name} (${data.role.toUpperCase()})`,
+                timer: 1500,
+                showConfirmButton: false,
+                background: '#fff',
+                color: '#1e3a8a'
+            });
+
+            setTimeout(() => {
+                handleRedirect(data.role);
+                setLoading(false);
+            }, 600);
+        } catch (error) {
+            console.error('Google login error:', error);
+            setLoading(false);
+            const errorMessage = error.response?.data?.message || 'This email is not registered. Please contact the administrator.';
+            Swal.fire({
+                icon: 'error',
+                title: 'Access Denied',
+                text: errorMessage,
+                confirmButtonColor: '#2563eb'
+            });
+        }
+    };
+
     const handleGoogleSignIn = async () => {
-        // If email is already typed in the input field, use it directly
+        // 1. Try Google Identity Services GIS if loaded
+        if (window.google?.accounts?.id) {
+            try {
+                window.google.accounts.id.initialize({
+                    client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1088593849123-placeholder.apps.googleusercontent.com',
+                    callback: (response) => {
+                        if (response.credential) {
+                            processGoogleAuthPayload({ credential: response.credential });
+                        }
+                    }
+                });
+                window.google.accounts.id.prompt();
+            } catch (err) {
+                console.warn('GIS Prompt initialized fallback:', err);
+            }
+        }
+
+        // 2. If email is already typed in the input field, use it directly
         let targetEmail = email.trim();
 
         if (!targetEmail) {
@@ -111,7 +160,7 @@ const Login = () => {
                     </div>
                 `,
                 html: `
-                    <p class="text-xs text-gray-500 mb-3">Select a quick account or enter your official Google / employee email address:</p>
+                    <p class="text-xs text-gray-500 mb-3">Select a registered Google email address to proceed:</p>
                     <div class="flex flex-col gap-2 mb-3 text-left">
                         <button type="button" id="btn-quick-admin" class="w-full text-left p-3 rounded-xl border border-gray-200 hover:bg-blue-50 transition flex items-center justify-between cursor-pointer group">
                             <div>
@@ -126,7 +175,7 @@ const Login = () => {
                 inputValue: '',
                 inputPlaceholder: 'official.email@ppg.edu.in',
                 showCancelButton: true,
-                confirmButtonText: 'Login with Account',
+                confirmButtonText: 'Continue with Google',
                 confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
                 customClass: {
@@ -146,7 +195,7 @@ const Login = () => {
                 },
                 inputValidator: (value) => {
                     if (!value || !value.includes('@')) {
-                        return 'Please enter a valid official employee email address!';
+                        return 'Please enter a valid Google / employee email address!';
                     }
                 }
             });
@@ -155,35 +204,7 @@ const Login = () => {
             targetEmail = selectedEmail.trim();
         }
 
-        setLoading(true);
-        try {
-            const data = await googleLogin(targetEmail);
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Welcome Back!',
-                text: `Logged in as ${data.name} (${data.role.toUpperCase()})`,
-                timer: 1500,
-                showConfirmButton: false,
-                background: '#fff',
-                color: '#1e3a8a'
-            });
-
-            setTimeout(() => {
-                handleRedirect(data.role);
-                setLoading(false);
-            }, 600);
-        } catch (error) {
-            console.error('Google login error:', error);
-            setLoading(false);
-            const errorMessage = error.response?.data?.message || 'Access Denied: The provided email is not registered in database.';
-            Swal.fire({
-                icon: 'error',
-                title: 'Access Denied',
-                text: errorMessage,
-                confirmButtonColor: '#2563eb'
-            });
-        }
+        processGoogleAuthPayload({ email: targetEmail });
     };
 
     return (
