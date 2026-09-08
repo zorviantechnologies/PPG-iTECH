@@ -36,13 +36,13 @@ export const AuthProvider = ({ children }) => {
         checkUser();
     }, []);
 
-    const login = async (emp_id, pin, role = '') => {
+    const login = async (emailOrId, pin, role = '') => {
         let response;
         if (role === 'management') {
-            response = await api.post('/auth/management-login', { emp_id, pin });
+            response = await api.post('/auth/management-login', { email: emailOrId, emp_id: emailOrId, pin });
             localStorage.setItem('managementAccess', 'true');
         } else {
-            response = await api.post('/auth/login', { emp_id, pin });
+            response = await api.post('/auth/login', { email: emailOrId, emp_id: emailOrId, pin });
             localStorage.removeItem('managementAccess');
         }
         

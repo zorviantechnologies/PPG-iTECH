@@ -10,7 +10,7 @@ const generateToken = (id) => {
     });
 };
 
-// @desc    Auth user via Google (using official or personal email)
+// @desc    Auth user via Google or registered employee email
 // @route   POST /api/auth/google
 // @access  Public
 exports.googleLogin = async (req, res) => {
@@ -18,19 +18,19 @@ exports.googleLogin = async (req, res) => {
     const trimmedEmail = email?.trim();
 
     if (!trimmedEmail) {
-        return res.status(400).json({ message: 'Please provide a valid Google Email address' });
+        return res.status(400).json({ message: 'Please provide a valid Employee Email address' });
     }
 
     try {
         // Only allow users with registered official/personal email id to log in
         const { rows } = await queryWithRetry(
-            "SELECT * FROM users WHERE (LOWER(email) = LOWER($1) OR LOWER(personal_email) = LOWER($1)) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
+            "SELECT * FROM users WHERE (LOWER(email) = LOWER($1) OR LOWER(personal_email) = LOWER($1) OR LOWER(emp_id) = LOWER($1)) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
             [trimmedEmail]
         );
         const user = rows[0];
 
         if (user) {
-            await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: trimmedEmail, method: 'GOOGLE_OAUTH' }, req.ip);
+            await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email || user.personal_email || trimmedEmail, method: 'EMAIL_SSO' }, req.ip);
 
             res.json({
                 id: user.id,
@@ -55,51 +55,57 @@ exports.googleLogin = async (req, res) => {
     }
 };
 
-// @desc    Auth user & get token
+// @desc    Auth user & get token via Employee Email Address (or ID)
 // @route   POST /api/auth/login
 // @access  Public
 exports.loginUser = async (req, res) => {
-    const { emp_id, pin } = req.body;
+    const { email, emp_id, pin, password } = req.body;
 
-    const trimmedEmpId = emp_id?.trim();
-    const trimmedPin = pin?.trim();
+    const identifier = (email || emp_id)?.trim();
+    const trimmedPin = (pin || password)?.trim();
 
-    if (!trimmedEmpId || !trimmedPin) {
-        return res.status(400).json({ message: 'Please provide emp_id and pin' });
+    if (!identifier) {
+        return res.status(400).json({ message: 'Please enter your registered employee email address' });
     }
 
     try {
-        // queryWithRetry now handles transient "Max Clients" errors automatically
+        // Look up by registered official email, personal email, or employee ID
         const { rows } = await queryWithRetry(
-            "SELECT * FROM users WHERE LOWER(emp_id) = LOWER($1) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts')",
-            [trimmedEmpId]
+            "SELECT * FROM users WHERE (LOWER(email) = LOWER($1) OR LOWER(personal_email) = LOWER($1) OR LOWER(emp_id) = LOWER($1)) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
+            [identifier]
         );
         const user = rows[0];
 
         if (user) {
-            if (!user.password && !user.pin) {
-                await logActivity(user.id, 'FAILED_LOGIN', { emp_id: user.emp_id, reason: 'No valid login credentials on account' }, req.ip);
-                return res.status(401).json({ message: 'Invalid credentials' });
-            }
-
-            // Check hashed password (priority) or hashed pin column if legacy
             let isMatch = false;
-            
-            if (user.password) {
-                isMatch = await bcrypt.compare(trimmedPin, user.password);
-            } else if (user.pin) {
-                isMatch = (user.pin === trimmedPin);
-                
-                // Auto-upgrade to hashed password on successful plain-text login
-                if (isMatch) {
-                    const hashed = await bcrypt.hash(trimmedPin, 10);
-                    await queryWithRetry('UPDATE users SET password = $1 WHERE id = $2', [hashed, user.id]);
-                    console.log(`Auto-migrated password for user ${user.emp_id}`);
+
+            if (trimmedPin) {
+                // Check hashed password (priority) or hashed pin column if legacy
+                if (user.password) {
+                    isMatch = await bcrypt.compare(trimmedPin, user.password);
+                }
+                if (!isMatch && user.pin) {
+                    isMatch = (user.pin === trimmedPin);
+                    
+                    // Auto-upgrade to hashed password on successful plain-text login
+                    if (isMatch) {
+                        const hashed = await bcrypt.hash(trimmedPin, 10);
+                        await queryWithRetry('UPDATE users SET password = $1 WHERE id = $2', [hashed, user.id]);
+                        console.log(`Auto-migrated password for user ${user.emp_id}`);
+                    }
+                }
+            } else {
+                // If user account has no password/PIN set in DB, allow direct email authentication
+                if (!user.password && !user.pin) {
+                    isMatch = true;
+                } else {
+                    await logActivity(user.id, 'FAILED_LOGIN', { emp_id: user.emp_id, email_id: user.email, reason: 'PIN/Password required' }, req.ip);
+                    return res.status(401).json({ message: 'Please enter your Password or PIN to log in' });
                 }
             }
 
             if (isMatch) {
-                await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email }, req.ip);
+                await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email || user.personal_email }, req.ip);
 
                 res.json({
                     id: user.id,
@@ -108,15 +114,16 @@ exports.loginUser = async (req, res) => {
                     role: user.role,
                     department_id: user.department_id,
                     profile_pic: user.profile_pic,
+                    email: user.email || user.personal_email,
                     token: generateToken(user.id),
                 });
             } else {
-                await logActivity(user.id, 'FAILED_LOGIN', { emp_id: user.emp_id, email_id: user.email, reason: 'Invalid PIN' }, req.ip);
-                res.status(401).json({ message: 'Invalid credentials' });
+                await logActivity(user.id, 'FAILED_LOGIN', { emp_id: user.emp_id, email_id: user.email, reason: 'Invalid Password/PIN' }, req.ip);
+                res.status(401).json({ message: 'Invalid credentials. Please check your email and Password/PIN.' });
             }
         } else {
-            await logActivity(null, 'FAILED_LOGIN', { emp_id: trimmedEmpId, reason: 'Unknown Employee ID' }, req.ip);
-            res.status(401).json({ message: 'Invalid credentials' });
+            await logActivity(null, 'FAILED_LOGIN', { identifier, reason: 'Unknown Employee Email' }, req.ip);
+            res.status(401).json({ message: 'Access Denied: The provided email address is not registered in the database.' });
         }
     } catch (error) {
         console.error('Login Error:', error);
@@ -128,11 +135,12 @@ exports.loginUser = async (req, res) => {
 };
 
 
-// @desc    Management login with PIN
+// @desc    Management login with PIN / Email
 // @route   POST /api/auth/management-login
 // @access  Public
 exports.managementLogin = async (req, res) => {
-    const { emp_id, pin } = req.body;
+    const { email, emp_id, pin } = req.body;
+    const identifier = (email || emp_id)?.trim();
 
     if (!pin) {
         return res.status(400).json({ message: 'Please provide a PIN' });
@@ -141,20 +149,20 @@ exports.managementLogin = async (req, res) => {
     try {
         let query, params;
 
-        if (emp_id) {
-            // If emp_id provided, find that specific management user
-            query = "SELECT id, name, pin, emp_id FROM users WHERE role = 'management' AND LOWER(emp_id) = LOWER($1)";
-            params = [emp_id.trim()];
+        if (identifier) {
+            // If email/emp_id provided, find that specific management user
+            query = "SELECT id, name, pin, emp_id, email FROM users WHERE role = 'management' AND (LOWER(emp_id) = LOWER($1) OR LOWER(email) = LOWER($1) OR LOWER(personal_email) = LOWER($1))";
+            params = [identifier];
         } else {
             // Fallback: find any management user (supports the old button flow)
-            query = "SELECT id, name, pin, emp_id FROM users WHERE role = 'management' LIMIT 1";
+            query = "SELECT id, name, pin, emp_id, email FROM users WHERE role = 'management' LIMIT 1";
             params = [];
         }
 
         const { rows: mgmtUsers } = await queryWithRetry(query, params);
 
         if (mgmtUsers.length === 0) {
-            return res.status(401).json({ message: 'Invalid management ID' });
+            return res.status(401).json({ message: 'Invalid management account or email' });
         }
 
         const mgmt = mgmtUsers[0];
@@ -167,6 +175,7 @@ exports.managementLogin = async (req, res) => {
             role: 'management',
             name: mgmt.name,
             emp_id: mgmt.emp_id,
+            email: mgmt.email,
             token: generateToken(mgmt.id),
         });
     } catch (error) {
