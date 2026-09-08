@@ -5,7 +5,7 @@ Follow these 5 simple steps to get your attendance machine talking to your websi
 ---
 
 ### Step 1: Physical Network Connection
-- Connect an **Ethernet (LAN) Cable** from your Biometric Machine to your **Wifi Router**
+- Connect an **Ethernet (LAN) Cable** from your Biometric Machine to your **Wifi Router**.
 - Ensure the machine is powered ON.
 
 ### Step 2: Verify Device Settings
