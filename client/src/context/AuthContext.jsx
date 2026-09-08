@@ -53,6 +53,20 @@ export const AuthProvider = ({ children }) => {
         return data;
     };
 
+    const googleLogin = async (email) => {
+        const response = await api.post('/auth/google', { email });
+        const { data } = response;
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('lastRole', data.role);
+        if (data.role === 'management') {
+            localStorage.setItem('managementAccess', 'true');
+        } else {
+            localStorage.removeItem('managementAccess');
+        }
+        setUser(data);
+        return data;
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('lastRole');
@@ -63,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, googleLogin, logout, loading }}>
             {children}
         </AuthContext.Provider>
     );

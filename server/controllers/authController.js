@@ -10,6 +10,51 @@ const generateToken = (id) => {
     });
 };
 
+// @desc    Auth user via Google (using email)
+// @route   POST /api/auth/google
+// @access  Public
+exports.googleLogin = async (req, res) => {
+    const { email } = req.body;
+    const trimmedEmail = email?.trim();
+
+    if (!trimmedEmail) {
+        return res.status(400).json({ message: 'Please provide a valid Google Email address' });
+    }
+
+    try {
+        // Only allow employee ID having email id only to log in
+        const { rows } = await queryWithRetry(
+            "SELECT * FROM users WHERE LOWER(email) = LOWER($1) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
+            [trimmedEmail]
+        );
+        const user = rows[0];
+
+        if (user) {
+            await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email, method: 'GOOGLE_OAUTH' }, req.ip);
+
+            res.json({
+                id: user.id,
+                emp_id: user.emp_id,
+                name: user.name,
+                role: user.role,
+                department_id: user.department_id,
+                profile_pic: user.profile_pic,
+                email: user.email,
+                token: generateToken(user.id),
+            });
+        } else {
+            await logActivity(null, 'FAILED_LOGIN', { email: trimmedEmail, reason: 'No registered employee found with this email ID' }, req.ip);
+            res.status(401).json({ message: 'Access Denied: No registered employee found with this email ID. Please contact administrator.' });
+        }
+    } catch (error) {
+        console.error('Google Login Error:', error);
+        if (isRetryableDbError(error)) {
+            return res.status(503).json({ message: 'Database is currently busy or unavailable. Please try again in a few seconds.' });
+        }
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
 // @access  Public
