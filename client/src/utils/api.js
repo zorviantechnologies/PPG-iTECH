@@ -2,7 +2,15 @@ import axios from 'axios';
 import { encryptPayload } from './crypto';
 
 const normalizeApiBase = (rawBase) => {
-    const base = String(rawBase || '').trim().replace(/\/+$/, '');
+    let base = String(rawBase || '').trim().replace(/\/+$/, '');
+
+    // In production Vercel deployment, fallback from localhost to live Render backend
+    if (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('ppg-i-tech'))) {
+        if (!base || base.includes('localhost')) {
+            base = 'https://ppg-itech.onrender.com';
+        }
+    }
+
     if (!base) return '/api';
     if (base.endsWith('/api')) return base;
     return `${base}/api`;

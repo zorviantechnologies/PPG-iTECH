@@ -234,19 +234,20 @@ app.set('io', io);
 // Configure CORS
 const allowedOrigins = [
   "http://localhost:5173",
+  "https://ppg-i-tech.vercel.app",
   process.env.FRONTEND_URL
-];
+].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
       callback(new Error("CORS not allowed"));
     }
   },
   methods: ['GET','POST','PUT','DELETE','PATCH','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization','X-Encrypted'],
+  allowedHeaders: ['Content-Type','Authorization','X-Encrypted','X-Disable-Encrypt'],
   credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));
