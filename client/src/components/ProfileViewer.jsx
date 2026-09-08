@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaCheckCircle, FaIdBadge, FaBuilding, FaPhone, FaEnvelope, FaUser, FaCalendarAlt, FaVenusMars, FaTint, FaGlobe, FaHandsHelping, FaWhatsapp, FaMapMarkerAlt, FaUsers, FaHeart, FaBriefcase, FaMoneyBillWave, FaUniversity, FaCreditCard, FaLock, FaUserCircle, FaSuitcase, FaCamera, FaSave, FaCertificate, FaDownload, FaEye, FaPlus, FaTrash, FaKey, FaPrint, FaMinusCircle } from 'react-icons/fa';
+import { FaTimes, FaCheckCircle, FaIdBadge, FaBuilding, FaPhone, FaEnvelope, FaUser, FaCalendarAlt, FaVenusMars, FaTint, FaGlobe, FaHandsHelping, FaWhatsapp, FaMapMarkerAlt, FaUsers, FaHeart, FaBriefcase, FaMoneyBillWave, FaUniversity, FaCreditCard, FaLock, FaUserCircle, FaSuitcase, FaCamera, FaSave, FaCertificate, FaDownload, FaEye, FaPlus, FaTrash, FaPrint, FaMinusCircle } from 'react-icons/fa';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
 import { useAuth } from '../context/AuthContext';
@@ -61,8 +61,6 @@ const ProfileViewer = ({ user, onClose }) => {
     const [loading, setLoading] = useState(false);
     const [certificates, setCertificates] = useState([]);
     const [formData, setFormData] = useState({});
-    const [pinData, setPinData] = useState({ currentPin: '', newPin: '', confirmPin: '' });
-    const [isChangingPin, setIsChangingPin] = useState(false);
     const [certName, setCertName] = useState('');
     const [certFile, setCertFile] = useState(null);
     const [uploadingCert, setUploadingCert] = useState(false);
@@ -292,32 +290,6 @@ const ProfileViewer = ({ user, onClose }) => {
         }
     };
 
-    const handlePinChange = async () => {
-        if (!pinData.newPin || !pinData.confirmPin) {
-            return Swal.fire('Missing Info', 'Please fill in all PIN fields.', 'warning');
-        }
-        if (pinData.newPin.length < 4) {
-            return Swal.fire('Invalid PIN', 'PIN must be at least 4 characters.', 'warning');
-        }
-        if (pinData.newPin !== pinData.confirmPin) {
-            return Swal.fire('Mismatch', 'New PIN and Confirm PIN do not match.', 'warning');
-        }
-        setLoading(true);
-        try {
-            if (authUser.role === 'management') {
-                await api.put('/auth/management-profile', { pin: pinData.newPin });
-            } else {
-                await api.put('/auth/profile', { pin: pinData.newPin });
-            }
-            Swal.fire({ icon: 'success', title: 'PIN Updated!', text: 'Your PIN has been changed successfully.', timer: 1500, showConfirmButton: false });
-            setPinData({ currentPin: '', newPin: '', confirmPin: '' });
-            setIsChangingPin(false);
-        } catch (error) {
-            Swal.fire('Error', error.response?.data?.message || 'Failed to update PIN.', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handlePrintProfile = async () => {
         const title = `Profile - ${user.name}`;
@@ -992,63 +964,7 @@ const ProfileViewer = ({ user, onClose }) => {
                                 </>
                             )}
 
-                            {/* PIN Change Section */}
-                            {isOwnProfile && (
-                                <>
-                                    <div className="col-span-full">
-                                        <SectionHeader title="Security" />
-                                    </div>
-                                    <div className="col-span-full">
-                                        {!isChangingPin ? (
-                                            <button
-                                                onClick={() => setIsChangingPin(true)}
-                                                className="flex items-center gap-3 p-4 rounded-3xl bg-gray-50/50 hover:bg-white transition-all border border-transparent hover:border-gray-100 group w-full"
-                                            >
-                                                <div className="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-sky-600 group-hover:rotate-12 transition-transform">
-                                                    <FaKey />
-                                                </div>
-                                                <div className="text-left">
-                                                    <p className="text-sm font-black text-gray-800 tracking-tight">Change PIN</p>
-                                                    <p className="text-[9px] font-bold text-gray-400">Update your login PIN</p>
-                                                </div>
-                                            </button>
-                                        ) : (
-                                            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-3xl bg-white border border-sky-100 shadow-lg space-y-3">
-                                                <p className="text-[9px] font-black text-sky-600 uppercase tracking-widest">Change Your PIN</p>
-                                                <input
-                                                    type="password"
-                                                    value={pinData.newPin}
-                                                    onChange={(e) => setPinData({ ...pinData, newPin: e.target.value })}
-                                                    placeholder="New PIN"
-                                                    className={inputClass}
-                                                />
-                                                <input
-                                                    type="password"
-                                                    value={pinData.confirmPin}
-                                                    onChange={(e) => setPinData({ ...pinData, confirmPin: e.target.value })}
-                                                    placeholder="Confirm New PIN"
-                                                    className={inputClass}
-                                                />
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={handlePinChange}
-                                                        disabled={loading}
-                                                        className="flex-1 py-2.5 bg-sky-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-sky-700 disabled:opacity-50"
-                                                    >
-                                                        {loading ? 'Updating...' : 'Update PIN'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => { setIsChangingPin(false); setPinData({ currentPin: '', newPin: '', confirmPin: '' }); }}
-                                                        className="flex-1 py-2.5 bg-gray-100 text-gray-500 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-gray-200"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </div>
-                                </>
-                            )}
+
                         </div>
                     </div>
                 </div>

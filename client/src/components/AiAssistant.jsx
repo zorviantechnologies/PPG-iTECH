@@ -28,7 +28,6 @@ const AI_KNOWLEDGE_BASE = {
         { q: "Staff Timetable", link: "/staff/timetables", hash: "all", p: true },
         { q: "Conversation", link: "/staff/conversation" },
         { q: "Purchase Requests", link: "/staff/items", desc: "Create purchase requests for your department. Your requests are sent to your HOD for approval. To create: click 'New Request', enter item name, quantity, and select unit (piece, kg, litre), optionally add more items, then submit." },
-        { q: "Change PIN", link: "/staff/profile", desc: "To change your PIN: navigate to your profile view, scroll to the bottom of the page, click the change pin button, enter your new pin, confirm it, and click update pin." },
         { q: "Academic Calendar", link: "/staff/calendar" }
     ],
     hod: [
@@ -50,7 +49,6 @@ const AI_KNOWLEDGE_BASE = {
         { q: "Staff Timetable", link: "/hod/timetables", hash: "all", p: true },
         { q: "Conversation", link: "/hod/conversation" },
         { q: "Purchase Requests", link: "/hod/purchase", p: true, desc: "Create and manage purchase requests. Your requests are sent to Principal for approval. To create: click 'New Request', enter item name, quantity, and select unit (piece, kg, litre), optionally add more items, then submit." },
-        { q: "Change PIN", link: "/hod/profile", desc: "To change your PIN: navigate to your profile view, scroll to the bottom of the page, click the change pin button, enter your new pin, confirm it, and click update pin." },
         { q: "Academic Calendar", link: "/hod/calendar" },
         { q: "Attendance Records", link: "/hod/attendance", p: true, desc: "This module contains Summary View tabs for your department." },
         { q: "Summary View", link: "/hod/attendance", hash: "summary", p: true },
@@ -74,8 +72,7 @@ const AI_KNOWLEDGE_BASE = {
         { q: "Departments", link: "/principal/department", p: true, desc: "Browse all departments and their respective staff." },
         { q: "Academic Calendar", link: "/principal/calendar", p: true },
         { q: "Incoming Requests", link: "/principal/leaves", desc: "This page includes tabs for Incoming Leave Requests and Incoming Permission Requests." },
-        { q: "Permission Requests", link: "/principal/leaves", hash: "permission" },
-        { q: "Change PIN", link: "/principal/profile", desc: "To change your PIN: navigate to your profile view, scroll to the bottom of the page, click the change pin button, enter your new pin, confirm it, and click update pin." }
+        { q: "Permission Requests", link: "/principal/leaves", hash: "permission" }
     ],
     admin: [
         { q: "Notification", link: "/admin/notifications" },
@@ -93,7 +90,6 @@ const AI_KNOWLEDGE_BASE = {
         { q: "Academic Calendar", link: "/admin/calendar" },
         { q: "Purchase Requests", link: "/admin/purchase", p: true, desc: "Manage all approved purchase requests from Principal and HOD approvals. View Approved_Principal (ready for procurement) and mark items as Purchased or Rejected." },
         { q: "Profile", link: "/admin/profile" },
-        { q: "Change PIN", link: "/admin/profile", desc: "To change your PIN: navigate to your profile view, scroll to the bottom of the page, click the change pin button, enter your new pin, confirm it, and click update pin." },
         { q: "Principal Attendance Core", link: "/admin", hash: "attendance-cores", p: true },
         { q: "HODs Attendance Core", link: "/admin", hash: "attendance-cores", p: true },
         { q: "Staff Attendance Core", link: "/admin", hash: "attendance-cores", p: true }
@@ -314,12 +310,6 @@ const AiAssistant = ({ isSidebar, onClose, userRole, isAiMinimized }) => {
                 return;
             }
 
-            if (['staff', 'hod', 'principal', 'admin'].includes(role) && (lowerText.includes('how to change pin') || lowerText.includes('how to change my pin') || lowerText.includes('change pin'))) {
-                const instructions = "To change your PIN: navigate to your profile view, scroll to the bottom of the page, click the change pin button, enter your new pin, confirm it, and click update pin.";
-                setMessages(prev => [...prev, { type: 'ai', text: instructions, time: new Date() }]);
-                speak(instructions);
-                return;
-            }
 
             // 1. Check if user just wants to print the CURRENT page
             if (wantsPrint && (!cleanText || cleanText.length < 3)) {
@@ -344,7 +334,7 @@ const AiAssistant = ({ isSidebar, onClose, userRole, isAiMinimized }) => {
 
             if (exactMatch) {
                 let actionLink = exactMatch.link;
-                if ((exactMatch.q.toLowerCase() === 'profile' || exactMatch.q.toLowerCase() === 'change pin') && !actionLink.includes(user.emp_id) && role !== 'management') {
+                if (exactMatch.q.toLowerCase() === 'profile' && !actionLink.includes(user.emp_id) && role !== 'management') {
                     actionLink = `/${role}/profile/${user.emp_id}`;
                 }
 
