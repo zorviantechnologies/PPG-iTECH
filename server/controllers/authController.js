@@ -10,7 +10,7 @@ const generateToken = (id) => {
     });
 };
 
-// @desc    Auth user via Google (using email)
+// @desc    Auth user via Google (using official or personal email)
 // @route   POST /api/auth/google
 // @access  Public
 exports.googleLogin = async (req, res) => {
@@ -22,15 +22,15 @@ exports.googleLogin = async (req, res) => {
     }
 
     try {
-        // Only allow employee ID having email id only to log in
+        // Only allow users with registered official/personal email id to log in
         const { rows } = await queryWithRetry(
-            "SELECT * FROM users WHERE LOWER(email) = LOWER($1) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
+            "SELECT * FROM users WHERE (LOWER(email) = LOWER($1) OR LOWER(personal_email) = LOWER($1)) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
             [trimmedEmail]
         );
         const user = rows[0];
 
         if (user) {
-            await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email, method: 'GOOGLE_OAUTH' }, req.ip);
+            await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: trimmedEmail, method: 'GOOGLE_OAUTH' }, req.ip);
 
             res.json({
                 id: user.id,
@@ -39,12 +39,12 @@ exports.googleLogin = async (req, res) => {
                 role: user.role,
                 department_id: user.department_id,
                 profile_pic: user.profile_pic,
-                email: user.email,
+                email: user.email || user.personal_email,
                 token: generateToken(user.id),
             });
         } else {
-            await logActivity(null, 'FAILED_LOGIN', { email: trimmedEmail, reason: 'No registered employee found with this email ID' }, req.ip);
-            res.status(401).json({ message: 'Access Denied: No registered employee found with this email ID. Please contact administrator.' });
+            await logActivity(null, 'FAILED_LOGIN', { email: trimmedEmail, reason: 'No registered official employee email found' }, req.ip);
+            res.status(401).json({ message: 'Access Denied: The provided email is not registered as an official employee email in PPG iTech Hub.' });
         }
     } catch (error) {
         console.error('Google Login Error:', error);
