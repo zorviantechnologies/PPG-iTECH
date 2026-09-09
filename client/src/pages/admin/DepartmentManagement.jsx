@@ -3,7 +3,7 @@ import Layout from '../../components/Layout';
 import api from '../../utils/api';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { FaTrash, FaPlus, FaLayerGroup, FaBuilding, FaProjectDiagram, FaArrowRight, FaPen, FaPrint } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaLayerGroup, FaBuilding, FaProjectDiagram, FaArrowRight, FaPen, FaPrint, FaUserGraduate, FaUsers } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { finalizePrintWindow } from '../../utils/printUtils';
 
@@ -36,22 +36,26 @@ const DepartmentManagement = () => {
         window.dispatchEvent(new CustomEvent('closeSidebar'));
     };
 
-    const handleDelete = async (id) => {
+    const handleViewStudents = (dept) => {
+        navigate(`/admin/students?department_id=${dept.id}`);
+        window.dispatchEvent(new CustomEvent('closeSidebar'));
+    };
+
+    const handleDelete = async (id, deptName = '') => {
         const isStudentModule = activeModule === 'students';
 
-        const title = isStudentModule ? 'Purge Student Logins?' : 'Delete Department?';
-        const text = isStudentModule
-            ? 'This will delete ONLY the student accounts & student logins registered under this department. Staff members and staff logins will NOT be deleted.'
-            : 'This will remove the department node and affect staff assigned to it.';
-        const confirmBtnText = isStudentModule ? 'Yes, Purge Student Logins' : 'Yes, Delete Department';
-
         Swal.fire({
-            title,
-            text,
+            title: `Delete Department ${deptName ? `"${deptName}"` : ''}?`,
+            text: isStudentModule
+                ? 'Would you like to delete the department completely or purge only the student accounts registered under it?'
+                : 'This will permanently remove the department node from the system. Associated staff and student records will be unassigned.',
             icon: 'warning',
             showCancelButton: true,
+            showDenyButton: isStudentModule,
             confirmButtonColor: '#ef4444',
-            confirmButtonText: confirmBtnText,
+            confirmButtonText: 'Yes, Delete Department',
+            denyButtonColor: '#4f46e5',
+            denyButtonText: 'Purge Student Accounts Only',
             cancelButtonColor: '#64748b',
             background: '#fff',
             customClass: {
@@ -59,9 +63,10 @@ const DepartmentManagement = () => {
                 title: 'font-black text-gray-800 tracking-tight'
             }
         }).then(async (result) => {
-            if (result.isConfirmed) {
+            if (result.isConfirmed || result.isDenied) {
                 try {
-                    const deleteUrl = isStudentModule ? `/departments/${id}?scope=students` : `/departments/${id}`;
+                    const isPurgeOnly = result.isDenied;
+                    const deleteUrl = isPurgeOnly ? `/departments/${id}?scope=students` : `/departments/${id}`;
                     const res = await api.delete(deleteUrl);
 
                     const [deptRes, empRes] = await Promise.all([
@@ -72,8 +77,8 @@ const DepartmentManagement = () => {
                     setAllEmployees(empRes.data);
 
                     Swal.fire({
-                        title: isStudentModule ? 'Student Logins Purged' : 'Department Deleted',
-                        text: res.data?.message || (isStudentModule ? 'Student logins removed while staff accounts remain unchanged.' : 'Department removed.'),
+                        title: isPurgeOnly ? 'Student Logins Purged' : 'Department Deleted',
+                        text: res.data?.message || (isPurgeOnly ? 'Student logins removed while staff accounts remain unchanged.' : 'Department removed successfully.'),
                         icon: 'success',
                         confirmButtonColor: '#2563eb'
                     });
@@ -259,9 +264,9 @@ const DepartmentManagement = () => {
                                             <FaPen size={14} />
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(dept.id)}
+                                            onClick={() => handleDelete(dept.id, dept.name)}
                                             className="h-10 w-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all active:scale-90"
-                                            title="Purge Node"
+                                            title="Delete Department"
                                         >
                                             <FaTrash size={14} />
                                         </button>
@@ -273,12 +278,18 @@ const DepartmentManagement = () => {
                                         <h3 className="text-2xl font-black text-gray-800 tracking-tight group-hover:text-sky-600 transition-colors">{dept.name}</h3>
                                     </div>
 
-                                    <div className="flex items-center gap-6 pt-4 border-t border-gray-50">
+                                    <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-50">
+                                        <button
+                                            onClick={() => handleViewStudents(dept)}
+                                            className="text-indigo-600 hover:text-indigo-800 text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1.5"
+                                        >
+                                            <FaUserGraduate size={12} /> View Students
+                                        </button>
                                         <button
                                             onClick={() => handleViewStaff(dept)}
-                                            className="text-sky-600 hover:text-sky-800 text-[10px] font-black uppercase tracking-widest hover:underline"
+                                            className="text-sky-600 hover:text-sky-800 text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1.5"
                                         >
-                                            View Staff & HODs
+                                            <FaUsers size={12} /> View Staff & HODs
                                         </button>
                                     </div>
                                 </div>

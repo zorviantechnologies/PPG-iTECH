@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import api from '../../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,14 +12,24 @@ import Swal from 'sweetalert2';
 
 const StudentManagement = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialDeptId = searchParams.get('department_id') || searchParams.get('dept') || '';
+
     const [students, setStudents] = useState([]);
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [selectedDept, setSelectedDept] = useState('');
+    const [selectedDept, setSelectedDept] = useState(initialDeptId);
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedSem, setSelectedSem] = useState('');
     const [selectedSection, setSelectedSection] = useState('');
+
+    useEffect(() => {
+        const deptId = searchParams.get('department_id') || searchParams.get('dept');
+        if (deptId !== null) {
+            setSelectedDept(deptId);
+        }
+    }, [searchParams]);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -152,7 +162,23 @@ const StudentManagement = () => {
                         <div>
                             <select
                                 value={selectedDept}
-                                onChange={(e) => setSelectedDept(e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setSelectedDept(val);
+                                    if (val) {
+                                        setSearchParams(prev => {
+                                            const newParams = new URLSearchParams(prev);
+                                            newParams.set('department_id', val);
+                                            return newParams;
+                                        });
+                                    } else {
+                                        setSearchParams(prev => {
+                                            const newParams = new URLSearchParams(prev);
+                                            newParams.delete('department_id');
+                                            return newParams;
+                                        });
+                                    }
+                                }}
                                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-sky-500 transition-colors"
                             >
                                 <option value="">All Departments</option>

@@ -79,10 +79,15 @@ export const AuthProvider = ({ children }) => {
             setActiveModuleState('staff');
             setShowModuleModal(false);
         } else {
-            // Admin / Accounts
-            localStorage.removeItem('activeModule');
-            setActiveModuleState(null);
-            setShowModuleModal(true);
+            // Admin / Accounts: preserve activeModule if already chosen, or prompt modal
+            const existingModule = localStorage.getItem('activeModule');
+            if (existingModule) {
+                setActiveModuleState(existingModule);
+                setShowModuleModal(false);
+            } else {
+                setActiveModuleState(null);
+                setShowModuleModal(true);
+            }
         }
 
         setUser(data);
@@ -119,9 +124,15 @@ export const AuthProvider = ({ children }) => {
             setActiveModuleState('staff');
             setShowModuleModal(false);
         } else {
-            localStorage.removeItem('activeModule');
-            setActiveModuleState(null);
-            setShowModuleModal(true);
+            // Admin / Accounts: preserve activeModule if already chosen, or prompt modal
+            const existingModule = localStorage.getItem('activeModule');
+            if (existingModule) {
+                setActiveModuleState(existingModule);
+                setShowModuleModal(false);
+            } else {
+                setActiveModuleState(null);
+                setShowModuleModal(true);
+            }
         }
 
         setUser(data);

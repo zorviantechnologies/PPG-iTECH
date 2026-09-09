@@ -34,13 +34,18 @@ const Login = () => {
     const navigate = useNavigate();
 
     const handleRedirect = (role) => {
+        const activeMod = localStorage.getItem('activeModule');
+        let adminTarget = '/admin';
+        if (activeMod === 'students') adminTarget = '/admin/students';
+        else if (activeMod === 'results') adminTarget = '/admin/results';
+
         const routes = {
-            'admin': '/admin',
+            'admin': adminTarget,
             'principal': '/principal',
             'hod': '/hod',
             'staff': '/staff',
             'student': '/student',
-            'accounts': '/admin',
+            'accounts': adminTarget,
             'management': '/management'
         };
         const route = routes[role] || '/';

@@ -95,7 +95,7 @@ const ManagementRoute = ({ children }) => {
 
 // A wrapper for /login that redirects to dashboard if already authenticated
 const LoginRoute = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, activeModule } = useAuth();
 
   if (loading) return null;
   const isManagement =
@@ -104,6 +104,10 @@ const LoginRoute = () => {
 
   if (isManagement) return <Navigate to="/management" replace />;
     if (user) {
+      if (['admin', 'accounts'].includes(user.role)) {
+        const target = activeModule === 'students' ? '/admin/students' : activeModule === 'results' ? '/admin/results' : '/admin';
+        return <Navigate to={target} replace />;
+      }
       const roleMap = { admin: '/admin', principal: '/principal', hod: '/hod', staff: '/staff', accounts: '/admin', student: '/student' };
       return <Navigate to={roleMap[user.role] || '/login'} replace />;
     }
