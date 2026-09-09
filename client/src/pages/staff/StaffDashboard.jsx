@@ -5,8 +5,9 @@ import api from '../../utils/api';
 import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSocket } from '@/context/SocketContext';
-import { FaUserCheck, FaUserTimes, FaBus, FaFileAlt, FaCalendarDay, FaCalendarAlt, FaStar, FaBriefcase, FaTimes, FaFilter, FaClock, FaBookOpen, FaDoorOpen, FaChalkboardTeacher } from 'react-icons/fa';
+import { FaUserCheck, FaUserTimes, FaBus, FaFileAlt, FaCalendarDay, FaCalendarAlt, FaStar, FaBriefcase, FaTimes, FaFilter, FaClock, FaBookOpen, FaDoorOpen, FaChalkboardTeacher, FaUsers, FaUserGraduate } from 'react-icons/fa';
 import AttendanceHistory from '@/components/AttendanceHistory';
+import StudentManagement from '../admin/StudentManagement';
 import PersonalAttendanceChart from '@/components/PersonalAttendanceChart';
 import { useTimetableConfig } from '@/hooks/useTimetableConfig';
 import { formatTo12Hr } from '@/utils/timeFormatter';
@@ -25,6 +26,7 @@ const StaffDashboard = () => {
     const [todayTimetable, setTodayTimetable] = useState([]);
     const { getPeriodConfig } = useTimetableConfig();
     const [statusFilter, setStatusFilter] = useState(null); // null = show all
+    const [activeCardTab, setActiveCardTab] = useState('staff'); // 'staff', 'students'
     const historyRef = useRef(null);
 
     const fetchData = useCallback(async () => {
@@ -174,19 +176,79 @@ const StaffDashboard = () => {
 
     return (
         <Layout>
-            {/* Header */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 className="text-4xl font-black text-gray-800 tracking-tighter">
-                            My <span className="text-[#4A90E2]">Dashboard</span>
-                        </h1>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-2">
-                            {currentMonth} · Personal Attendance Record
-                        </p>
+            {/* 2 Cards: Staff and Students */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                    
+                    {/* Card 1: Staff Card */}
+                    <div
+                        onClick={() => setActiveCardTab('staff')}
+                        className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer flex items-start gap-4 relative overflow-hidden ${
+                            activeCardTab === 'staff'
+                                ? 'bg-gradient-to-br from-sky-600 to-indigo-700 text-white shadow-xl shadow-sky-500/20 border-transparent scale-[1.02]'
+                                : 'bg-white text-gray-800 border-gray-100 shadow-sm hover:shadow-md hover:border-sky-200'
+                        }`}
+                    >
+                        <div className={`p-4 rounded-2xl text-xl ${
+                            activeCardTab === 'staff' ? 'bg-white/20 text-white' : 'bg-sky-50 text-sky-600'
+                        }`}>
+                            <FaUsers />
+                        </div>
+                        <div>
+                            <span className={`text-[10px] font-black uppercase tracking-widest block mb-1 ${
+                                activeCardTab === 'staff' ? 'text-sky-200' : 'text-sky-600'
+                            }`}>
+                                Module 1
+                            </span>
+                            <h2 className="text-xl font-black tracking-tight">Staff Services</h2>
+                            <p className={`text-xs mt-1 leading-relaxed ${
+                                activeCardTab === 'staff' ? 'text-sky-100' : 'text-gray-400'
+                            }`}>
+                                Personal timetable, attendance history, leave applications, and salary logs.
+                            </p>
+                        </div>
                     </div>
+
+                    {/* Card 2: Students Card */}
+                    <div
+                        onClick={() => setActiveCardTab('students')}
+                        className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer flex items-start gap-4 relative overflow-hidden ${
+                            activeCardTab === 'students'
+                                ? 'bg-gradient-to-br from-indigo-600 to-purple-700 text-white shadow-xl shadow-indigo-500/20 border-transparent scale-[1.02]'
+                                : 'bg-white text-gray-800 border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-200'
+                        }`}
+                    >
+                        <div className={`p-4 rounded-2xl text-xl ${
+                            activeCardTab === 'students' ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-600'
+                        }`}>
+                            <FaUserGraduate />
+                        </div>
+                        <div>
+                            <span className={`text-[10px] font-black uppercase tracking-widest block mb-1 ${
+                                activeCardTab === 'students' ? 'text-indigo-200' : 'text-indigo-600'
+                            }`}>
+                                Module 2
+                            </span>
+                            <h2 className="text-xl font-black tracking-tight">Students Module</h2>
+                            <p className={`text-xs mt-1 leading-relaxed ${
+                                activeCardTab === 'students' ? 'text-indigo-100' : 'text-gray-400'
+                            }`}>
+                                Department student information, student list, and class services.
+                            </p>
+                        </div>
+                    </div>
+
                 </div>
             </motion.div>
+
+            {activeCardTab === 'students' && (
+                <div className="-mx-4 md:-mx-6 lg:-mx-8">
+                    <StudentManagement />
+                </div>
+            )}
+
+            {activeCardTab === 'staff' && (
+            <>
 
             {/* Today's Timetable Section */}
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="mb-10">
@@ -356,6 +418,8 @@ const StaffDashboard = () => {
             <div ref={historyRef}>
                 <AttendanceHistory empId={user?.emp_id} statusFilter={statusFilter} />
             </div>
+            </>
+            )}
         </Layout>
     );
 };

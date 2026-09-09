@@ -72,7 +72,7 @@ exports.googleLogin = async (req, res) => {
              FROM user_login ul
              JOIN users u ON u.id = ul.user_id
              WHERE LOWER(TRIM(ul.email)) = $1 
-               AND u.role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')`,
+               AND u.role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management', 'student')`,
             [trimmedEmail]
         );
         const user = rows[0];
@@ -119,7 +119,7 @@ exports.getRegisteredEmails = async (req, res) => {
                 (u.email IS NOT NULL AND TRIM(u.email) != '') OR
                 (u.personal_email IS NOT NULL AND TRIM(u.personal_email) != '')
              )
-             AND u.role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')
+             AND u.role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management', 'student')
              ORDER BY email ASC`
         );
         res.json(rows);
@@ -148,7 +148,7 @@ exports.loginUser = async (req, res) => {
              FROM user_login ul
              JOIN users u ON u.id = ul.user_id
              WHERE (LOWER(TRIM(ul.email)) = LOWER(TRIM($1)) OR LOWER(TRIM(u.emp_id)) = LOWER(TRIM($1))) 
-               AND u.role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')`,
+               AND u.role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management', 'student')`,
             [identifier]
         );
         const user = rows[0];

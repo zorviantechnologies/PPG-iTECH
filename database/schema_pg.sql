@@ -8,10 +8,12 @@ CREATE TABLE IF NOT EXISTS departments (
 
 -- ENUM Types
 DO $$ BEGIN
-    CREATE TYPE user_role AS ENUM ('admin', 'principal', 'hod', 'staff');
+    CREATE TYPE user_role AS ENUM ('admin', 'principal', 'hod', 'staff', 'student');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
+ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'student';
+
 
 DO $$ BEGIN
     CREATE TYPE gender_type AS ENUM ('Male', 'Female', 'Other');
@@ -331,4 +333,43 @@ CREATE TABLE IF NOT EXISTS user_login (
 INSERT INTO users (emp_id, password, pin, role, name) 
 VALUES ('@PPG ZORVIAN', '$2b$10$YourHashedPasswordHere', '638581', 'admin', 'Super Admin')
 ON CONFLICT (emp_id) DO NOTHING;
+
+-- Students Detail Table
+CREATE TABLE IF NOT EXISTS students (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    reg_no VARCHAR(50) NOT NULL UNIQUE,
+    roll_no VARCHAR(50),
+    academic_year INT NOT NULL DEFAULT 1,
+    semester INT NOT NULL DEFAULT 1,
+    section VARCHAR(10) DEFAULT 'A',
+    batch VARCHAR(30),
+    parent_name VARCHAR(100),
+    parent_phone VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Examination Results Table (Year-wise and Department-wise)
+CREATE TABLE IF NOT EXISTS exam_results (
+    id SERIAL PRIMARY KEY,
+    student_id INT REFERENCES users(id) ON DELETE CASCADE,
+    student_reg_no VARCHAR(50) NOT NULL,
+    student_name VARCHAR(100) NOT NULL,
+    department_id INT REFERENCES departments(id) ON DELETE SET NULL,
+    academic_year INT NOT NULL DEFAULT 1,
+    semester INT NOT NULL DEFAULT 1,
+    exam_name VARCHAR(100) NOT NULL,
+    subject_code VARCHAR(20) NOT NULL,
+    subject_name VARCHAR(100) NOT NULL,
+    internal_marks DECIMAL(5, 2) DEFAULT 0,
+    external_marks DECIMAL(5, 2) DEFAULT 0,
+    total_marks DECIMAL(5, 2) NOT NULL DEFAULT 0,
+    max_marks DECIMAL(5, 2) DEFAULT 100,
+    grade VARCHAR(5) DEFAULT 'F',
+    status VARCHAR(20) DEFAULT 'PASS',
+    published BOOLEAN DEFAULT FALSE,
+    uploaded_by VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 

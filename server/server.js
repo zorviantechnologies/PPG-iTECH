@@ -160,6 +160,58 @@ const initDB = async () => {
             ON CONFLICT (email) DO UPDATE SET user_id = EXCLUDED.user_id
         `);
         console.log('--- user_login Table Populated Successfully ---');
+
+        // Ensure student role value exists in user_role ENUM type
+        try {
+            await queryWithRetry("ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'student'");
+            console.log('--- Added student to user_role ENUM ---');
+        } catch (enumErr) {
+            // Ignore if enum value already exists or using varchar
+        }
+
+        // Ensure students table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS students (
+                id SERIAL PRIMARY KEY,
+                user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                reg_no VARCHAR(50) NOT NULL UNIQUE,
+                roll_no VARCHAR(50),
+                academic_year INT NOT NULL DEFAULT 1,
+                semester INT NOT NULL DEFAULT 1,
+                section VARCHAR(10) DEFAULT 'A',
+                batch VARCHAR(30),
+                parent_name VARCHAR(100),
+                parent_phone VARCHAR(20),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('--- Students Table Verified ---');
+
+        // Ensure exam_results table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS exam_results (
+                id SERIAL PRIMARY KEY,
+                student_id INT REFERENCES users(id) ON DELETE CASCADE,
+                student_reg_no VARCHAR(50) NOT NULL,
+                student_name VARCHAR(100) NOT NULL,
+                department_id INT REFERENCES departments(id) ON DELETE SET NULL,
+                academic_year INT NOT NULL DEFAULT 1,
+                semester INT NOT NULL DEFAULT 1,
+                exam_name VARCHAR(100) NOT NULL,
+                subject_code VARCHAR(20) NOT NULL,
+                subject_name VARCHAR(100) NOT NULL,
+                internal_marks DECIMAL(5, 2) DEFAULT 0,
+                external_marks DECIMAL(5, 2) DEFAULT 0,
+                total_marks DECIMAL(5, 2) NOT NULL DEFAULT 0,
+                max_marks DECIMAL(5, 2) DEFAULT 100,
+                grade VARCHAR(5) DEFAULT 'F',
+                status VARCHAR(20) DEFAULT 'PASS',
+                published BOOLEAN DEFAULT FALSE,
+                uploaded_by VARCHAR(50),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('--- Exam Results Table Verified ---');
     } catch (err) {
         console.error('Database Initialization Error:', err);
     }
@@ -187,6 +239,8 @@ const settingsRoutes = require('./routes/settingsRoutes');
 const activityLogRoutes = require('./routes/activityLogRoutes');
 const statusRoutes = require('./routes/statusRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
+const studentRoutes = require('./routes/studentRoutes');
+const resultRoutes = require('./routes/resultRoutes');
 const { getDbHealth } = require('./controllers/statusController');
 
 const helmet = require('helmet');
@@ -322,6 +376,8 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/activity-logs', activityLogRoutes);
 app.use('/api/status', statusRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/students', studentRoutes);
+app.use('/api/results', resultRoutes);
 
 
 

@@ -48,6 +48,8 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
     admin: [
       { label: 'Dashboard', path: '/admin', icon: <FaTachometerAlt /> },
       { label: 'Employee Management', path: '/admin/employees', icon: <FaUsers /> },
+      { label: 'Student Management', path: '/admin/students', icon: <FaUserGraduate /> },
+      { label: 'Exam Results', path: '/admin/results', icon: <FaClipboardList /> },
       { label: 'Department Management', path: '/admin/departments', icon: <FaBuilding /> },
       { label: 'Salary Management', path: '/admin/payroll', icon: <FaMoneyBillWave /> },
       { label: 'Attendance Records', path: '/admin/attendance', icon: <FaCalendarCheck /> },
@@ -59,6 +61,8 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
     accounts: [
       { label: 'Dashboard', path: '/admin', icon: <FaTachometerAlt /> },
       { label: 'Employee Management', path: '/admin/employees', icon: <FaUsers /> },
+      { label: 'Student Management', path: '/admin/students', icon: <FaUserGraduate /> },
+      { label: 'Exam Results', path: '/admin/results', icon: <FaClipboardList /> },
       { label: 'Department Management', path: '/admin/departments', icon: <FaBuilding /> },
       { label: 'Salary Management', path: '/admin/payroll', icon: <FaMoneyBillWave /> },
       { label: 'Attendance Records', path: '/admin/attendance', icon: <FaCalendarCheck /> },
@@ -90,12 +94,18 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
     ],
     staff: [
       { label: 'Dashboard', path: '/staff', icon: <FaTachometerAlt /> },
+      { label: 'Student Module', path: '/staff/students', icon: <FaUserGraduate /> },
       { label: 'Leave Management', path: '/staff/leaves', icon: <FaClipboardList /> },
       { label: 'Salary Details', path: '/staff/payroll', icon: <FaMoneyBillWave /> },
       { label: 'Timetable', path: '/staff/timetables', icon: <FaCalendarCheck /> },
       { label: 'Conversation', path: '/staff/conversation', icon: <FaComments /> },
       { label: 'Purchase Requests', path: '/staff/items', icon: <FaShoppingBag /> },
       { label: 'Academic Calendar', path: '/staff/calendar', icon: <FaCalendarDay /> },
+    ],
+    student: [
+      { label: 'Dashboard', path: '/student', icon: <FaTachometerAlt /> },
+      { label: 'My Results', path: '/student/results', icon: <FaClipboardList /> },
+      { label: 'My Attendance', path: '/student/attendance', icon: <FaCalendarCheck /> },
     ],
     management: [
       { label: 'Dashboard', path: '/management', icon: <FaTachometerAlt /> },

@@ -42,6 +42,10 @@ import AdminCalendar from './pages/admin/AdminCalendar';
 import LeaveLimitation from './pages/admin/LeaveLimitation';
 import TimetableSetup from './pages/admin/TimetableSetup';
 import BiometricHistory from './pages/admin/BiometricHistory';
+import StudentManagement from './pages/admin/StudentManagement';
+import StudentFormPage from './pages/admin/StudentFormPage';
+import ExamResultsPortal from './pages/admin/ExamResultsPortal';
+import StudentDashboard from './pages/student/StudentDashboard';
 
 // Shared Pages
 import ProfilePage from './pages/shared/ProfilePage';
@@ -100,7 +104,7 @@ const LoginRoute = () => {
 
   if (isManagement) return <Navigate to="/management" replace />;
     if (user) {
-      const roleMap = { admin: '/admin', principal: '/principal', hod: '/hod', staff: '/staff', accounts: '/admin' };
+      const roleMap = { admin: '/admin', principal: '/principal', hod: '/hod', staff: '/staff', accounts: '/admin', student: '/student' };
       return <Navigate to={roleMap[user.role] || '/login'} replace />;
     }
   return <Login />;
@@ -248,6 +252,10 @@ const AppContent = () => {
             <Route path="notifications" element={<Notifications />} />
             <Route path="feedback" element={<FeedbackInboxPage />} />
             <Route path="biometric-history" element={<BiometricHistory />} />
+            <Route path="students" element={<StudentManagement />} />
+            <Route path="students/new" element={<StudentFormPage />} />
+            <Route path="students/edit/:id" element={<StudentFormPage />} />
+            <Route path="results" element={<ExamResultsPortal />} />
           </Routes>
         </ProtectedRoute>
       } />
@@ -324,6 +332,8 @@ const AppContent = () => {
             <Route path="profile/:id" element={<ProfilePage />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="feedback" element={<FeedbackInboxPage />} />
+            <Route path="students" element={<StudentManagement />} />
+            <Route path="results" element={<ExamResultsPortal />} />
           </Routes>
         </ProtectedRoute>
       } />
@@ -349,6 +359,16 @@ const AppContent = () => {
             <Route path="calendar" element={<InstitutionalCalendar />} />
           </Routes>
         </ManagementRoute>
+      } />
+
+      <Route path="/student/*" element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <Routes>
+            <Route path="/" element={<StudentDashboard />} />
+            <Route path="results" element={<StudentDashboard />} />
+            <Route path="attendance" element={<StudentDashboard />} />
+          </Routes>
+        </ProtectedRoute>
       } />
 
       <Route path="/" element={<Navigate to="/login" />} />
