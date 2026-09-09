@@ -49,15 +49,30 @@ exports.updateDepartment = async (req, res) => {
     }
 };
 
-// @desc    Delete department
+// @desc    Delete department or purge student logins in department
 // @route   DELETE /api/departments/:id
 // @access  Private (Admin)
 exports.deleteDepartment = async (req, res) => {
+    const { id } = req.params;
+    const { scope, students_only } = req.query;
+
     try {
-        await pool.query('DELETE FROM departments WHERE id = $1', [req.params.id]);
-        res.json({ message: 'Department deleted' });
+        if (scope === 'students' || students_only === 'true') {
+            // Delete ONLY student users & student records in this department (keeps staff intact)
+            const { rowCount } = await pool.query(
+                "DELETE FROM users WHERE role = 'student' AND department_id = $1",
+                [id]
+            );
+            return res.json({ 
+                message: `Successfully deleted ${rowCount} student logins. Staff accounts remain unchanged.`,
+                deletedCount: rowCount 
+            });
+        }
+
+        await pool.query('DELETE FROM departments WHERE id = $1', [id]);
+        res.json({ message: 'Department deleted successfully' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        console.error('DELETE DEPARTMENT ERROR:', error);
+        res.status(500).json({ message: 'Server Error: ' + error.message });
     }
 };

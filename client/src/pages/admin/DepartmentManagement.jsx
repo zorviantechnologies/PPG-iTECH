@@ -7,7 +7,10 @@ import { FaTrash, FaPlus, FaLayerGroup, FaBuilding, FaProjectDiagram, FaArrowRig
 import { motion, AnimatePresence } from 'framer-motion';
 import { finalizePrintWindow } from '../../utils/printUtils';
 
+import { useAuth } from '../../context/AuthContext';
+
 const DepartmentManagement = () => {
+    const { activeModule } = useAuth();
     const [departments, setDepartments] = useState([]);
     const [allEmployees, setAllEmployees] = useState([]);
     const navigate = useNavigate();
@@ -34,13 +37,21 @@ const DepartmentManagement = () => {
     };
 
     const handleDelete = async (id) => {
+        const isStudentModule = activeModule === 'students';
+
+        const title = isStudentModule ? 'Purge Student Logins?' : 'Delete Department?';
+        const text = isStudentModule
+            ? 'This will delete ONLY the student accounts & student logins registered under this department. Staff members and staff logins will NOT be deleted.'
+            : 'This will remove the department node and affect staff assigned to it.';
+        const confirmBtnText = isStudentModule ? 'Yes, Purge Student Logins' : 'Yes, Delete Department';
+
         Swal.fire({
-            title: 'Delete Department?',
-            text: "This will remove the department and affect the staff assigned to it.",
+            title,
+            text,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
-            confirmButtonText: 'Yes, Delete',
+            confirmButtonText: confirmBtnText,
             cancelButtonColor: '#64748b',
             background: '#fff',
             customClass: {
@@ -50,23 +61,26 @@ const DepartmentManagement = () => {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await api.delete(`/departments/${id}`);
+                    const deleteUrl = isStudentModule ? `/departments/${id}?scope=students` : `/departments/${id}`;
+                    const res = await api.delete(deleteUrl);
+
                     const [deptRes, empRes] = await Promise.all([
                         api.get('/departments'),
                         api.get('/employees')
                     ]);
                     setDepartments(deptRes.data);
                     setAllEmployees(empRes.data);
+
                     Swal.fire({
-                        title: 'Department Deleted',
-                        text: 'The department has been removed.',
+                        title: isStudentModule ? 'Student Logins Purged' : 'Department Deleted',
+                        text: res.data?.message || (isStudentModule ? 'Student logins removed while staff accounts remain unchanged.' : 'Department removed.'),
                         icon: 'success',
                         confirmButtonColor: '#2563eb'
                     });
                 } catch (error) {
                     Swal.fire({
                         title: 'Error',
-                        text: 'Failed to delete department. It might have staff assigned.',
+                        text: error.response?.data?.message || 'Failed to delete department.',
                         icon: 'error',
                         confirmButtonColor: '#2563eb'
                     });
