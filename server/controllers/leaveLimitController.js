@@ -107,7 +107,7 @@ const ensureMonthlyPermissionReset = async (client, emp_id, year, monthKey) => {
     );
 };
 
-// @desc    Get leave limits for all staff (Admin only) with their taken balance
+// @desc    Get leave limits for all staff or students (Admin only) with their taken balance
 // @route   GET /api/leave-limits
 // @access  Admin
 exports.getAllLeaveLimits = async (req, res) => {
@@ -115,14 +115,22 @@ exports.getAllLeaveLimits = async (req, res) => {
         await ensureLeaveLimitSchema(pool);
 
         const year = parseInt(req.query.year) || currentYear();
+        const roleQuery = req.query.role; // 'student' or 'staff'
         const monthKey = currentMonthKey();
 
-        // Get all employees with an employee id
+        let roleCondition = '';
+        if (roleQuery === 'student') {
+            roleCondition = ` AND u.role = 'student'`;
+        } else if (roleQuery === 'staff') {
+            roleCondition = ` AND (u.role IS DISTINCT FROM 'student')`;
+        }
+
+        // Get all matching employees with an employee id
         const { rows: employees } = await pool.query(`
             SELECT emp_id, name, designation, role, department_id
-            FROM users
-            WHERE emp_id IS NOT NULL
-            ORDER BY name ASC
+            FROM users u
+            WHERE u.emp_id IS NOT NULL ${roleCondition}
+            ORDER BY u.name ASC
         `);
 
         // Ensure all employees have a limit record for this year
@@ -166,7 +174,7 @@ exports.getAllLeaveLimits = async (req, res) => {
                   AND lr.status = 'Approved'
                   AND EXTRACT(YEAR FROM lr.from_date) = $1
             ) comp_earned ON true
-            WHERE u.emp_id IS NOT NULL
+            WHERE u.emp_id IS NOT NULL ${roleCondition}
             ORDER BY u.name ASC
         `, [year]);
 

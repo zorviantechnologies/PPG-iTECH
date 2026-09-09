@@ -3,6 +3,7 @@ import Layout from '../../components/Layout';
 import api from '../../utils/api';
 import Swal from 'sweetalert2';
 import { useSocket } from '../../context/SocketContext';
+import { useAuth } from '../../context/AuthContext';
 import {
     FaEdit, FaSearch, FaCalendarAlt, FaCheckCircle,
     FaUserTie, FaBuilding, FaSave, FaTimes, FaClipboardList, FaPlus, FaTrash
@@ -22,6 +23,8 @@ const colorMap = {
 };
 
 const LeaveLimitation = () => {
+    const { activeModule } = useAuth();
+    const isStudentModule = activeModule === 'students';
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
@@ -71,7 +74,7 @@ const LeaveLimitation = () => {
 
     useEffect(() => {
         fetchLimits();
-    }, [selectedYear]);
+    }, [selectedYear, isStudentModule]);
 
     useEffect(() => {
         fetchLeaveTypes();
@@ -154,7 +157,8 @@ const LeaveLimitation = () => {
             setLoading(true);
         }
         try {
-            const { data } = await api.get(`/leave-limits?year=${selectedYear}`);
+            const roleParam = isStudentModule ? 'student' : 'staff';
+            const { data } = await api.get(`/leave-limits?year=${selectedYear}&role=${roleParam}`);
 
             // Filter data based on month range if additional date fields exist
             // For now, we show all data for the selected year
@@ -162,13 +166,14 @@ const LeaveLimitation = () => {
             if (Array.isArray(data) && data.length > 0) {
                 setStaffData(data);
             } else {
-                const { data: employees } = await api.get('/employees?all=true');
+                const { data: employees } = await api.get(`/employees?all=true&role=${roleParam}`);
                 setStaffData(mapEmployeesToDefaultLimits(employees, selectedYear));
             }
         } catch (error) {
             console.error('Failed to fetch limits', error);
             try {
-                const { data: employees } = await api.get('/employees?all=true');
+                const roleParam = isStudentModule ? 'student' : 'staff';
+                const { data: employees } = await api.get(`/employees?all=true&role=${roleParam}`);
                 setStaffData(mapEmployeesToDefaultLimits(employees, selectedYear));
             } catch (fallbackError) {
                 console.error('Fallback employee fetch failed', fallbackError);
@@ -557,11 +562,13 @@ const LeaveLimitation = () => {
     };
 
 
-    const filtered = staffData.filter(emp =>
-        emp.name?.toLowerCase().includes(search.toLowerCase()) ||
-        emp.department_name?.toLowerCase().includes(search.toLowerCase()) ||
-        emp.designation?.toLowerCase().includes(search.toLowerCase())
-    );
+    const filtered = staffData
+        .filter(emp => isStudentModule ? emp.role === 'student' : emp.role !== 'student')
+        .filter(emp =>
+            emp.name?.toLowerCase().includes(search.toLowerCase()) ||
+            emp.department_name?.toLowerCase().includes(search.toLowerCase()) ||
+            emp.designation?.toLowerCase().includes(search.toLowerCase())
+        );
 
     const visibleEmpIds = filtered
         .map((emp) => String(emp?.emp_id || '').trim())
@@ -590,8 +597,12 @@ const LeaveLimitation = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
                     <div>
-                        <h1 className="text-3xl font-black text-gray-800 tracking-tight">Leave Balances</h1>
-
+                        <h1 className="text-3xl font-black text-gray-800 tracking-tight">
+                            {isStudentModule ? 'Student Leave Balances' : 'Staff Leave Balances'}
+                        </h1>
+                        <p className="text-xs font-bold text-gray-400 mt-1">
+                            {isStudentModule ? 'Managing leave balances for enrolled students' : 'Managing yearly leave limitations and balances for staff members'}
+                        </p>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-3 w-full">
                         <div className="flex items-center gap-3">
@@ -687,7 +698,7 @@ const LeaveLimitation = () => {
                     <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-sky-300 group-focus-within:text-sky-500 transition-colors" />
                     <input
                         type="text"
-                        placeholder="Search by name, department, or designation..."
+                        placeholder={isStudentModule ? "Search students by name or department..." : "Search staff by name, department, or designation..."}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         className="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all font-bold text-gray-700 text-sm shadow-lg shadow-sky-50/30"
@@ -709,7 +720,9 @@ const LeaveLimitation = () => {
                                             aria-label="Select all visible employees"
                                         />
                                     </th>
-                                    <th className="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest min-w-[220px]">Employee</th>
+                                    <th className="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest min-w-[220px]">
+                                        {isStudentModule ? 'Student' : 'Employee'}
+                                    </th>
                                     {leaveTypes.map(t => (
                                         <th key={t.key} className="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center min-w-[120px]">
                                             {t.label}
@@ -734,7 +747,7 @@ const LeaveLimitation = () => {
                                     <tr>
                                         <td colSpan={leaveTypes.length + 3} className="p-16 text-center opacity-30">
                                             <FaUserTie size={40} className="mx-auto mb-3" />
-                                            <p className="font-black text-sm">No employee found</p>
+                                            <p className="font-black text-sm">{isStudentModule ? 'No student records found' : 'No staff records found'}</p>
                                         </td>
                                     </tr>
                                 ) : filtered.map((emp, idx) => {
@@ -903,7 +916,7 @@ const LeaveLimitation = () => {
                     {new Date(fromDate).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                     {' '}to{' '}
                     {new Date(toDate).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                    {' '}· Leave Management · {filtered.length} employee{filtered.length !== 1 ? 's' : ''}
+                    {' '}· Leave Management · {filtered.length} {isStudentModule ? 'student' : 'staff member'}{filtered.length !== 1 ? 's' : ''}
                 </p>
             </motion.div>
         </Layout >
