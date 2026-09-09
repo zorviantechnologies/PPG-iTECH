@@ -319,8 +319,16 @@ CREATE TABLE IF NOT EXISTS biometric_logs (
 CREATE UNIQUE INDEX IF NOT EXISTS ux_biometric_logs_emp_time
 ON biometric_logs (emp_id, log_time);
 
+-- User Login Table (stores user_id and email for login authorization)
+CREATE TABLE IF NOT EXISTS user_login (
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    PRIMARY KEY (user_id, email)
+);
+
 -- Initial Data: Admin
 -- Note: ON CONFLICT DO NOTHING is the PG equivalent of INSERT IGNORE
 INSERT INTO users (emp_id, password, pin, role, name) 
 VALUES ('@PPG ZORVIAN', '$2b$10$YourHashedPasswordHere', '638581', 'admin', 'Super Admin')
 ON CONFLICT (emp_id) DO NOTHING;
+

@@ -66,15 +66,18 @@ exports.googleLogin = async (req, res) => {
             return res.status(400).json({ message: 'Google authentication failed: Could not retrieve a valid email address.' });
         }
 
-        // 4. Query "users" table to check if verified email exists
-        // The "email" column is the only field used to determine whether user is authorized.
+        // 4. Query "user_login" table joined with "users" to check if verified email exists in user_login
         const { rows } = await queryWithRetry(
-            "SELECT * FROM users WHERE (LOWER(TRIM(email)) = $1 OR LOWER(TRIM(personal_email)) = $1 OR LOWER(TRIM(emp_id)) = $1) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
+            `SELECT ul.user_id, ul.email as login_email, u.* 
+             FROM user_login ul
+             JOIN users u ON u.id = ul.user_id
+             WHERE LOWER(TRIM(ul.email)) = $1 
+               AND u.role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')`,
             [trimmedEmail]
         );
         const user = rows[0];
 
-        // 5. If email exists, allow user to log in and create normal application session
+        // 5. If email exists in user_login table, allow user to log in and create application session
         if (user) {
             await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email || user.personal_email || trimmedEmail, method: 'GOOGLE_OAUTH' }, req.ip);
 
@@ -85,14 +88,13 @@ exports.googleLogin = async (req, res) => {
                 role: user.role,
                 department_id: user.department_id,
                 profile_pic: user.profile_pic,
-                email: user.email || user.personal_email,
+                email: user.email || user.personal_email || user.login_email,
                 token: generateToken(user.id),
             });
         } else {
-            // 6. If email does NOT exist, do NOT create an account and do NOT allow access.
-            // Show clear message: "This email is not registered. Please contact the administrator."
-            await logActivity(null, 'FAILED_LOGIN', { email: trimmedEmail, reason: 'Unregistered email attempt via Google OAuth' }, req.ip);
-            return res.status(401).json({ message: 'This email is not registered. Please contact the administrator.' });
+            // 6. If email does NOT exist in user_login, do NOT allow access.
+            await logActivity(null, 'FAILED_LOGIN', { email: trimmedEmail, reason: 'Email not found in user_login table' }, req.ip);
+            return res.status(401).json({ message: 'Access Denied: This email is not registered in the user login table. Please contact the administrator.' });
         }
     } catch (error) {
         console.error('Google Login Error:', error);
@@ -116,15 +118,19 @@ exports.loginUser = async (req, res) => {
     }
 
     try {
-        // Look up by registered official email, personal email, or employee ID
+        // Query user_login table joined with users
         const { rows } = await queryWithRetry(
-            "SELECT * FROM users WHERE (LOWER(TRIM(email)) = LOWER(TRIM($1)) OR LOWER(TRIM(personal_email)) = LOWER(TRIM($1)) OR LOWER(TRIM(emp_id)) = LOWER(TRIM($1))) AND role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')",
+            `SELECT ul.user_id, ul.email as login_email, u.* 
+             FROM user_login ul
+             JOIN users u ON u.id = ul.user_id
+             WHERE (LOWER(TRIM(ul.email)) = LOWER(TRIM($1)) OR LOWER(TRIM(u.emp_id)) = LOWER(TRIM($1))) 
+               AND u.role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')`,
             [identifier]
         );
         const user = rows[0];
 
         if (user) {
-            await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email || user.personal_email }, req.ip);
+            await logActivity(user.id, 'LOGIN', { emp_id: user.emp_id, email_id: user.email || user.personal_email || user.login_email }, req.ip);
 
             return res.json({
                 id: user.id,
@@ -133,12 +139,12 @@ exports.loginUser = async (req, res) => {
                 role: user.role,
                 department_id: user.department_id,
                 profile_pic: user.profile_pic,
-                email: user.email || user.personal_email,
+                email: user.email || user.personal_email || user.login_email,
                 token: generateToken(user.id),
             });
         } else {
-            await logActivity(null, 'FAILED_LOGIN', { identifier, reason: 'Unknown Employee Email' }, req.ip);
-            return res.status(401).json({ message: `Access Denied: The email '${identifier}' is not registered in the database.` });
+            await logActivity(null, 'FAILED_LOGIN', { identifier, reason: 'Identifier not in user_login table' }, req.ip);
+            return res.status(401).json({ message: `Access Denied: The email '${identifier}' is not registered in the user_login table.` });
         }
     } catch (error) {
         console.error('Login Error:', error);

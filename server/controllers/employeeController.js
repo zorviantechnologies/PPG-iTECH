@@ -205,6 +205,21 @@ exports.createEmployee = async (req, res) => {
             spouse_name || null, JSON.stringify(Array.isArray(children) ? children : [])
         ]);
 
+        // Sync with user_login table if email exists
+        if (email || personal_email) {
+            const userEmail = (email || personal_email).trim().toLowerCase();
+            try {
+                await pool.query(
+                    `INSERT INTO user_login (user_id, email)
+                     SELECT id, $1 FROM users WHERE emp_id = $2
+                     ON CONFLICT (email) DO UPDATE SET user_id = EXCLUDED.user_id`,
+                    [userEmail, trimmedEmpId]
+                );
+            } catch (ulErr) {
+                console.error('user_login sync error on create:', ulErr.message);
+            }
+        }
+
         // Broadcast real-time employee update to all connected clients
         const io = req.app.get('io');
         if (io) io.emit('employee_updated', { action: 'created', role, name });
@@ -452,9 +467,24 @@ exports.updateEmployee = async (req, res) => {
             pf_number || null, uan_number || null, permanent_address || null, communication_address || null,
             father_name || null, mother_name || null, marital_status || 'Single', monthly_salary || 0, experience || null,
             pin || null, hashedPassword || null, deductions || null, emergency_contact || null, personal_email || null, bank_account_name || null, other_experience || null,
-            spouse_name || null, JSON.stringify(Array.isArray(children) ? children : []),
-            req.params.id
+            req.params.id,
+            spouse_name || null, JSON.stringify(Array.isArray(children) ? children : [])
         ]);
+
+        // Sync with user_login table if email exists
+        if (email || personal_email) {
+            const userEmail = (email || personal_email).trim().toLowerCase();
+            try {
+                await pool.query(
+                    `INSERT INTO user_login (user_id, email)
+                     VALUES ($1, $2)
+                     ON CONFLICT (email) DO UPDATE SET user_id = EXCLUDED.user_id`,
+                    [req.params.id, userEmail]
+                );
+            } catch (ulErr) {
+                console.error('user_login sync error on update:', ulErr.message);
+            }
+        }
 
         const io = req.app.get('io');
         if (io) io.emit('employee_updated', { action: 'updated' });

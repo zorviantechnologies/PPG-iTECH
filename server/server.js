@@ -133,6 +133,33 @@ const initDB = async () => {
             console.log('Certificates migration info:', migErr.message);
         }
         console.log('--- Certificates Table Verified ---');
+
+        // Ensure user_login table exists and populate with existing users having user_id and email
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS user_login (
+                user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                PRIMARY KEY (user_id, email)
+            )
+        `);
+        console.log('--- user_login Table Verified ---');
+
+        // Sync user_login with users table where user id and email exist
+        await queryWithRetry(`
+            INSERT INTO user_login (user_id, email)
+            SELECT id, LOWER(TRIM(email))
+            FROM users
+            WHERE id IS NOT NULL AND email IS NOT NULL AND TRIM(email) != ''
+            ON CONFLICT (email) DO UPDATE SET user_id = EXCLUDED.user_id
+        `);
+        await queryWithRetry(`
+            INSERT INTO user_login (user_id, email)
+            SELECT id, LOWER(TRIM(personal_email))
+            FROM users
+            WHERE id IS NOT NULL AND personal_email IS NOT NULL AND TRIM(personal_email) != ''
+            ON CONFLICT (email) DO UPDATE SET user_id = EXCLUDED.user_id
+        `);
+        console.log('--- user_login Table Populated Successfully ---');
     } catch (err) {
         console.error('Database Initialization Error:', err);
     }
