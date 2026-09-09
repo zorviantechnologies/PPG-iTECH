@@ -39,7 +39,8 @@ const Login = () => {
             'principal': '/principal',
             'hod': '/hod',
             'staff': '/staff',
-            'accounts': '/accounts',
+            'student': '/student',
+            'accounts': '/admin',
             'management': '/management'
         };
         const route = routes[role] || '/';
