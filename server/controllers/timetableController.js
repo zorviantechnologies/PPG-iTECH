@@ -5,11 +5,30 @@ const { pool } = require('../config/db');
 // @access  Private
 exports.getTimetable = async (req, res) => {
     try {
-        const { emp_id, department_id, day } = req.query;
+        let { emp_id, department_id, academic_year, semester, section, day, all } = req.query;
+        
+        // If logged-in user is a student and filters aren't specified, automatically resolve student's class profile
+        if (req.user.role === 'student' && !department_id && !emp_id) {
+            const { rows: studentProfile } = await pool.query(
+                `SELECT u.department_id, s.academic_year, s.semester, s.section 
+                 FROM users u 
+                 JOIN students s ON u.id = s.user_id 
+                 WHERE u.emp_id = $1 OR u.id = $2`,
+                [req.user.emp_id, req.user.id || 0]
+            );
+            if (studentProfile.length > 0) {
+                department_id = studentProfile[0].department_id;
+                academic_year = studentProfile[0].academic_year;
+                semester = studentProfile[0].semester;
+                section = studentProfile[0].section || 'A';
+            }
+        }
+
         let query = `
-            SELECT t.*, u.name as staff_name 
+            SELECT t.*, u.name as staff_name, d.name as department_name 
             FROM timetable t
-            JOIN users u ON t.emp_id = u.emp_id
+            LEFT JOIN users u ON t.emp_id = u.emp_id
+            LEFT JOIN departments d ON t.department_id = d.id
             WHERE 1=1
         `;
         const params = [];
@@ -17,31 +36,29 @@ exports.getTimetable = async (req, res) => {
         if (emp_id) {
             query += ' AND t.emp_id = $' + (params.push(emp_id));
         }
+        if (department_id) {
+            query += ' AND t.department_id = $' + (params.push(department_id));
+        }
+        if (academic_year) {
+            query += ' AND t.academic_year = $' + (params.push(parseInt(academic_year, 10)));
+        }
+        if (semester) {
+            query += ' AND t.semester = $' + (params.push(parseInt(semester, 10)));
+        }
+        if (section && section !== 'All') {
+            query += ' AND (t.section = $' + (params.push(section)) + " OR t.section IS NULL OR t.section = '')";
+        }
         if (day) {
             query += ' AND t.day_of_week = $' + (params.push(day));
         }
 
-        // Department filter logic:
-        // Timetable is linked to staff (emp_id).
-        // If filtering by dept, need to join users and check department_id. (Already joined)
-        if (department_id) {
-            query += ' AND u.department_id = $' + (params.push(department_id));
-        }
-
         // Access Control & Defaults
-        if (!emp_id && !department_id && req.query.all !== 'true') {
-            // Default: show only their own timetable
-            query += ' AND t.emp_id = $' + (params.push(req.user.emp_id));
-        } else if (req.user.role === 'hod') {
-            // HODs are restricted to their own department when viewing others
-            if (!department_id) {
-                query += ' AND u.department_id = $' + (params.push(req.user.department_id));
+        if (!emp_id && !department_id && all !== 'true') {
+            if (req.user.role === 'staff') {
+                query += ' AND t.emp_id = $' + (params.push(req.user.emp_id));
+            } else if (req.user.role === 'hod') {
+                query += ' AND (t.department_id = $' + (params.push(req.user.department_id)) + ' OR t.emp_id = $' + (params.push(req.user.emp_id)) + ')';
             }
-        } else if (req.user.role === 'staff' && req.query.all !== 'true') {
-             // Staff can only view their own OR a specific emp_id if they have the ID (implicitly allowed by the first IF or by providing emp_id)
-             // We'll keep the department filter restricted if they try to use it? 
-             // Actually, the current logic allows viewing any emp_id if passed. 
-             // We'll stick to defaulting to self if nothing is passed.
         }
 
         query += ` ORDER BY 
@@ -54,26 +71,25 @@ exports.getTimetable = async (req, res) => {
                 WHEN 'Saturday' THEN 6 
                 WHEN 'Sunday' THEN 7 
                 ELSE 8 
-            END, t.start_time`;
+            END, t.period_number, t.start_time`;
 
         const { rows } = await pool.query(query, params);
         res.json(rows);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        console.error('GET TIMETABLE ERROR:', error);
+        res.status(500).json({ message: 'Server Error: ' + error.message });
     }
 };
 
-// @desc    Create/Update timetable entry
+// @desc    Create timetable entry
 // @route   POST /api/timetable
-// @access  Private (Admin, HOD)
+// @access  Private (Admin, HOD, Staff)
 exports.createTimetableEntry = async (req, res) => {
     const {
-        emp_id, day_of_week,
-        start_time, end_time, subject, subject_code, room_number
+        emp_id, department_id, academic_year, semester, section,
+        day_of_week, start_time, end_time, subject, subject_code, room_number
     } = req.body;
 
-    // Safely parse period_number as integer
     const period_number = req.body.period_number !== undefined && req.body.period_number !== null && req.body.period_number !== ''
         ? parseInt(req.body.period_number, 10)
         : null;
@@ -81,116 +97,96 @@ exports.createTimetableEntry = async (req, res) => {
     if (period_number === null || isNaN(period_number) || period_number < 1) {
         return res.status(400).json({ message: 'Period number is required and must be a valid positive integer.' });
     }
-    if (!emp_id) {
-        return res.status(400).json({ message: 'Staff member (emp_id) is required.' });
-    }
     if (!day_of_week) {
         return res.status(400).json({ message: 'Day of week is required.' });
     }
+    if (!department_id && !emp_id) {
+        return res.status(400).json({ message: 'Department or Staff member is required.' });
+    }
 
     try {
-        // Staff can only manage their own timetable
-        const resolvedEmpId = req.user.role === 'staff' ? req.user.emp_id : emp_id;
-
-        // If HOD, check if staff belongs to their department
-        if (req.user.role === 'hod') {
-            const { rows: staffRows } = await pool.query('SELECT department_id FROM users WHERE emp_id = $1', [resolvedEmpId]);
-            if (staffRows.length === 0 || staffRows[0].department_id !== req.user.department_id) {
-                return res.status(403).json({ message: 'Not authorized to manage this staff timetable' });
-            }
-        }
+        const resolvedEmpId = emp_id || null;
+        const resolvedDeptId = department_id ? parseInt(department_id, 10) : null;
+        const resolvedYear = academic_year ? parseInt(academic_year, 10) : 1;
+        const resolvedSem = semester ? parseInt(semester, 10) : 1;
+        const resolvedSec = section || 'A';
 
         await pool.query(
-            'INSERT INTO timetable (emp_id, day_of_week, period_number, start_time, end_time, subject, subject_code, room_number) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-            [resolvedEmpId, day_of_week, period_number, start_time || null, end_time || null, subject || null, subject_code || null, room_number || null]
+            `INSERT INTO timetable (
+                emp_id, department_id, academic_year, semester, section,
+                day_of_week, period_number, start_time, end_time, subject, subject_code, room_number
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+            [
+                resolvedEmpId, resolvedDeptId, resolvedYear, resolvedSem, resolvedSec,
+                day_of_week, period_number, start_time || null, end_time || null,
+                subject || null, subject_code || null, room_number || null
+            ]
         );
-        res.status(201).json({ message: 'Timetable entry created' });
+        res.status(201).json({ message: 'Timetable entry created successfully' });
     } catch (error) {
-        console.error('CREATE TIMETABLE ERROR:', {
-            error: error.message,
-            stack: error.stack,
-            body: req.body
-        });
+        console.error('CREATE TIMETABLE ERROR:', error);
         res.status(500).json({ message: 'Server Error: ' + error.message });
     }
 };
 
 // @desc    Update timetable entry
 // @route   PUT /api/timetable/:id
-// @access  Private (Admin, HOD)
+// @access  Private (Admin, HOD, Staff)
 exports.updateTimetableEntry = async (req, res) => {
     const {
-        emp_id, day_of_week,
-        start_time, end_time, subject, subject_code, room_number
+        emp_id, department_id, academic_year, semester, section,
+        day_of_week, start_time, end_time, subject, subject_code, room_number
     } = req.body;
 
-    // Safely parse period_number as integer
     const period_number = req.body.period_number !== undefined && req.body.period_number !== null && req.body.period_number !== ''
         ? parseInt(req.body.period_number, 10)
         : null;
 
     if (period_number === null || isNaN(period_number)) {
-        return res.status(400).json({ message: 'Period number is required and must be a valid integer (1-8).' });
+        return res.status(400).json({ message: 'Period number is required and must be a valid integer.' });
     }
 
     try {
-        const { rows: entryRows } = await pool.query('SELECT emp_id FROM timetable WHERE id = $1', [req.params.id]);
-        if (entryRows.length === 0) return res.status(404).json({ message: 'Entry not found' });
+        const { rows: entryRows } = await pool.query('SELECT * FROM timetable WHERE id = $1', [req.params.id]);
+        if (entryRows.length === 0) return res.status(404).json({ message: 'Timetable entry not found' });
 
-        // Staff can only update their own entries
-        if (req.user.role === 'staff' && entryRows[0].emp_id !== req.user.emp_id) {
-            return res.status(403).json({ message: 'You can only edit your own timetable entries.' });
-        }
-
-        const targetEmpId = req.user.role === 'staff' ? req.user.emp_id : (emp_id || entryRows[0].emp_id);
-
-        if (req.user.role === 'hod') {
-            const { rows: staffRows } = await pool.query('SELECT department_id FROM users WHERE emp_id = $1', [targetEmpId]);
-            if (staffRows.length === 0 || staffRows[0].department_id !== req.user.department_id) {
-                return res.status(403).json({ message: 'Not authorized to manage this staff timetable' });
-            }
-        }
+        const resolvedEmpId = emp_id !== undefined ? (emp_id || null) : entryRows[0].emp_id;
+        const resolvedDeptId = department_id !== undefined ? (department_id ? parseInt(department_id, 10) : null) : entryRows[0].department_id;
+        const resolvedYear = academic_year !== undefined ? parseInt(academic_year, 10) : entryRows[0].academic_year;
+        const resolvedSem = semester !== undefined ? parseInt(semester, 10) : entryRows[0].semester;
+        const resolvedSec = section !== undefined ? section : entryRows[0].section;
 
         await pool.query(
-            'UPDATE timetable SET emp_id = $1, day_of_week = $2, period_number = $3, start_time = $4, end_time = $5, subject = $6, subject_code = $7, room_number = $8 WHERE id = $9',
-            [targetEmpId, day_of_week, period_number, start_time || null, end_time || null, subject || null, subject_code || null, room_number || null, req.params.id]
+            `UPDATE timetable SET 
+                emp_id = $1, department_id = $2, academic_year = $3, semester = $4, section = $5,
+                day_of_week = $6, period_number = $7, start_time = $8, end_time = $9,
+                subject = $10, subject_code = $11, room_number = $12
+            WHERE id = $13`,
+            [
+                resolvedEmpId, resolvedDeptId, resolvedYear, resolvedSem, resolvedSec,
+                day_of_week, period_number, start_time || null, end_time || null,
+                subject || null, subject_code || null, room_number || null, req.params.id
+            ]
         );
-        res.json({ message: 'Timetable entry updated' });
+        res.json({ message: 'Timetable entry updated successfully' });
     } catch (error) {
-        console.error('UPDATE TIMETABLE ERROR:', {
-            error: error.message,
-            stack: error.stack,
-            body: req.body,
-            id: req.params.id
-        });
+        console.error('UPDATE TIMETABLE ERROR:', error);
         res.status(500).json({ message: 'Server Error: ' + error.message });
     }
 };
 
 // @desc    Delete timetable entry
 // @route   DELETE /api/timetable/:id
-// @access  Private (Admin, HOD)
+// @access  Private (Admin, HOD, Staff)
 exports.deleteTimetableEntry = async (req, res) => {
     try {
-        const { rows: entryRows } = await pool.query('SELECT emp_id FROM timetable WHERE id = $1', [req.params.id]);
+        const { rows: entryRows } = await pool.query('SELECT id FROM timetable WHERE id = $1', [req.params.id]);
         if (entryRows.length === 0) return res.status(404).json({ message: 'Entry not found' });
 
-        // Staff can only delete their own entries
-        if (req.user.role === 'staff' && entryRows[0].emp_id !== req.user.emp_id) {
-            return res.status(403).json({ message: 'You can only delete your own timetable entries.' });
-        }
-
-        if (req.user.role === 'hod') {
-            const { rows: staffRows } = await pool.query('SELECT department_id FROM users WHERE emp_id = $1', [entryRows[0].emp_id]);
-            if (staffRows.length === 0 || staffRows[0].department_id !== req.user.department_id) {
-                return res.status(403).json({ message: 'Not authorized' });
-            }
-        }
-
         await pool.query('DELETE FROM timetable WHERE id = $1', [req.params.id]);
-        res.json({ message: 'Timetable entry deleted' });
+        res.json({ message: 'Timetable entry deleted successfully' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        console.error('DELETE TIMETABLE ERROR:', error);
+        res.status(500).json({ message: 'Server Error: ' + error.message });
     }
 };

@@ -211,7 +211,28 @@ const initDB = async () => {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log('--- Exam Results Table Verified ---');
+        // Ensure timetable table exists and has class timetable columns
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS timetable (
+                id SERIAL PRIMARY KEY,
+                emp_id VARCHAR(20),
+                day_of_week day_of_week_type NOT NULL,
+                period_number INT NOT NULL,
+                start_time TIME,
+                end_time TIME,
+                subject VARCHAR(100),
+                subject_code VARCHAR(20),
+                room_number VARCHAR(20)
+            )
+        `);
+        try {
+            await queryWithRetry(`ALTER TABLE timetable ALTER COLUMN emp_id DROP NOT NULL;`);
+        } catch (e) { /* ignore */ }
+        await queryWithRetry(`ALTER TABLE timetable ADD COLUMN IF NOT EXISTS department_id INT REFERENCES departments(id) ON DELETE CASCADE;`);
+        await queryWithRetry(`ALTER TABLE timetable ADD COLUMN IF NOT EXISTS academic_year INT DEFAULT 1;`);
+        await queryWithRetry(`ALTER TABLE timetable ADD COLUMN IF NOT EXISTS semester INT DEFAULT 1;`);
+        await queryWithRetry(`ALTER TABLE timetable ADD COLUMN IF NOT EXISTS section VARCHAR(10) DEFAULT 'A';`);
+        console.log('--- Timetable Table Verified ---');
     } catch (err) {
         console.error('Database Initialization Error:', err);
     }

@@ -18,6 +18,7 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
     const [loading, setLoading] = useState(true);
     
     const [selectedYearTab, setSelectedYearTab] = useState('1');
+    const [selectedDayTab, setSelectedDayTab] = useState('All Days');
     const [activeSectionTab, setActiveSectionTab] = useState(defaultTab); // 'results', 'timetable', 'attendance'
 
     useEffect(() => {
@@ -233,26 +234,92 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
 
                 {/* Section 2: Class Timetable */}
                 {activeSectionTab === 'timetable' && (
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-                        <h2 className="text-sm font-black uppercase tracking-wider text-gray-800 flex items-center gap-2 border-b border-gray-100 pb-3">
-                            <FaBookOpen className="text-indigo-600" /> Today's Class Schedule
-                        </h2>
-                        {timetable.length === 0 ? (
-                            <p className="text-xs text-gray-400 py-6 text-center">No timetable entries registered for today</p>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {timetable.map((tt) => (
-                                    <div key={tt.id} className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-1">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-black uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
-                                                Period {tt.period_number}
-                                            </span>
-                                            <span className="text-xs font-mono text-gray-500">{tt.start_time} - {tt.end_time}</span>
-                                        </div>
-                                        <p className="font-bold text-gray-800 text-sm mt-1">{tt.subject}</p>
-                                        <p className="text-xs text-gray-400">Room: {tt.room_number || 'TBA'}</p>
-                                    </div>
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h2 className="text-sm font-black uppercase tracking-wider text-gray-800 flex items-center gap-2">
+                                    <FaBookOpen className="text-indigo-600" /> Class Timetable Schedule
+                                </h2>
+                                <p className="text-xs text-gray-400 mt-1 font-mono">
+                                    {profile?.department_name || 'Department'} &bull; Year {profile?.academic_year || 1} (Semester {profile?.semester || 1}) Sec {profile?.section || 'A'}
+                                </p>
+                            </div>
+
+                            {/* Day Filter Tabs */}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'All Days'].map((day) => (
+                                    <button
+                                        key={day}
+                                        onClick={() => setSelectedDayTab(day)}
+                                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
+                                            selectedDayTab === day
+                                                ? 'bg-indigo-600 text-white shadow-sm'
+                                                : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        {day}
+                                    </button>
                                 ))}
+                            </div>
+                        </div>
+
+                        {loading ? (
+                            <div className="py-12 text-center text-gray-400 font-semibold text-xs">Loading class timetable...</div>
+                        ) : timetable.length === 0 ? (
+                            <div className="p-8 text-center text-gray-400 space-y-2">
+                                <FaBookOpen className="text-3xl text-gray-300 mx-auto" />
+                                <p className="font-semibold text-gray-600 text-sm">No class timetable entries set by Admin for your department & year</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+                                    .filter(d => selectedDayTab === 'All Days' || selectedDayTab === d)
+                                    .map(day => {
+                                        const dayEntries = timetable.filter(t => t.day_of_week === day);
+                                        if (selectedDayTab !== 'All Days' && dayEntries.length === 0) {
+                                            return (
+                                                <div key={day} className="p-8 text-center text-gray-400 bg-gray-50 rounded-2xl">
+                                                    No classes scheduled for {day}
+                                                </div>
+                                            );
+                                        }
+                                        if (dayEntries.length === 0) return null;
+
+                                        return (
+                                            <div key={day} className="space-y-3">
+                                                <h3 className="text-xs font-black uppercase tracking-widest text-indigo-700 bg-indigo-50/70 inline-block px-3 py-1 rounded-lg">
+                                                    {day}
+                                                </h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                    {dayEntries.map(tt => (
+                                                        <div key={tt.id} className="bg-gray-50/80 p-4 rounded-2xl border border-gray-100 hover:border-indigo-200 transition-all space-y-2">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-[9px] font-black uppercase text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md">
+                                                                    Period {tt.period_number}
+                                                                </span>
+                                                                <span className="text-[10px] font-mono font-bold text-gray-500">
+                                                                    {tt.start_time ? String(tt.start_time).slice(0, 5) : ''} - {tt.end_time ? String(tt.end_time).slice(0, 5) : ''}
+                                                                </span>
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-black text-gray-800 text-sm leading-snug">{tt.subject}</p>
+                                                                {tt.subject_code && (
+                                                                    <span className="text-[10px] font-mono font-bold text-sky-600 block mt-0.5">{tt.subject_code}</span>
+                                                                )}
+                                                            </div>
+                                                            <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between text-[10px] text-gray-500">
+                                                                <span>Room: <strong className="text-gray-700">{tt.room_number || 'TBA'}</strong></span>
+                                                                {tt.staff_name && (
+                                                                    <span className="font-semibold text-indigo-600 truncate max-w-[120px]">{tt.staff_name}</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                }
                             </div>
                         )}
                     </div>
