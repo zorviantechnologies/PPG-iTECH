@@ -259,36 +259,20 @@ const ExamResultsPortal = () => {
         <Layout title="Examination Results Portal">
             <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
 
-                {/* Banner Header */}
-                <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
-                    <div className="absolute -right-10 -bottom-10 opacity-10 text-9xl">
-                        <FaFileInvoice />
-                    </div>
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div>
-                            <span className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
-                                <FaGraduationCap /> Controller of Examinations Portal
-                            </span>
-                            <h1 className="text-2xl md:text-3xl font-black tracking-tight">Student Examination Results Portal</h1>
-                            <p className="text-purple-100 text-sm mt-1 max-w-xl">
-                                Upload, manage, and publish academic exam results organized year-wise and department-wise.
-                            </p>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3">
-                            <button
-                                onClick={handleDownloadTemplate}
-                                className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-2xl backdrop-blur-md border border-white/20 transition-all text-xs flex items-center gap-2"
-                            >
-                                <FaDownload /> CSV Template
-                            </button>
-                            <button
-                                onClick={() => setShowUploadModal(true)}
-                                className="bg-white text-indigo-800 hover:bg-purple-50 font-bold px-5 py-2.5 rounded-2xl shadow-lg transition-all text-xs flex items-center gap-2"
-                            >
-                                <FaUpload /> Bulk Upload CSV
-                            </button>
-                        </div>
-                    </div>
+                {/* Action Buttons: CSV Template & Bulk Upload CSV */}
+                <div className="flex items-center justify-end gap-3">
+                    <button
+                        onClick={handleDownloadTemplate}
+                        className="bg-white hover:bg-gray-50 text-gray-700 font-bold px-5 py-3 rounded-2xl border border-gray-200 shadow-sm hover:shadow transition-all text-xs flex items-center gap-2 active:scale-95"
+                    >
+                        <FaDownload className="text-sky-600" /> CSV Template
+                    </button>
+                    <button
+                        onClick={() => setShowUploadModal(true)}
+                        className="bg-sky-600 hover:bg-sky-700 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-sky-100 transition-all text-xs flex items-center gap-2 active:scale-95"
+                    >
+                        <FaUpload /> Bulk Upload CSV
+                    </button>
                 </div>
 
                 {/* Department & Year / Semester Tabs Selector */}

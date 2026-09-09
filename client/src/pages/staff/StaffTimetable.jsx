@@ -236,11 +236,9 @@ const StaffTimetable = () => {
                 if (slot.is_break) {
                     if (dIdx !== 0) return ''; // Skip break cells for non-first rows to allow rowSpan
                     return `<td class="break-col" rowspan="${days.length}" style="vertical-align:middle; text-align:center;">
-                        <div style="display:inline-block; writing-mode:vertical-rl; transform:rotate(180deg); white-space:nowrap;">
-                            <span style="font-weight:900;color:#c2410c;margin-bottom:4px;font-size:7pt;text-transform:uppercase;letter-spacing:2px;">BREAK</span>
-                            <span style="font-weight:700;color:#c2410c;opacity:0.6;font-size:5.5pt;text-align:center;">
-                                ${slot.start_time ? to12h(slot.start_time) + ' – ' + to12h(slot.end_time) : ''}
-                            </span>
+                        <div style="font-weight:900; color:#c2410c; font-size:7.5pt; text-transform:uppercase; letter-spacing:1px;">BREAK</div>
+                        <div style="font-weight:700; color:#ea580c; font-size:6.5pt; margin-top:2px;">
+                            ${slot.start_time ? to12h(slot.start_time) + ' – ' + to12h(slot.end_time) : ''}
                         </div>
                     </td>`;
                 }
@@ -437,15 +435,14 @@ const TimetableGrid = ({ days, displaySlots, timetable, loading, showStaffName, 
                                     if (isBreak) {
                                         if (dayIdx !== 0) return null; // Only render the break cell once per column
                                         return (
-                                            <td key={idx} rowSpan={days.length} className="border-b border-r border-sky-100 bg-orange-50/50 align-middle text-center p-2 relative group">
-                                                <div className="relative h-full flex items-center justify-center pointer-events-none">
-                                                    <div className="whitespace-nowrap font-black uppercase tracking-[0.2em]" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
-                                                        <span className="text-[10px] text-orange-600">Break</span>
-                                                        <span className="text-[8px] text-orange-300 mx-2 px-1 text-center font-bold">——</span>
-                                                        <span className="text-[8px] font-bold text-orange-400">
-                                                            {slot.start_time ? `${to12h(slot.start_time)} - ${to12h(slot.end_time)}` : ''}
+                                            <td key={idx} rowSpan={days.length} className="border-b border-r border-sky-100 bg-orange-50/60 align-middle text-center p-2">
+                                                <div className="flex flex-col items-center justify-center gap-1 font-black uppercase text-orange-600">
+                                                    <span className="text-[10px] tracking-wider font-extrabold">BREAK</span>
+                                                    {slot.start_time && (
+                                                        <span className="text-[8px] text-orange-400 font-bold">
+                                                            {to12h(slot.start_time)} – {to12h(slot.end_time)}
                                                         </span>
-                                                    </div>
+                                                    )}
                                                 </div>
                                             </td>
                                         );
