@@ -105,6 +105,26 @@ exports.googleLogin = async (req, res) => {
     }
 };
 
+// @desc    Get list of registered employee emails for Google login selection
+// @route   GET /api/auth/registered-emails
+// @access  Public
+exports.getRegisteredEmails = async (req, res) => {
+    try {
+        const { rows } = await queryWithRetry(
+            `SELECT DISTINCT LOWER(TRIM(ul.email)) as email, u.name, u.role
+             FROM user_login ul
+             JOIN users u ON u.id = ul.user_id
+             WHERE ul.email IS NOT NULL AND TRIM(ul.email) != ''
+               AND u.role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')
+             ORDER BY email ASC`
+        );
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching registered emails:', error);
+        res.status(500).json({ message: 'Failed to fetch registered emails' });
+    }
+};
+
 // @desc    Auth user & get token via Employee Email Address (or ID)
 // @route   POST /api/auth/login
 // @access  Public

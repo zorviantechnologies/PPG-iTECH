@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { loginUser, googleLogin, getUserProfile, updateProfilePic, managementLogin, updateProfile, updateProfileName, checkEmployeeId, updateManagementProfile } = require('../controllers/authController');
+const { loginUser, googleLogin, getUserProfile, updateProfilePic, managementLogin, updateProfile, updateProfileName, checkEmployeeId, updateManagementProfile, getRegisteredEmails } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.post('/login', loginUser);
 router.post('/google', googleLogin);
+router.get('/registered-emails', getRegisteredEmails);
 router.post('/check-id', checkEmployeeId);
 router.post('/management-login', managementLogin);
 router.get('/profile', protect, getUserProfile);
