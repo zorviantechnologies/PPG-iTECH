@@ -8,6 +8,8 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [activeModule, setActiveModuleState] = useState(() => localStorage.getItem('activeModule') || null);
+    const [showModuleModal, setShowModuleModal] = useState(false);
 
     useEffect(() => {
         const checkUser = async () => {
@@ -16,18 +18,22 @@ export const AuthProvider = ({ children }) => {
             if (token) {
                 try {
                     if (isManagement) {
-                        // For management, set a minimal user object from localStorage
                         setUser({ role: 'management', name: 'Management', token });
                     } else {
                         const { data } = await api.get('/auth/profile');
                         setUser(data);
-                        // Store role for fast redirect on next open
                         localStorage.setItem('lastRole', data.role);
+                        // If user is student, default activeModule to 'students'
+                        if (data.role === 'student') {
+                            localStorage.setItem('activeModule', 'students');
+                            setActiveModuleState('students');
+                        }
                     }
                 } catch (error) {
                     localStorage.removeItem('token');
                     localStorage.removeItem('lastRole');
                     localStorage.removeItem('managementAccess');
+                    localStorage.removeItem('activeModule');
                     setUser(null);
                 }
             }
@@ -35,6 +41,16 @@ export const AuthProvider = ({ children }) => {
         };
         checkUser();
     }, []);
+
+    const selectModule = (moduleName) => {
+        localStorage.setItem('activeModule', moduleName);
+        setActiveModuleState(moduleName);
+        setShowModuleModal(false);
+    };
+
+    const openModuleChooser = () => {
+        setShowModuleModal(true);
+    };
 
     const login = async (emailOrId, pin, role = '') => {
         let response;
@@ -49,6 +65,18 @@ export const AuthProvider = ({ children }) => {
         const { data } = response;
         localStorage.setItem('token', data.token);
         localStorage.setItem('lastRole', data.role);
+        
+        // Default module handling or prompt
+        if (data.role === 'student') {
+            localStorage.setItem('activeModule', 'students');
+            setActiveModuleState('students');
+        } else {
+            // Prompt module selection on login for admin/staff
+            localStorage.removeItem('activeModule');
+            setActiveModuleState(null);
+            setShowModuleModal(true);
+        }
+
         setUser(data);
         return data;
     };
@@ -73,6 +101,16 @@ export const AuthProvider = ({ children }) => {
         } else {
             localStorage.removeItem('managementAccess');
         }
+
+        if (data.role === 'student') {
+            localStorage.setItem('activeModule', 'students');
+            setActiveModuleState('students');
+        } else {
+            localStorage.removeItem('activeModule');
+            setActiveModuleState(null);
+            setShowModuleModal(true);
+        }
+
         setUser(data);
         return data;
     };
@@ -81,13 +119,20 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('token');
         localStorage.removeItem('lastRole');
         localStorage.removeItem('managementAccess');
+        localStorage.removeItem('activeModule');
         sessionStorage.removeItem('managementAccess');
-        sessionStorage.removeItem('splashShown'); // allow splash to show on next login
+        sessionStorage.removeItem('splashShown');
+        setActiveModuleState(null);
+        setShowModuleModal(false);
         setUser(null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, googleLogin, logout, loading }}>
+        <AuthContext.Provider value={{ 
+            user, login, googleLogin, logout, loading, 
+            activeModule, selectModule, openModuleChooser, 
+            showModuleModal, setShowModuleModal 
+        }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaBell, FaBirthdayCake, FaTimes, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaUser, FaBuilding, FaFileAlt, FaCalendarCheck } from 'react-icons/fa';
+import { FaBell, FaBirthdayCake, FaTimes, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaUser, FaBuilding, FaFileAlt, FaCalendarCheck, FaSync, FaUsers, FaUserGraduate, FaFileInvoice } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../utils/api';
@@ -21,7 +21,7 @@ const Header = () => {
     const notifRef = useRef(null);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const profileRef = useRef(null);
-    const { logout } = useAuth();
+    const { logout, activeModule, openModuleChooser } = useAuth();
 
 
 
@@ -635,6 +635,21 @@ const Header = () => {
                                 </div>
                             )}
                         </div>
+                    )}
+
+                    {/* Switch Module Button in Header */}
+                    {!isManagement && effectiveRole !== 'student' && (
+                        <button
+                            type="button"
+                            onClick={openModuleChooser}
+                            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold transition-all border border-sky-200 shadow-sm shrink-0"
+                            title="Switch Portal Module"
+                        >
+                            <FaSync className="text-sky-600 animate-spin-slow" />
+                            <span className="capitalize">
+                                {activeModule === 'students' ? '🎓 Students' : activeModule === 'results' ? '📊 Results' : '👔 Staff'}
+                            </span>
+                        </button>
                     )}
 
                     <div

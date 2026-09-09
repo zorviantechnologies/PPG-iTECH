@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import AiAssistant from './AiAssistant';
+import ModuleSelectionModal from './ModuleSelectionModal';
 import { useAuth } from '../context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -12,7 +13,7 @@ const Layout = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth < 1024);
     const [isAiOpen, setIsAiOpen] = useState(() => localStorage.getItem('isAiOpen') === 'true');
     const [isAiMinimized, setIsAiMinimized] = useState(false);
-    const { user, loading } = useAuth();
+    const { user, loading, activeModule, showModuleModal, setShowModuleModal } = useAuth();
     const location = useLocation();
 
     const isManagement = location.pathname.startsWith('/management');
@@ -171,6 +172,12 @@ const Layout = ({ children }) => {
 
     return (
         <div className="flex flex-col h-screen bg-transparent overflow-hidden font-sans">
+            {/* Module Selection Modal Prompt */}
+            <ModuleSelectionModal
+                isOpen={showModuleModal || (!activeModule && !!user && !isManagement && user.role !== 'student')}
+                onClose={() => setShowModuleModal(false)}
+            />
+
             {/* Full-width Top Header */}
             <Header />
 

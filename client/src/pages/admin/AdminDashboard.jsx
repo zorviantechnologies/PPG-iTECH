@@ -5,10 +5,8 @@ import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { FaBirthdayCake, FaUserCheck, FaUserTimes, FaCalendarDay, FaFileAlt, FaTimes, FaCalendarAlt, FaStar, FaBriefcase, FaEye, FaClock, FaHistory, FaFilter, FaSync, FaUsers, FaUserGraduate, FaFileInvoice, FaGraduationCap } from 'react-icons/fa';
+import { FaBirthdayCake, FaUserCheck, FaUserTimes, FaCalendarDay, FaFileAlt, FaTimes, FaCalendarAlt, FaStar, FaBriefcase, FaEye, FaClock, FaHistory, FaFilter, FaSync, FaUsers } from 'react-icons/fa';
 import AttendanceHistory from '../../components/AttendanceHistory';
-import StudentManagement from './StudentManagement';
-import ExamResultsPortal from './ExamResultsPortal';
 import { formatTo12Hr } from '../../utils/timeFormatter';
 import { getCurrentDayStatus } from '../../utils/currentDayStatus';
 
@@ -36,9 +34,19 @@ const InfoCard = ({ icon, label, value, color }) => {
 
 // ── Main Component ──────────────────────────────────────────────────────────
 const AdminDashboard = () => {
-    const { user } = useAuth();
+    const { user, activeModule } = useAuth();
     const socket = useSocket();
     const navigate = useNavigate();
+
+    // Auto-redirect to selected module route if not in staff module
+    useEffect(() => {
+        if (activeModule === 'students') {
+            navigate('/admin/students', { replace: true });
+        } else if (activeModule === 'results') {
+            navigate('/admin/results', { replace: true });
+        }
+    }, [activeModule, navigate]);
+
     const [stats, setStats] = useState({
         present: 0, absent: 0, od: 0, cl: 0, ml: 0, comp_leave: 0, lop: 0, late_entry: 0,
         principal: { present: 0, absent: 0, od: 0, cl: 0, ml: 0, comp_leave: 0, lop: 0, late_entry: 0 },
@@ -57,7 +65,6 @@ const AdminDashboard = () => {
     const [isNonWorkingDay, setIsNonWorkingDay] = useState(false);
     const [rebuildingToday, setRebuildingToday] = useState(false);
     const [rebuildResult, setRebuildResult] = useState(null);
-    const [activeCardTab, setActiveCardTab] = useState('staff'); // 'staff', 'students', 'results'
 
     const handleRebuildToday = async () => {
         setRebuildingToday(true);
@@ -295,115 +302,6 @@ const AdminDashboard = () => {
                 </div>
             </motion.div>
 
-            {/* 3 Prominent Hub Cards: Staff, Students, Results */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                    
-                    {/* Card 1: Staff Module */}
-                    <div
-                        onClick={() => setActiveCardTab('staff')}
-                        className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer flex items-start gap-4 relative overflow-hidden ${
-                            activeCardTab === 'staff'
-                                ? 'bg-gradient-to-br from-sky-600 to-indigo-700 text-white shadow-xl shadow-sky-500/20 border-transparent scale-[1.02]'
-                                : 'bg-white text-gray-800 border-gray-100 shadow-sm hover:shadow-md hover:border-sky-200'
-                        }`}
-                    >
-                        <div className={`p-4 rounded-2xl text-xl ${
-                            activeCardTab === 'staff' ? 'bg-white/20 text-white' : 'bg-sky-50 text-sky-600'
-                        }`}>
-                            <FaUsers />
-                        </div>
-                        <div>
-                            <span className={`text-[10px] font-black uppercase tracking-widest block mb-1 ${
-                                activeCardTab === 'staff' ? 'text-sky-200' : 'text-sky-600'
-                            }`}>
-                                Module 1
-                            </span>
-                            <h2 className="text-xl font-black tracking-tight">Staff Module</h2>
-                            <p className={`text-xs mt-1 leading-relaxed ${
-                                activeCardTab === 'staff' ? 'text-sky-100' : 'text-gray-400'
-                            }`}>
-                                Staff details, employee management, payroll, leave limits, and attendance.
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Card 2: Students Module */}
-                    <div
-                        onClick={() => setActiveCardTab('students')}
-                        className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer flex items-start gap-4 relative overflow-hidden ${
-                            activeCardTab === 'students'
-                                ? 'bg-gradient-to-br from-indigo-600 to-purple-700 text-white shadow-xl shadow-indigo-500/20 border-transparent scale-[1.02]'
-                                : 'bg-white text-gray-800 border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-200'
-                        }`}
-                    >
-                        <div className={`p-4 rounded-2xl text-xl ${
-                            activeCardTab === 'students' ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-600'
-                        }`}>
-                            <FaUserGraduate />
-                        </div>
-                        <div>
-                            <span className={`text-[10px] font-black uppercase tracking-widest block mb-1 ${
-                                activeCardTab === 'students' ? 'text-indigo-200' : 'text-indigo-600'
-                            }`}>
-                                Module 2
-                            </span>
-                            <h2 className="text-xl font-black tracking-tight">Students Module</h2>
-                            <p className={`text-xs mt-1 leading-relaxed ${
-                                activeCardTab === 'students' ? 'text-indigo-100' : 'text-gray-400'
-                            }`}>
-                                Student information, reg numbers, class allocation, and profiles.
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Card 3: Results Module */}
-                    <div
-                        onClick={() => setActiveCardTab('results')}
-                        className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer flex items-start gap-4 relative overflow-hidden ${
-                            activeCardTab === 'results'
-                                ? 'bg-gradient-to-br from-purple-600 to-pink-700 text-white shadow-xl shadow-purple-500/20 border-transparent scale-[1.02]'
-                                : 'bg-white text-gray-800 border-gray-100 shadow-sm hover:shadow-md hover:border-purple-200'
-                        }`}
-                    >
-                        <div className={`p-4 rounded-2xl text-xl ${
-                            activeCardTab === 'results' ? 'bg-white/20 text-white' : 'bg-purple-50 text-purple-600'
-                        }`}>
-                            <FaFileInvoice />
-                        </div>
-                        <div>
-                            <span className={`text-[10px] font-black uppercase tracking-widest block mb-1 ${
-                                activeCardTab === 'results' ? 'text-purple-200' : 'text-purple-600'
-                            }`}>
-                                Module 3
-                            </span>
-                            <h2 className="text-xl font-black tracking-tight">Results Portal</h2>
-                            <p className={`text-xs mt-1 leading-relaxed ${
-                                activeCardTab === 'results' ? 'text-purple-100' : 'text-gray-400'
-                            }`}>
-                                Examination results upload portal organized year-wise & department-wise.
-                            </p>
-                        </div>
-                    </div>
-
-                </div>
-            </motion.div>
-
-            {/* Render Selected View */}
-            {activeCardTab === 'students' && (
-                <div className="-mx-4 md:-mx-6 lg:-mx-8">
-                    <StudentManagement />
-                </div>
-            )}
-
-            {activeCardTab === 'results' && (
-                <div className="-mx-4 md:-mx-6 lg:-mx-8">
-                    <ExamResultsPortal />
-                </div>
-            )}
-
-            {activeCardTab === 'staff' && (
-            <>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <motion.div
@@ -591,9 +489,6 @@ const AdminDashboard = () => {
                     </div>
                 </div>
             )}
-            </>
-            )}
-
 
             {/* Employee List Full Screen */}
             <AnimatePresence>

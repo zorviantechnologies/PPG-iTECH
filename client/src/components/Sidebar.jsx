@@ -18,12 +18,13 @@ import {
   FaShieldAlt,
   FaBell,
   FaFingerprint,
+  FaSync,
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import LiveStatus from './LiveStatus';
 
 const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
-  const { logout, user } = useAuth();
+  const { logout, user, activeModule, openModuleChooser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [now, setNow] = useState(new Date());
@@ -34,90 +35,98 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
   }, []);
 
   const handleLogout = () => {
-    // Clear ALL auth storage regardless of role
     sessionStorage.removeItem('managementAccess');
     localStorage.removeItem('managementAccess');
     localStorage.removeItem('token');
     localStorage.removeItem('lastRole');
-    localStorage.removeItem('ai_chat_history');
-    logout(); // also clears AuthContext user state
+    localStorage.removeItem('activeModule');
+    logout();
     navigate('/login');
   };
 
-  const menuItems = {
-    admin: [
-      { label: 'Dashboard', path: '/admin', icon: <FaTachometerAlt /> },
-      { label: 'Employee Management', path: '/admin/employees', icon: <FaUsers /> },
-      { label: 'Student Management', path: '/admin/students', icon: <FaUserGraduate /> },
-      { label: 'Exam Results', path: '/admin/results', icon: <FaClipboardList /> },
-      { label: 'Department Management', path: '/admin/departments', icon: <FaBuilding /> },
-      { label: 'Salary Management', path: '/admin/payroll', icon: <FaMoneyBillWave /> },
-      { label: 'Attendance Records', path: '/admin/attendance', icon: <FaCalendarCheck /> },
-      { label: 'Leave Balances', path: '/admin/leave-limits', icon: <FaClipboardCheck /> },
-      { label: 'Timetable Setup', path: '/admin/timetable-setup', icon: <FaCalendarAlt /> },
-      { label: 'Calendar', path: '/admin/calendar', icon: <FaCalendarDay /> },
-      { label: 'Purchase Requests', path: '/admin/purchase', icon: <FaShoppingBag /> },
-    ],
-    accounts: [
-      { label: 'Dashboard', path: '/admin', icon: <FaTachometerAlt /> },
-      { label: 'Employee Management', path: '/admin/employees', icon: <FaUsers /> },
-      { label: 'Student Management', path: '/admin/students', icon: <FaUserGraduate /> },
-      { label: 'Exam Results', path: '/admin/results', icon: <FaClipboardList /> },
-      { label: 'Department Management', path: '/admin/departments', icon: <FaBuilding /> },
-      { label: 'Salary Management', path: '/admin/payroll', icon: <FaMoneyBillWave /> },
-      { label: 'Attendance Records', path: '/admin/attendance', icon: <FaCalendarCheck /> },
-      { label: 'Leave Balances', path: '/admin/leave-limits', icon: <FaClipboardCheck /> },
-      { label: 'Timetable Setup', path: '/admin/timetable-setup', icon: <FaCalendarAlt /> },
-      { label: 'Calendar', path: '/admin/calendar', icon: <FaCalendarDay /> },
-      { label: 'Purchase Requests', path: '/admin/purchase', icon: <FaShoppingBag /> },
-    ],
-    principal: [
-      { label: 'Dashboard', path: '/principal', icon: <FaTachometerAlt /> },
-      { label: 'Attendance Records', path: '/principal/attendance', icon: <FaCalendarCheck /> },
-      { label: 'Departments', path: '/principal/department', icon: <FaBuilding /> },
-      { label: 'Incoming Requests', path: '/principal/leaves', icon: <FaClipboardList /> },
-      { label: 'Salary Overview', path: '/principal/payroll', icon: <FaMoneyBillWave /> },
-      { label: 'Conversation', path: '/principal/conversation', icon: <FaComments /> },
-      { label: 'Purchase Requests', path: '/principal/purchase', icon: <FaShoppingBag /> },
-      { label: 'Academic Calendar', path: '/principal/calendar', icon: <FaCalendarDay /> },
-    ],
-    hod: [
-      { label: 'Dashboard', path: '/hod', icon: <FaTachometerAlt /> },
-      { label: 'Leave Management', path: '/hod/leaves', icon: <FaClipboardList /> },
-      { label: 'Salary Details', path: '/hod/payroll', icon: <FaMoneyBillWave /> },
-      { label: 'Department Staff', path: '/hod/department', icon: <FaBuilding /> },
-      { label: 'Timetable', path: '/hod/timetable', icon: <FaCalendarDay /> },
-      { label: 'Attendance Record', path: '/hod/attendance', icon: <FaUserGraduate /> },
-      { label: 'Conversation', path: '/hod/conversation', icon: <FaComments /> },
-      { label: 'Purchase Requests', path: '/hod/purchase', icon: <FaShoppingBag /> },
-      { label: 'Academic Calendar', path: '/hod/calendar', icon: <FaCalendarDay /> },
-    ],
-    staff: [
-      { label: 'Dashboard', path: '/staff', icon: <FaTachometerAlt /> },
-      { label: 'Student Module', path: '/staff/students', icon: <FaUserGraduate /> },
-      { label: 'Leave Management', path: '/staff/leaves', icon: <FaClipboardList /> },
-      { label: 'Salary Details', path: '/staff/payroll', icon: <FaMoneyBillWave /> },
-      { label: 'Timetable', path: '/staff/timetables', icon: <FaCalendarCheck /> },
-      { label: 'Conversation', path: '/staff/conversation', icon: <FaComments /> },
-      { label: 'Purchase Requests', path: '/staff/items', icon: <FaShoppingBag /> },
-      { label: 'Academic Calendar', path: '/staff/calendar', icon: <FaCalendarDay /> },
-    ],
-    student: [
-      { label: 'Dashboard', path: '/student', icon: <FaTachometerAlt /> },
-      { label: 'My Results', path: '/student/results', icon: <FaClipboardList /> },
-      { label: 'My Attendance', path: '/student/attendance', icon: <FaCalendarCheck /> },
-    ],
-    management: [
-      { label: 'Dashboard', path: '/management', icon: <FaTachometerAlt /> },
-      { label: 'Departments', path: '/management/departments', icon: <FaBuilding /> },
-      { label: 'Salary Overview', path: '/management/payroll', icon: <FaMoneyBillWave /> },
-      { label: 'Attendance Records', path: '/management/attendance', icon: <FaCalendarCheck /> },
-    ],
+  const getMenuItems = () => {
+    if (userRole === 'admin' || userRole === 'accounts') {
+      if (activeModule === 'students') {
+        return [
+          { label: 'Student Directory', path: '/admin/students', icon: <FaUserGraduate /> },
+          { label: 'Add Student', path: '/admin/students/new', icon: <FaUsers /> },
+        ];
+      }
+      if (activeModule === 'results') {
+        return [
+          { label: 'Results Portal', path: '/admin/results', icon: <FaClipboardList /> },
+        ];
+      }
+      // Default / Staff Module
+      return [
+        { label: 'Dashboard', path: '/admin', icon: <FaTachometerAlt /> },
+        { label: 'Employee Management', path: '/admin/employees', icon: <FaUsers /> },
+        { label: 'Department Management', path: '/admin/departments', icon: <FaBuilding /> },
+        { label: 'Salary Management', path: '/admin/payroll', icon: <FaMoneyBillWave /> },
+        { label: 'Attendance Records', path: '/admin/attendance', icon: <FaCalendarCheck /> },
+        { label: 'Leave Balances', path: '/admin/leave-limits', icon: <FaClipboardCheck /> },
+        { label: 'Timetable Setup', path: '/admin/timetable-setup', icon: <FaCalendarAlt /> },
+        { label: 'Calendar', path: '/admin/calendar', icon: <FaCalendarDay /> },
+        { label: 'Purchase Requests', path: '/admin/purchase', icon: <FaShoppingBag /> },
+      ];
+    }
+
+    if (userRole === 'staff' || userRole === 'hod') {
+      if (activeModule === 'students') {
+        return [
+          { label: 'Student Module', path: '/staff/students', icon: <FaUserGraduate /> },
+        ];
+      }
+      return [
+        { label: 'Dashboard', path: '/staff', icon: <FaTachometerAlt /> },
+        { label: 'Leave Management', path: '/staff/leaves', icon: <FaClipboardList /> },
+        { label: 'Salary Details', path: '/staff/payroll', icon: <FaMoneyBillWave /> },
+        { label: 'Timetable', path: '/staff/timetables', icon: <FaCalendarCheck /> },
+        { label: 'Conversation', path: '/staff/conversation', icon: <FaComments /> },
+        { label: 'Purchase Requests', path: '/staff/items', icon: <FaShoppingBag /> },
+        { label: 'Academic Calendar', path: '/staff/calendar', icon: <FaCalendarDay /> },
+      ];
+    }
+
+    if (userRole === 'student') {
+      return [
+        { label: 'Dashboard', path: '/student', icon: <FaTachometerAlt /> },
+        { label: 'My Results', path: '/student/results', icon: <FaClipboardList /> },
+        { label: 'My Attendance', path: '/student/attendance', icon: <FaCalendarCheck /> },
+      ];
+    }
+
+    if (userRole === 'principal') {
+      return [
+        { label: 'Dashboard', path: '/principal', icon: <FaTachometerAlt /> },
+        { label: 'Attendance Records', path: '/principal/attendance', icon: <FaCalendarCheck /> },
+        { label: 'Departments', path: '/principal/department', icon: <FaBuilding /> },
+        { label: 'Incoming Requests', path: '/principal/leaves', icon: <FaClipboardList /> },
+        { label: 'Salary Overview', path: '/principal/payroll', icon: <FaMoneyBillWave /> },
+        { label: 'Conversation', path: '/principal/conversation', icon: <FaComments /> },
+        { label: 'Purchase Requests', path: '/principal/purchase', icon: <FaShoppingBag /> },
+        { label: 'Academic Calendar', path: '/principal/calendar', icon: <FaCalendarDay /> },
+      ];
+    }
+
+    if (userRole === 'management') {
+      return [
+        { label: 'Dashboard', path: '/management', icon: <FaTachometerAlt /> },
+        { label: 'Departments', path: '/management/departments', icon: <FaBuilding /> },
+        { label: 'Salary Overview', path: '/management/payroll', icon: <FaMoneyBillWave /> },
+        { label: 'Attendance Records', path: '/management/attendance', icon: <FaCalendarCheck /> },
+      ];
+    }
+
+    return [];
   };
 
-  const currentMenuItems = menuItems[userRole] || menuItems.staff;
+  const currentMenuItems = getMenuItems();
   const menuWithFeedback = (() => {
     const items = [...currentMenuItems];
+    if (userRole !== 'student' && userRole !== 'management') {
+      items.push({ label: 'Switch Module', onClick: openModuleChooser, icon: <FaSync />, isAction: true });
+    }
     if (['5001', '5045'].includes(String(user?.emp_id || '').trim())) {
       const roleBase = userRole === 'management' ? '/management' : `/${userRole}`;
       const exists = items.some((i) => i.path === `${roleBase}/feedback`);
@@ -166,23 +175,39 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
           <ul className="flex items-center gap-1.5 min-w-max max-[320px]:gap-1 lg:block lg:min-w-0 lg:space-y-3 lg:max-[320px]:space-y-2">
             {menuWithFeedback.map((item) => (
               <li key={item.label} className="shrink-0 lg:shrink">
-                <NavLink
-                  to={item.path}
-                  end={item.path.split('/').length <= 2}
-                  className={({ isActive }) =>
-                    `flex flex-col items-center justify-center min-w-[64px] h-[60px] px-1 rounded-xl transition-all duration-300 lg:min-w-0 lg:h-auto lg:py-2 ${isActive ? activeClass : inactiveClass}`
-                  }
-                  onClick={() => onClose()}
-                >
-                  {({ isActive }) => (
-                    <>
-                      <span className={`text-base max-[320px]:text-sm mb-1 max-[320px]:mb-0.5 transition-colors lg:text-xl lg:max-[320px]:text-lg ${isActive ? 'text-sky-600' : 'text-gray-400'}`}>{item.icon}</span>
-                      <span className="text-[6px] max-[320px]:text-[5px] font-bold uppercase tracking-tight max-[320px]:tracking-normal text-center leading-[1.1] px-0.5 line-clamp-2 lg:text-[7px] lg:max-[320px]:text-[6px] lg:tracking-tighter lg:px-1 lg:max-[320px]:px-0.5">
-                        {item.label}
-                      </span>
-                    </>
-                  )}
-                </NavLink>
+                {item.isAction ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (item.onClick) item.onClick();
+                      onClose();
+                    }}
+                    className={`w-full flex flex-col items-center justify-center min-w-[64px] h-[60px] px-1 rounded-xl transition-all duration-300 lg:min-w-0 lg:h-auto lg:py-2 ${inactiveClass}`}
+                  >
+                    <span className="text-base max-[320px]:text-sm mb-1 max-[320px]:mb-0.5 text-sky-600 lg:text-xl lg:max-[320px]:text-lg">{item.icon}</span>
+                    <span className="text-[6px] max-[320px]:text-[5px] font-bold uppercase tracking-tight text-center leading-[1.1] text-sky-700 px-0.5 line-clamp-2 lg:text-[7px] lg:max-[320px]:text-[6px]">
+                      {item.label}
+                    </span>
+                  </button>
+                ) : (
+                  <NavLink
+                    to={item.path}
+                    end={item.path.split('/').length <= 2}
+                    className={({ isActive }) =>
+                      `flex flex-col items-center justify-center min-w-[64px] h-[60px] px-1 rounded-xl transition-all duration-300 lg:min-w-0 lg:h-auto lg:py-2 ${isActive ? activeClass : inactiveClass}`
+                    }
+                    onClick={() => onClose()}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <span className={`text-base max-[320px]:text-sm mb-1 max-[320px]:mb-0.5 transition-colors lg:text-xl lg:max-[320px]:text-lg ${isActive ? 'text-sky-600' : 'text-gray-400'}`}>{item.icon}</span>
+                        <span className="text-[6px] max-[320px]:text-[5px] font-bold uppercase tracking-tight max-[320px]:tracking-normal text-center leading-[1.1] px-0.5 line-clamp-2 lg:text-[7px] lg:max-[320px]:text-[6px] lg:tracking-tighter lg:px-1 lg:max-[320px]:px-0.5">
+                          {item.label}
+                        </span>
+                      </>
+                    )}
+                  </NavLink>
+                )}
               </li>
             ))}
           </ul>
