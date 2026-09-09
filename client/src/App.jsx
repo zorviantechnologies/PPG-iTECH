@@ -332,8 +332,6 @@ const AppContent = () => {
             <Route path="profile/:id" element={<ProfilePage />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="feedback" element={<FeedbackInboxPage />} />
-            <Route path="students" element={<StudentManagement />} />
-            <Route path="results" element={<ExamResultsPortal />} />
           </Routes>
         </ProtectedRoute>
       } />
@@ -364,9 +362,12 @@ const AppContent = () => {
       <Route path="/student/*" element={
         <ProtectedRoute allowedRoles={['student']}>
           <Routes>
-            <Route path="/" element={<StudentDashboard />} />
-            <Route path="results" element={<StudentDashboard />} />
-            <Route path="attendance" element={<StudentDashboard />} />
+            <Route path="/" element={<StudentDashboard defaultTab="results" />} />
+            <Route path="results" element={<StudentDashboard defaultTab="results" />} />
+            <Route path="attendance" element={<StudentDashboard defaultTab="attendance" />} />
+            <Route path="timetable" element={<StudentDashboard defaultTab="timetable" />} />
+            <Route path="calendar" element={<InstitutionalCalendar />} />
+            <Route path="leaves" element={<StaffLeaveApply />} />
           </Routes>
         </ProtectedRoute>
       } />

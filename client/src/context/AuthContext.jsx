@@ -27,6 +27,9 @@ export const AuthProvider = ({ children }) => {
                         if (data.role === 'student') {
                             localStorage.setItem('activeModule', 'students');
                             setActiveModuleState('students');
+                        } else if (['staff', 'hod', 'principal'].includes(data.role)) {
+                            localStorage.setItem('activeModule', 'staff');
+                            setActiveModuleState('staff');
                         }
                     }
                 } catch (error) {
@@ -66,12 +69,17 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('lastRole', data.role);
         
-        // Default module handling or prompt
+        // Module handling: Admin/Accounts get prompt modal; Staff & Student set default module
         if (data.role === 'student') {
             localStorage.setItem('activeModule', 'students');
             setActiveModuleState('students');
+            setShowModuleModal(false);
+        } else if (['staff', 'hod', 'principal'].includes(data.role)) {
+            localStorage.setItem('activeModule', 'staff');
+            setActiveModuleState('staff');
+            setShowModuleModal(false);
         } else {
-            // Prompt module selection on login for admin/staff
+            // Admin / Accounts
             localStorage.removeItem('activeModule');
             setActiveModuleState(null);
             setShowModuleModal(true);
@@ -105,6 +113,11 @@ export const AuthProvider = ({ children }) => {
         if (data.role === 'student') {
             localStorage.setItem('activeModule', 'students');
             setActiveModuleState('students');
+            setShowModuleModal(false);
+        } else if (['staff', 'hod', 'principal'].includes(data.role)) {
+            localStorage.setItem('activeModule', 'staff');
+            setActiveModuleState('staff');
+            setShowModuleModal(false);
         } else {
             localStorage.removeItem('activeModule');
             setActiveModuleState(null);

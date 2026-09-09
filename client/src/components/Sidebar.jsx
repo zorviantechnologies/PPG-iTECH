@@ -50,6 +50,10 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
         return [
           { label: 'Student Directory', path: '/admin/students', icon: <FaUserGraduate /> },
           { label: 'Add Student', path: '/admin/students/new', icon: <FaUsers /> },
+          { label: 'Timetable Setup', path: '/admin/timetable-setup', icon: <FaCalendarAlt /> },
+          { label: 'Academic Calendar', path: '/admin/calendar', icon: <FaCalendarDay /> },
+          { label: 'Results Portal', path: '/admin/results', icon: <FaClipboardList /> },
+          { label: 'Leave Balances', path: '/admin/leave-limits', icon: <FaClipboardCheck /> },
         ];
       }
       if (activeModule === 'results') {
@@ -72,11 +76,6 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
     }
 
     if (userRole === 'staff' || userRole === 'hod') {
-      if (activeModule === 'students') {
-        return [
-          { label: 'Student Module', path: '/staff/students', icon: <FaUserGraduate /> },
-        ];
-      }
       return [
         { label: 'Dashboard', path: '/staff', icon: <FaTachometerAlt /> },
         { label: 'Leave Management', path: '/staff/leaves', icon: <FaClipboardList /> },
@@ -93,6 +92,9 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
         { label: 'Dashboard', path: '/student', icon: <FaTachometerAlt /> },
         { label: 'My Results', path: '/student/results', icon: <FaClipboardList /> },
         { label: 'My Attendance', path: '/student/attendance', icon: <FaCalendarCheck /> },
+        { label: 'Class Timetable', path: '/student/timetable', icon: <FaCalendarCheck /> },
+        { label: 'Academic Calendar', path: '/student/calendar', icon: <FaCalendarDay /> },
+        { label: 'Leave Requests', path: '/student/leaves', icon: <FaClipboardCheck /> },
       ];
     }
 
@@ -124,7 +126,7 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
   const currentMenuItems = getMenuItems();
   const menuWithFeedback = (() => {
     const items = [...currentMenuItems];
-    if (userRole !== 'student' && userRole !== 'management') {
+    if (['admin', 'accounts'].includes(userRole)) {
       items.push({ label: 'Switch Module', onClick: openModuleChooser, icon: <FaSync />, isAction: true });
     }
     if (['5001', '5045'].includes(String(user?.emp_id || '').trim())) {

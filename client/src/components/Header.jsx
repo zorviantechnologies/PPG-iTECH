@@ -637,8 +637,8 @@ const Header = () => {
                         </div>
                     )}
 
-                    {/* Switch Module Button in Header */}
-                    {!isManagement && effectiveRole !== 'student' && (
+                    {/* Switch Module Button in Header (Admin / Accounts Only) */}
+                    {!isManagement && ['admin', 'accounts'].includes(user?.role) && (
                         <button
                             type="button"
                             onClick={openModuleChooser}

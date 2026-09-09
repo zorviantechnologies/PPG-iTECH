@@ -7,22 +7,14 @@ const ModuleSelectionModal = ({ isOpen, onClose }) => {
     const { user, selectModule, activeModule } = useAuth();
     const navigate = useNavigate();
 
-    if (!isOpen || !user || user.role === 'student') return null;
-
-    const isAdmin = ['admin', 'accounts'].includes(user.role);
-    const isStaff = ['staff', 'hod', 'principal'].includes(user.role);
+    if (!isOpen || !user || !['admin', 'accounts'].includes(user.role)) return null;
 
     const handleChoice = (moduleKey) => {
         selectModule(moduleKey);
 
-        if (isAdmin) {
-            if (moduleKey === 'staff') navigate('/admin');
-            else if (moduleKey === 'students') navigate('/admin/students');
-            else if (moduleKey === 'results') navigate('/admin/results');
-        } else if (isStaff) {
-            if (moduleKey === 'staff') navigate('/staff');
-            else if (moduleKey === 'students') navigate('/staff/students');
-        }
+        if (moduleKey === 'staff') navigate('/admin');
+        else if (moduleKey === 'students') navigate('/admin/students');
+        else if (moduleKey === 'results') navigate('/admin/results');
 
         if (onClose) onClose();
     };

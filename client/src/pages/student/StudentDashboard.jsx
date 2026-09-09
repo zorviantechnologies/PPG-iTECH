@@ -9,7 +9,7 @@ import {
     FaClock, FaGraduationCap, FaSync 
 } from 'react-icons/fa';
 
-const StudentDashboard = () => {
+const StudentDashboard = ({ defaultTab = 'results' }) => {
     const { user } = useAuth();
     const [profile, setProfile] = useState(null);
     const [myResults, setMyResults] = useState([]);
@@ -18,7 +18,13 @@ const StudentDashboard = () => {
     const [loading, setLoading] = useState(true);
     
     const [selectedYearTab, setSelectedYearTab] = useState('1');
-    const [activeSectionTab, setActiveSectionTab] = useState('results'); // 'results', 'timetable', 'attendance'
+    const [activeSectionTab, setActiveSectionTab] = useState(defaultTab); // 'results', 'timetable', 'attendance'
+
+    useEffect(() => {
+        if (defaultTab) {
+            setActiveSectionTab(defaultTab);
+        }
+    }, [defaultTab]);
 
     const fetchStudentData = useCallback(async () => {
         setLoading(true);
