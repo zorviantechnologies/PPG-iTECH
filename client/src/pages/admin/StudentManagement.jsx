@@ -92,30 +92,19 @@ const StudentManagement = () => {
         <Layout title="Student Management Portal">
             <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
                 
-                {/* Header Banner */}
-                <div className="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
-                    <div className="absolute -right-10 -bottom-10 opacity-10 text-9xl">
-                        <FaUserGraduate />
+                {/* Top Header */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 className="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-3">
+                            Student Management
+                        </h1>
                     </div>
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div>
-                            <span className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
-                                <FaGraduationCap /> Student Information System
-                            </span>
-                            <h1 className="text-2xl md:text-3xl font-black tracking-tight">Student Management</h1>
-                            <p className="text-sky-100 text-sm mt-1 max-w-xl">
-                                Manage student profiles, academic year placements, department allocations, and student login credentials.
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => navigate('/admin/students/new')}
-                                className="bg-white text-sky-700 hover:bg-sky-50 font-bold px-5 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 text-sm shrink-0"
-                            >
-                                <FaPlus /> Add New Student
-                            </button>
-                        </div>
-                    </div>
+                    <button
+                        onClick={() => navigate('/admin/students/new')}
+                        className="bg-sky-600 hover:bg-sky-700 text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg shadow-sky-100 hover:shadow-xl transition-all duration-300 flex items-center gap-2 text-sm shrink-0 active:scale-95"
+                    >
+                        <FaPlus /> Add Student
+                    </button>
                 </div>
 
                 {/* Metrics Cards */}

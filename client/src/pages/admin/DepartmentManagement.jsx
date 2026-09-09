@@ -278,19 +278,22 @@ const DepartmentManagement = () => {
                                         <h3 className="text-2xl font-black text-gray-800 tracking-tight group-hover:text-sky-600 transition-colors">{dept.name}</h3>
                                     </div>
 
-                                    <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-50">
-                                        <button
-                                            onClick={() => handleViewStudents(dept)}
-                                            className="text-indigo-600 hover:text-indigo-800 text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1.5"
-                                        >
-                                            <FaUserGraduate size={12} /> View Students
-                                        </button>
-                                        <button
-                                            onClick={() => handleViewStaff(dept)}
-                                            className="text-sky-600 hover:text-sky-800 text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1.5"
-                                        >
-                                            <FaUsers size={12} /> View Staff & HODs
-                                        </button>
+                                    <div className="flex items-center gap-6 pt-4 border-t border-gray-50">
+                                        {activeModule === 'students' ? (
+                                            <button
+                                                onClick={() => handleViewStudents(dept)}
+                                                className="text-indigo-600 hover:text-indigo-800 text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1.5"
+                                            >
+                                                <FaUserGraduate size={12} /> View Students
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleViewStaff(dept)}
+                                                className="text-sky-600 hover:text-sky-800 text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1.5"
+                                            >
+                                                <FaUsers size={12} /> View Staff & HODs
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
