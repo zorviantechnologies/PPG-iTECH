@@ -4,7 +4,8 @@ const {
     getTimetable,
     createTimetableEntry,
     updateTimetableEntry,
-    deleteTimetableEntry
+    deleteTimetableEntry,
+    bulkCreateTimetableEntries
 } = require('../controllers/timetableController');
 const {
     getTimetableConfig,
@@ -18,6 +19,9 @@ router.use(protect);
 router.route('/config')
     .get(getTimetableConfig)
     .put(restrictTo('admin'), saveTimetableConfig);
+
+// Bulk upload route
+router.post('/bulk', restrictTo('admin', 'hod', 'staff'), bulkCreateTimetableEntries);
 
 // Timetable entries
 router.route('/')

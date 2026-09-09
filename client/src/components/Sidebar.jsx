@@ -51,7 +51,7 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
           { label: 'Student Directory', path: '/admin/students', icon: <FaUserGraduate /> },
           { label: 'Add Student', path: '/admin/students/new', icon: <FaUsers /> },
           { label: 'Department Management', path: '/admin/departments', icon: <FaBuilding /> },
-          { label: 'Timetable Setup', path: '/admin/timetable-setup', icon: <FaCalendarAlt /> },
+          { label: 'Timetable Setup', path: '/admin/timetable', icon: <FaCalendarAlt /> },
           { label: 'Academic Calendar', path: '/admin/calendar', icon: <FaCalendarDay /> },
           { label: 'Results Portal', path: '/admin/results', icon: <FaClipboardList /> },
           { label: 'Leave Balances', path: '/admin/leave-limits', icon: <FaClipboardCheck /> },

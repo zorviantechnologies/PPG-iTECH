@@ -175,6 +175,78 @@ exports.updateTimetableEntry = async (req, res) => {
     }
 };
 
+// @desc    Bulk Create / Replace timetable entries from Excel
+// @route   POST /api/timetable/bulk
+// @access  Private (Admin, HOD, Staff)
+exports.bulkCreateTimetableEntries = async (req, res) => {
+    const { department_id, academic_year, semester, section, entries } = req.body;
+
+    if (!department_id || !academic_year || !semester) {
+        return res.status(400).json({ message: 'Department, Academic Year, and Semester are required.' });
+    }
+    if (!Array.isArray(entries) || entries.length === 0) {
+        return res.status(400).json({ message: 'No timetable entries provided in Excel file.' });
+    }
+
+    const deptId = parseInt(department_id, 10);
+    const year = parseInt(academic_year, 10);
+    const sem = parseInt(semester, 10);
+    const sec = section || 'A';
+
+    try {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            // Optionally clear existing entries for this class section before inserting new sheet
+            await client.query(
+                `DELETE FROM timetable 
+                 WHERE department_id = $1 AND academic_year = $2 AND semester = $3 
+                 AND (section = $4 OR section IS NULL OR section = '')`,
+                [deptId, year, sem, sec]
+            );
+
+            let insertedCount = 0;
+            for (const item of entries) {
+                const day_of_week = item.day_of_week || item.Day || 'Monday';
+                const period_number = parseInt(item.period_number || item['Period Number'] || 1, 10);
+                const start_time = item.start_time || item['Start Time'] || null;
+                const end_time = item.end_time || item['End Time'] || null;
+                const subject = item.subject || item['Subject Name'] || item['Subject'] || '';
+                const subject_code = item.subject_code || item['Subject Code'] || '';
+                const room_number = item.room_number || item['Room Number'] || item['Room'] || '';
+                const emp_id = item.emp_id || item['Staff ID'] || item['Faculty ID'] || null;
+
+                if (subject.trim()) {
+                    await client.query(
+                        `INSERT INTO timetable (
+                            emp_id, department_id, academic_year, semester, section,
+                            day_of_week, period_number, start_time, end_time, subject, subject_code, room_number
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+                        [
+                            emp_id, deptId, year, sem, sec,
+                            day_of_week, period_number, start_time || null, end_time || null,
+                            subject.trim(), subject_code ? subject_code.trim() : null, room_number ? room_number.trim() : null
+                        ]
+                    );
+                    insertedCount++;
+                }
+            }
+
+            await client.query('COMMIT');
+            res.status(201).json({ message: `Successfully imported ${insertedCount} timetable periods.`, count: insertedCount });
+        } catch (txErr) {
+            await client.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            client.release();
+        }
+    } catch (error) {
+        console.error('BULK TIMETABLE ERROR:', error);
+        res.status(500).json({ message: 'Failed to import timetable: ' + error.message });
+    }
+};
+
 // @desc    Delete timetable entry
 // @route   DELETE /api/timetable/:id
 // @access  Private (Admin, HOD, Staff)

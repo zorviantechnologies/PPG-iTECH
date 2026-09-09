@@ -8,10 +8,12 @@ import { finalizePrintWindow } from '../../utils/printUtils';
 import { 
     FaPlus, FaTrash, FaEdit, FaUserTie, FaClock, FaDoorOpen, 
     FaBookOpen, FaArrowLeft, FaFileAlt, FaBuilding, FaGraduationCap, 
-    FaCalendarAlt, FaLayerGroup, FaFilter, FaInfoCircle
+    FaCalendarAlt, FaLayerGroup, FaFilter, FaInfoCircle,
+    FaFileExcel, FaUpload, FaDownload, FaTimes, FaCheckCircle, FaCog
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimetableConfig } from '../../hooks/useTimetableConfig';
+import * as XLSX from 'xlsx';
 
 const to12h = (timeStr) => {
     if (!timeStr) return '';
@@ -27,7 +29,6 @@ const Timetable = ({ showToggle = true }) => {
     const navigate = useNavigate();
 
     const viewOnlyMode = !!empId;
-    // Default view is 'class' for Admin/HOD, 'staff' if empId provided, 'my' otherwise
     const [view, setView] = useState(() => {
         if (empId) return 'staff';
         if (['admin', 'accounts', 'hod'].includes(user?.role)) return 'class';
@@ -40,13 +41,18 @@ const Timetable = ({ showToggle = true }) => {
     
     // Class Timetable Filters
     const [selectedDept, setSelectedDept] = useState('');
-    const [selectedYear, setSelectedYear] = useState('');
-    const [selectedSem, setSelectedSem] = useState('');
+    const [selectedYear, setSelectedYear] = useState('3'); // Default 3rd Year as in user prompt example
+    const [selectedSem, setSelectedSem] = useState('5');   // Default Semester 5
     const [selectedSec, setSelectedSec] = useState('A');
     
     // Staff view filter
     const [selectedStaff, setSelectedStaff] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Excel Upload Modal & State
+    const [showExcelModal, setShowExcelModal] = useState(false);
+    const [excelPreview, setExcelPreview] = useState([]);
+    const [uploadingExcel, setUploadingExcel] = useState(false);
 
     const { config: periodConfig, teachingPeriods, periodNumbers, allSlots, getPeriodConfig } = useTimetableConfig();
 
@@ -82,7 +88,6 @@ const Timetable = ({ showToggle = true }) => {
             const { data } = await api.get('/departments');
             setDepartments(data || []);
             if (data.length > 0 && !selectedDept) {
-                // Default to HOD's department or first department
                 const userDept = user?.department_id ? String(user.department_id) : String(data[0].id);
                 setSelectedDept(userDept);
             }
@@ -115,6 +120,131 @@ const Timetable = ({ showToggle = true }) => {
             console.error('Fetch Timetable Error:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Excel Template Download Handler
+    const handleDownloadTemplate = () => {
+        const currentDeptObj = departments.find(d => String(d.id) === String(selectedDept));
+        const deptCode = currentDeptObj?.code || 'DEPT';
+        
+        const templateData = [
+            {
+                "Day": "Monday",
+                "Period Number": 1,
+                "Start Time": "09:00",
+                "End Time": "09:50",
+                "Subject Name": "Data Structures & Algorithms",
+                "Subject Code": "CS301",
+                "Room Number": "Room 204",
+                "Staff ID": "5001"
+            },
+            {
+                "Day": "Monday",
+                "Period Number": 2,
+                "Start Time": "09:50",
+                "End Time": "10:40",
+                "Subject Name": "Database Management Systems",
+                "Subject Code": "CS302",
+                "Room Number": "Lab 2",
+                "Staff ID": "5002"
+            },
+            {
+                "Day": "Tuesday",
+                "Period Number": 1,
+                "Start Time": "09:00",
+                "End Time": "09:50",
+                "Subject Name": "Operating Systems",
+                "Subject Code": "CS303",
+                "Room Number": "Room 204",
+                "Staff ID": "5003"
+            },
+            {
+                "Day": "Wednesday",
+                "Period Number": 1,
+                "Start Time": "09:00",
+                "End Time": "09:50",
+                "Subject Name": "Computer Networks",
+                "Subject Code": "CS304",
+                "Room Number": "Room 204",
+                "Staff ID": "5001"
+            }
+        ];
+
+        const worksheet = XLSX.utils.json_to_sheet(templateData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Class Timetable");
+        
+        const fileName = `Timetable_Template_${deptCode}_Year${selectedYear || '3'}_Sem${selectedSem || '5'}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+    };
+
+    // Excel File Selector Handler
+    const handleExcelFileSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const bstr = evt.target.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws);
+                
+                if (!data || data.length === 0) {
+                    Swal.fire('Empty File', 'The uploaded file contains no data rows.', 'warning');
+                    return;
+                }
+
+                setExcelPreview(data);
+                setShowExcelModal(true);
+            } catch (err) {
+                console.error('Excel Parsing Error:', err);
+                Swal.fire('Error', 'Failed to parse Excel file. Please upload a valid .xlsx or .csv sheet.', 'error');
+            }
+        };
+        reader.readAsBinaryString(file);
+
+        // Reset file input so re-selecting same file triggers event
+        e.target.value = '';
+    };
+
+    // Bulk Import Excel Save Handler
+    const handleSaveExcelImport = async () => {
+        if (!selectedDept || !selectedYear || !selectedSem) {
+            Swal.fire('Selection Required', 'Please select Department, Academic Year, and Semester first.', 'warning');
+            return;
+        }
+        if (excelPreview.length === 0) return;
+
+        setUploadingExcel(true);
+        try {
+            const payload = {
+                department_id: selectedDept,
+                academic_year: selectedYear,
+                semester: selectedSem,
+                section: selectedSec,
+                entries: excelPreview
+            };
+
+            const res = await api.post('/timetable/bulk', payload);
+            Swal.fire({
+                title: 'Timetable Imported!',
+                text: res.data?.message || `Successfully saved ${excelPreview.length} period entries.`,
+                icon: 'success',
+                confirmButtonColor: '#2563eb'
+            });
+
+            setShowExcelModal(false);
+            setExcelPreview([]);
+            fetchTimetable();
+        } catch (err) {
+            console.error('Save Excel Error:', err);
+            Swal.fire('Import Failed', err.response?.data?.message || err.message || 'Failed to save timetable entries', 'error');
+        } finally {
+            setUploadingExcel(false);
         }
     };
 
@@ -384,15 +514,24 @@ const Timetable = ({ showToggle = true }) => {
                         )}
                         <div>
                             <h1 className="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-3">
-                                <FaCalendarAlt className="text-sky-600" /> Timetable Portal
+                                <FaCalendarAlt className="text-sky-600" /> Class Timetable Setup
                             </h1>
                             <p className="text-xs font-semibold text-gray-500 mt-0.5">
-                                Setup & manage department-wise class timetables and staff schedules
+                                Select Year & Department to setup timetables, import Excel sheets, and view saved schedules
                             </p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3 flex-wrap">
+                        {isManager && (
+                            <button
+                                onClick={() => navigate('/admin/timetable-setup')}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 text-gray-700 border border-gray-200 rounded-2xl font-bold text-xs hover:bg-gray-100 transition-all shadow-sm"
+                            >
+                                <FaCog className="text-sky-600" /> Period Timing Config
+                            </button>
+                        )}
+
                         {!viewOnlyMode && isManager && showToggle && (
                             <div className="flex p-1 bg-white rounded-2xl border border-sky-100 shadow-sm">
                                 <button
@@ -425,18 +564,42 @@ const Timetable = ({ showToggle = true }) => {
                     </div>
                 </div>
 
-                {/* Filter Panel for Class Timetable (Required Selection) */}
+                {/* Filter Panel & Excel Upload Actions for Class Timetable */}
                 {view === 'class' && (
-                    <div className="bg-white p-6 rounded-3xl shadow-xl shadow-sky-50/50 border border-sky-50 space-y-4">
-                        <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-                            <FaFilter className="text-sky-600" />
-                            <h2 className="text-xs font-black uppercase tracking-widest text-gray-700">Class Selection (Required to Set Timetable)</h2>
+                    <div className="bg-white p-6 rounded-3xl shadow-xl shadow-sky-50/50 border border-sky-50 space-y-5">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                            <div className="flex items-center gap-2">
+                                <FaFilter className="text-sky-600" />
+                                <h2 className="text-xs font-black uppercase tracking-widest text-gray-700">1. Class Selection Filters (Select Department & Year to Setup Timetable)</h2>
+                            </div>
+
+                            {/* Excel Upload & Download Template Buttons */}
+                            {isClassSelectionComplete && isManager && (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <button
+                                        onClick={handleDownloadTemplate}
+                                        className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-bold text-xs hover:bg-emerald-100 transition-all shadow-sm active:scale-95"
+                                    >
+                                        <FaDownload /> Download Excel Template
+                                    </button>
+
+                                    <label className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 active:scale-95 cursor-pointer">
+                                        <FaUpload /> Upload Excel Sheet
+                                        <input
+                                            type="file"
+                                            accept=".xlsx, .xls, .csv"
+                                            onChange={handleExcelFileSelect}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                </div>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             {/* Department Select */}
                             <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">1. Select Department</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Department</label>
                                 <div className="relative">
                                     <FaBuilding className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
                                     <select
@@ -454,7 +617,7 @@ const Timetable = ({ showToggle = true }) => {
 
                             {/* Year Select */}
                             <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">2. Select Academic Year</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Academic Year</label>
                                 <div className="relative">
                                     <FaGraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
                                     <select
@@ -462,7 +625,6 @@ const Timetable = ({ showToggle = true }) => {
                                         onChange={(e) => {
                                             const yr = e.target.value;
                                             setSelectedYear(yr);
-                                            // Default semester according to year
                                             if (yr === '1') setSelectedSem('1');
                                             else if (yr === '2') setSelectedSem('3');
                                             else if (yr === '3') setSelectedSem('5');
@@ -481,7 +643,7 @@ const Timetable = ({ showToggle = true }) => {
 
                             {/* Semester Select */}
                             <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">3. Select Semester</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Semester</label>
                                 <div className="relative">
                                     <FaLayerGroup className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
                                     <select
@@ -499,7 +661,7 @@ const Timetable = ({ showToggle = true }) => {
 
                             {/* Section Select */}
                             <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">4. Select Section</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Section</label>
                                 <select
                                     value={selectedSec}
                                     onChange={(e) => setSelectedSec(e.target.value)}
@@ -539,12 +701,31 @@ const Timetable = ({ showToggle = true }) => {
                         <FaInfoCircle className="text-4xl text-sky-500 mx-auto animate-bounce" />
                         <h3 className="text-lg font-black text-sky-900">Select Department, Academic Year, and Semester</h3>
                         <p className="text-xs text-sky-600 font-medium max-w-md mx-auto">
-                            Please select the Department, Academic Year, and Semester from the filters above to unlock and configure the class timetable.
+                            Please select the Department, Academic Year, and Semester above to view or upload the class timetable.
                         </p>
                     </div>
                 ) : (
                     /* Timetable Grid Table */
                     <div className="styled-table-container modern-card !p-0 overflow-hidden border-sky-100 bg-white">
+                        <div className="p-4 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-2 text-xs font-bold text-gray-700">
+                                <FaBookOpen className="text-indigo-600" />
+                                <span>Displaying Saved Class Timetable Grid</span>
+                                <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-mono text-[10px]">
+                                    {departments.find(d => String(d.id) === String(selectedDept))?.name || 'Dept'} &bull; Year {selectedYear} (Sem {selectedSem}) Sec {selectedSec}
+                                </span>
+                            </div>
+
+                            {isManager && (
+                                <button
+                                    onClick={() => handleAction()}
+                                    className="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-sky-700 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                                >
+                                    <FaPlus /> Add Period Slot
+                                </button>
+                            )}
+                        </div>
+
                         <div className="overflow-x-auto">
                             <table className="w-full border-collapse min-w-[980px] md:min-w-[1100px] table-fixed">
                                 <thead>
@@ -678,6 +859,88 @@ const Timetable = ({ showToggle = true }) => {
                         <span className="text-[10px] font-black text-sky-600 uppercase tracking-widest ml-2">Loading Timetable Grid...</span>
                     </div>
                 )}
+
+                {/* Excel Preview & Import Confirmation Modal */}
+                <AnimatePresence>
+                    {showExcelModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                className="bg-white rounded-3xl p-6 md:p-8 max-w-4xl w-full shadow-2xl border border-gray-100 space-y-6 max-h-[90vh] flex flex-col"
+                            >
+                                <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                                            <FaFileSpreadsheet />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-black text-gray-800 tracking-tight">Excel Import Preview</h3>
+                                            <p className="text-xs text-gray-500">
+                                                {excelPreview.length} period rows parsed for {departments.find(d => String(d.id) === String(selectedDept))?.name || 'Dept'} Year {selectedYear} (Sem {selectedSem})
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => { setShowExcelModal(false); setExcelPreview([]); }}
+                                        className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                                    >
+                                        <FaTimes />
+                                    </button>
+                                </div>
+
+                                <div className="flex-1 overflow-auto border border-gray-100 rounded-2xl">
+                                    <table className="w-full text-left text-xs">
+                                        <thead className="bg-gray-50 font-black uppercase text-[10px] text-gray-500 tracking-wider sticky top-0">
+                                            <tr>
+                                                <th className="p-3">Day</th>
+                                                <th className="p-3">Period #</th>
+                                                <th className="p-3">Subject Name</th>
+                                                <th className="p-3">Subject Code</th>
+                                                <th className="p-3">Room</th>
+                                                <th className="p-3">Staff ID</th>
+                                                <th className="p-3">Times</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {excelPreview.map((row, rIdx) => (
+                                                <tr key={rIdx} className="hover:bg-gray-50">
+                                                    <td className="p-3 font-bold text-gray-800">{row.Day || row.day_of_week || 'Monday'}</td>
+                                                    <td className="p-3 font-mono font-bold text-indigo-600">{row['Period Number'] || row.period_number || 1}</td>
+                                                    <td className="p-3 font-semibold text-gray-900">{row['Subject Name'] || row.subject || '—'}</td>
+                                                    <td className="p-3 font-mono text-sky-600">{row['Subject Code'] || row.subject_code || '—'}</td>
+                                                    <td className="p-3 text-gray-600">{row['Room Number'] || row.room_number || 'TBA'}</td>
+                                                    <td className="p-3 font-mono text-purple-600">{row['Staff ID'] || row.emp_id || 'Unassigned'}</td>
+                                                    <td className="p-3 text-gray-500 font-mono">
+                                                        {(row['Start Time'] || row.start_time || '')} - {(row['End Time'] || row.end_time || '')}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div className="flex items-center justify-end gap-3 border-t border-gray-100 pt-4">
+                                    <button
+                                        onClick={() => { setShowExcelModal(false); setExcelPreview([]); }}
+                                        className="px-5 py-2.5 rounded-xl font-bold text-xs text-gray-500 hover:bg-gray-100 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSaveExcelImport}
+                                        disabled={uploadingExcel}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 disabled:opacity-50"
+                                    >
+                                        <FaCheckCircle /> {uploadingExcel ? 'Importing...' : 'Save & Replace Timetable'}
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
             </motion.div>
         </Layout>
     );

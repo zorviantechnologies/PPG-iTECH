@@ -9,6 +9,8 @@ const ModuleSelectionModal = ({ isOpen, onClose }) => {
 
     if (!isOpen || !user || !['admin', 'accounts'].includes(user.role)) return null;
 
+    const isAdmin = ['admin', 'accounts'].includes(user.role);
+
     const handleChoice = (moduleKey) => {
         selectModule(moduleKey);
 
