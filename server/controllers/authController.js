@@ -111,11 +111,15 @@ exports.googleLogin = async (req, res) => {
 exports.getRegisteredEmails = async (req, res) => {
     try {
         const { rows } = await queryWithRetry(
-            `SELECT DISTINCT LOWER(TRIM(ul.email)) as email, u.name, u.role
-             FROM user_login ul
-             JOIN users u ON u.id = ul.user_id
-             WHERE ul.email IS NOT NULL AND TRIM(ul.email) != ''
-               AND u.role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')
+            `SELECT DISTINCT LOWER(TRIM(COALESCE(ul.email, u.email, u.personal_email))) as email, u.name, u.role
+             FROM users u
+             LEFT JOIN user_login ul ON ul.user_id = u.id
+             WHERE (
+                (ul.email IS NOT NULL AND TRIM(ul.email) != '') OR
+                (u.email IS NOT NULL AND TRIM(u.email) != '') OR
+                (u.personal_email IS NOT NULL AND TRIM(u.personal_email) != '')
+             )
+             AND u.role IN ('admin', 'principal', 'hod', 'staff', 'accounts', 'management')
              ORDER BY email ASC`
         );
         res.json(rows);
