@@ -369,12 +369,14 @@ const AppContent = () => {
       <Route path="/student/*" element={
         <ProtectedRoute allowedRoles={['student']}>
           <Routes>
-            <Route path="/" element={<StudentDashboard defaultTab="results" />} />
+            <Route path="/" element={<StudentDashboard defaultTab="dashboard" />} />
             <Route path="results" element={<StudentDashboard defaultTab="results" />} />
             <Route path="attendance" element={<StudentDashboard defaultTab="attendance" />} />
             <Route path="timetable" element={<StudentDashboard defaultTab="timetable" />} />
             <Route path="calendar" element={<InstitutionalCalendar />} />
             <Route path="leaves" element={<StaffLeaveApply />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile/:id" element={<ProfilePage />} />
           </Routes>
         </ProtectedRoute>
       } />

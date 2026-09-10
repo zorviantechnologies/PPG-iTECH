@@ -844,7 +844,7 @@ const LeaveApply = () => {
                         { id: 'balance', label: 'Leave Balance', icon: <FaCalendarAlt /> },
                         { id: 'approvals', label: `Incoming Approvals (${pendingApprovals.length + pendingPermissionCount})`, icon: <FaInbox /> },
                         { id: 'history', label: 'My Leave History', icon: <FaHistory /> }
-                    ].map(tab => (
+                    ].filter(tab => user?.role !== 'student' || (tab.id !== 'compoff' && tab.id !== 'approvals')).map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
@@ -2219,12 +2219,14 @@ const LeaveApply = () => {
                                 </div>
                             )}
 
-                            <div className="mt-10 p-5 bg-sky-50/50 rounded-3xl border border-sky-100 flex items-start gap-3">
-                                <FaInfoCircle className="text-sky-400 shrink-0 mt-0.5" size={16} />
-                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed">
-                                    Remaining balance represents your current eligibility. Applications exceeding these limits will be automatically rejected by the system.
-                                </p>
-                            </div>
+                            {user?.role !== 'student' && (
+                                <div className="mt-10 p-5 bg-sky-50/50 rounded-3xl border border-sky-100 flex items-start gap-3">
+                                    <FaInfoCircle className="text-sky-400 shrink-0 mt-0.5" size={16} />
+                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed">
+                                        Remaining balance represents your current eligibility. Applications exceeding these limits will be automatically rejected by the system.
+                                    </p>
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>

@@ -139,7 +139,7 @@ const ExamResultsPortal = () => {
     const handleDownloadTemplate = () => {
         const headers = ['Register Number,Student Name,Subject Code,Subject Name,Internal Marks,External Marks,Total Marks,Max Marks'];
         const sampleRows = [
-            '711522104001,John Doe,CS8591,Computer Networks,18,65,83,100',
+            '712524205001,John Doe,CS8591,Computer Networks,18,65,83,100',
             '711522104002,Jane Smith,CS8591,Computer Networks,19,72,91,100'
         ];
         const blob = new Blob([[headers, ...sampleRows].join('\n')], { type: 'text/csv' });

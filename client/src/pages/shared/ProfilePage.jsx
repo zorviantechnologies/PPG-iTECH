@@ -17,12 +17,19 @@ const ProfilePage = () => {
         const fetchUser = async () => {
             setLoading(true);
             try {
-                if (id) {
-                    // Viewing another employee's profile by emp_id (management visiting dept staff profile)
-                    const { data } = await api.get(`/employees/${id}`);
-                    setTargetUser(data);
+                if (authUser?.role === 'student') {
+                    const studentId = id || authUser.id || authUser.emp_id;
+                    const { data } = await api.get(`/students/${studentId}`);
+                    setTargetUser({ ...data, role: 'student' });
+                } else if (id) {
+                    try {
+                        const { data } = await api.get(`/employees/${id}`);
+                        setTargetUser(data);
+                    } catch (err) {
+                        const { data } = await api.get(`/students/${id}`);
+                        setTargetUser({ ...data, role: 'student' });
+                    }
                 } else {
-                    // Viewing own profile (any role)
                     if (!authUser?.emp_id) return;
                     const { data } = await api.get(`/employees/${authUser.emp_id}?lookup=emp_id`);
                     setTargetUser(data);
@@ -34,7 +41,7 @@ const ProfilePage = () => {
             }
         };
         fetchUser();
-    }, [id, authUser?.emp_id, authUser?.role]);
+    }, [id, authUser?.emp_id, authUser?.id, authUser?.role]);
 
     if (loading) return (
         <Layout>

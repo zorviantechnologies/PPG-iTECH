@@ -77,7 +77,8 @@ const ProfileViewer = ({ user, onClose }) => {
     );
 
     const viewerRole = String(user?.role || '').trim().toLowerCase();
-    const isEmployeeProfile = viewerRole !== 'management' && viewerRole !== 'admin';
+    const isStudentProfile = viewerRole === 'student' || !!user?.reg_no;
+    const isEmployeeProfile = viewerRole !== 'management' && viewerRole !== 'admin' && !isStudentProfile;
 
     // HOD & Principal are restricted when viewing OTHERS' profiles
     // Principal & HOD can view sensitive info for others they are authorized to view
@@ -621,8 +622,8 @@ const ProfileViewer = ({ user, onClose }) => {
                 <div className="flex-1 flex flex-col bg-gray-50/20">
                     <div className="p-8 border-b border-gray-100 bg-white flex justify-between items-center">
                         <div>
-                            <h3 className="text-xl font-black text-gray-800 tracking-tight">Employee Profile</h3>
-                            <p className="text-[10px] font-black text-sky-500 uppercase tracking-[0.3em] mt-1">Official Personnel Data</p>
+                            <h3 className="text-xl font-black text-gray-800 tracking-tight">{isStudentProfile ? 'Student Profile' : 'Employee Profile'}</h3>
+                            <p className="text-[10px] font-black text-sky-500 uppercase tracking-[0.3em] mt-1">{isStudentProfile ? 'Academic & Personal Details' : 'Official Personnel Data'}</p>
                         </div>
                         <div className="flex items-center gap-2">
                             {isEmployeeProfile && (
@@ -671,34 +672,66 @@ const ProfileViewer = ({ user, onClose }) => {
 
                     <div className="flex-1 overflow-y-auto p-8 md:p-10 custom-scrollbar">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                            {/* Core Data - Not editable by user */}
-                            <div className="col-span-full">
-                                <SectionHeader title="Employee Information" />
-                            </div>
-                             <InfoRow 
-                                icon={<FaIdBadge />} 
-                                label="Employee ID" 
-                                value={isEditingProfile ? (formData.emp_id || user.emp_id) : user.emp_id} 
-                                editing={isEditingProfile && (['admin', 'accounts'].includes(authUser.role) || authUser.role === 'management')}
-                                name="emp_id"
-                                onChange={handleChange}
-                            />
-                             <InfoRow icon={<FaUser />} label="Full Name" value={user.name} />
-                            {canViewPin && (
-                                <InfoRow 
-                                    icon={<FaIdBadge />} 
-                                    label="PIN" 
-                                    value={isEditingProfile ? (formData.pin || user.pin) : (user.pin || '****')} 
-                                    editing={isEditingProfile && (['admin', 'accounts'].includes(authUser.role) || (authUser.role === 'management' && user.role === 'management'))}
-                                    name="pin"
-                                    onChange={handleChange}
-                                    type="text"
-                                />
+                            {isStudentProfile ? (
+                                <>
+                                    <div className="col-span-full">
+                                        <SectionHeader title="Academic Information" />
+                                    </div>
+                                    <InfoRow icon={<FaIdBadge />} label="Register Number" value={user.reg_no || user.emp_id} />
+                                    <InfoRow icon={<FaIdBadge />} label="Roll Number" value={user.roll_no || user.emp_id} />
+                                    <InfoRow icon={<FaBuilding />} label="Department" value={user.department_name || 'N/A'} />
+                                    <InfoRow icon={<FaUser />} label="Academic Year" value={user.academic_year ? `Year ${user.academic_year}` : 'Year 1'} />
+                                    <InfoRow icon={<FaCalendarAlt />} label="Current Semester" value={user.semester ? `Semester ${user.semester}` : 'Semester 1'} />
+                                    <InfoRow icon={<FaUsers />} label="Section" value={user.section || 'A'} />
+                                    <InfoRow icon={<FaCalendarAlt />} label="Batch" value={user.batch || '2023 - 2027'} />
+
+                                    <div className="col-span-full">
+                                        <SectionHeader title="Personal Information" />
+                                    </div>
+                                    <InfoRow icon={<FaUser />} label="Full Name" value={user.name} />
+                                    <InfoRow icon={<FaVenusMars />} label="Gender" value={user.gender || 'Not Specified'} />
+                                    <InfoRow icon={<FaCalendarAlt />} label="Date of Birth" value={user.dob || 'Not Specified'} />
+                                    <InfoRow icon={<FaPhone />} label="Mobile Number" value={user.mobile || 'Not Specified'} />
+                                    <InfoRow icon={<FaEnvelope />} label="Email Address" value={user.email || 'Not Specified'} />
+
+                                    <div className="col-span-full">
+                                        <SectionHeader title="Parent / Guardian Details" />
+                                    </div>
+                                    <InfoRow icon={<FaUser />} label="Parent / Guardian Name" value={user.parent_name || 'Not Specified'} />
+                                    <InfoRow icon={<FaPhone />} label="Parent Contact Number" value={user.parent_phone || 'Not Specified'} />
+                                </>
+                            ) : (
+                                <>
+                                    {/* Core Data - Not editable by user */}
+                                    <div className="col-span-full">
+                                        <SectionHeader title="Employee Information" />
+                                    </div>
+                                     <InfoRow 
+                                        icon={<FaIdBadge />} 
+                                        label="Employee ID" 
+                                        value={isEditingProfile ? (formData.emp_id || user.emp_id) : user.emp_id} 
+                                        editing={isEditingProfile && (['admin', 'accounts'].includes(authUser.role) || authUser.role === 'management')}
+                                        name="emp_id"
+                                        onChange={handleChange}
+                                    />
+                                     <InfoRow icon={<FaUser />} label="Full Name" value={user.name} />
+                                    {canViewPin && (
+                                        <InfoRow 
+                                            icon={<FaIdBadge />} 
+                                            label="PIN" 
+                                            value={isEditingProfile ? (formData.pin || user.pin) : (user.pin || '****')} 
+                                            editing={isEditingProfile && (['admin', 'accounts'].includes(authUser.role) || (authUser.role === 'management' && user.role === 'management'))}
+                                            name="pin"
+                                            onChange={handleChange}
+                                            type="text"
+                                        />
+                                    )}
+                                    <InfoRow icon={<FaEnvelope />} label="Official Email ID" value={isEditingProfile ? formData.email : user.email} editing={isEditingProfile} name="email" onChange={handleChange} />
+                                    <InfoRow icon={<FaEnvelope />} label="Personal Email ID" value={isEditingProfile ? formData.personal_email : user.personal_email} editing={isEditingProfile} name="personal_email" onChange={handleChange} />
+                                    <InfoRow icon={<FaBuilding />} label="Department" value={user.department_name} />
+                                    <InfoRow icon={<FaBriefcase />} label="Designation" value={user.designation || user.role} />
+                                </>
                             )}
-                            <InfoRow icon={<FaEnvelope />} label="Official Email ID" value={isEditingProfile ? formData.email : user.email} editing={isEditingProfile} name="email" onChange={handleChange} />
-                            <InfoRow icon={<FaEnvelope />} label="Personal Email ID" value={isEditingProfile ? formData.personal_email : user.personal_email} editing={isEditingProfile} name="personal_email" onChange={handleChange} />
-                            <InfoRow icon={<FaBuilding />} label="Department" value={user.department_name} />
-                            <InfoRow icon={<FaBriefcase />} label="Designation" value={user.designation || user.role} />
 
                             {/* Personal, Family, Career & Location Sections (only for employees) */}
                             {isEmployeeProfile && (

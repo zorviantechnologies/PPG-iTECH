@@ -1,27 +1,38 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
     FaUserGraduate, FaCalendarCheck, FaBookOpen, FaFileAlt, 
     FaAward, FaCheckCircle, FaTimesCircle, FaBuilding, 
-    FaClock, FaGraduationCap, FaSync 
+    FaClock, FaGraduationCap, FaCalendarAlt, FaCalendarDay, 
+    FaStar, FaFilter, FaArrowRight
 } from 'react-icons/fa';
 
-const StudentDashboard = ({ defaultTab = 'results' }) => {
+const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [myResults, setMyResults] = useState([]);
     const [attendance, setAttendance] = useState([]);
     const [timetable, setTimetable] = useState([]);
     const [loading, setLoading] = useState(true);
     
+    // Month stats (Working Days, Holidays, Special Events)
+    const [monthStats, setMonthStats] = useState({ workingDays: 0, holidays: 0, specialEvents: 0 });
+
     const [selectedYearTab, setSelectedYearTab] = useState('1');
     const [selectedSemTab, setSelectedSemTab] = useState('all');
     const [selectedDayTab, setSelectedDayTab] = useState('All Days');
-    const [activeSectionTab, setActiveSectionTab] = useState(defaultTab); // 'results', 'timetable', 'attendance'
+    const [activeSectionTab, setActiveSectionTab] = useState(defaultTab); // 'dashboard', 'results', 'timetable', 'attendance'
     const [resultCategoryTab, setResultCategoryTab] = useState('internal'); // 'internal' | 'semester'
+
+    // Attendance page filter states
+    const [attFilterMode, setAttFilterMode] = useState('all'); // 'all' | 'month' | 'semester'
+    const [selectedAttMonth, setSelectedAttMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
+    const [selectedAttSem, setSelectedAttSem] = useState('all');
 
     useEffect(() => {
         if (defaultTab) {
@@ -32,11 +43,16 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
     const fetchStudentData = useCallback(async () => {
         setLoading(true);
         try {
-            const [profileRes, resultsRes, attRes, ttRes] = await Promise.all([
+            const now = new Date();
+            const curMonth = now.getMonth() + 1;
+            const curYear = now.getFullYear();
+
+            const [profileRes, resultsRes, attRes, ttRes, holidayRes] = await Promise.all([
                 api.get('/auth/profile'),
                 api.get('/results/my-results'),
                 api.get(`/attendance?emp_id=${user?.emp_id}`),
-                api.get('/timetable')
+                api.get('/timetable'),
+                api.get(`holidays?month=${curMonth}&year=${curYear}`)
             ]);
 
             setProfile(profileRes.data || {});
@@ -47,6 +63,29 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
             if (profileRes.data?.academic_year) {
                 setSelectedYearTab(String(profileRes.data.academic_year));
             }
+
+            // Calculate month stats cards
+            const holidayData = holidayRes.data || [];
+            const daysInMonth = new Date(curYear, curMonth, 0).getDate();
+            const holidayDateSet = new Set();
+            holidayData.forEach(h => { holidayDateSet.add(h.h_date); });
+
+            let hCount = 0, sCount = 0;
+            holidayData.forEach(h => {
+                if (h.type === 'Holiday') hCount++;
+                else if (h.type === 'Special') sCount++;
+            });
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dow = new Date(curYear, curMonth - 1, d).getDay();
+                const ds = `${curYear}-${String(curMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                if ((dow === 0 || dow === 6) && !holidayDateSet.has(ds)) hCount++;
+            }
+            setMonthStats({
+                workingDays: daysInMonth - hCount - sCount,
+                holidays: hCount,
+                specialEvents: sCount
+            });
+
         } catch (err) {
             console.error('Error fetching student dashboard data:', err);
         } finally {
@@ -76,10 +115,37 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
         return matchYear && matchSem;
     });
 
+    // Today's weekday string
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const todayName = dayNames[new Date().getDay()];
+    const todayTimetable = timetable
+        .filter(t => t.day_of_week === todayName)
+        .sort((a, b) => (a.period_number - b.period_number));
+
     // Calculate attendance percentage
     const totalAttDays = attendance.length;
     const presentDays = attendance.filter(a => (a.status || '').toUpperCase().includes('PRESENT')).length;
     const attPercentage = totalAttDays > 0 ? ((presentDays / totalAttDays) * 100).toFixed(1) : '100.0';
+
+    // Recent 10 days attendance for dashboard
+    const recentAttendance = [...attendance]
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 10);
+
+    // Filtered attendance for full Attendance Page
+    const filteredAttendanceList = attendance.filter(att => {
+        if (attFilterMode === 'month' && selectedAttMonth) {
+            return String(att.date).startsWith(selectedAttMonth);
+        }
+        if (attFilterMode === 'semester' && selectedAttSem !== 'all') {
+            const semNum = Number(selectedAttSem);
+            // Rough 6-month semester breakdown or matched if record has semester info
+            if (att.semester) {
+                return Number(att.semester) === semNum;
+            }
+        }
+        return true;
+    }).sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return (
         <Layout title="Student Portal">
@@ -126,21 +192,72 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
                     </div>
                 </div>
 
-                {/* Main Section Navigation Tabs */}
-                <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
+                {/* 3 Monthly Summary Cards: Working Days, Holidays, Special Events */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <motion.div
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        onClick={() => navigate('/student/calendar')}
+                        className="bg-emerald-50/80 border border-emerald-200/80 rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:shadow-emerald-100 transition-all"
+                    >
+                        <div className="h-12 w-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
+                            <FaCalendarAlt />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Working Days</p>
+                            <p className="text-2xl font-black text-emerald-800 tracking-tighter">{Number(monthStats.workingDays || 0).toFixed(1)}</p>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        onClick={() => navigate('/student/calendar')}
+                        className="bg-rose-50/80 border border-rose-200/80 rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:shadow-rose-100 transition-all"
+                    >
+                        <div className="h-12 w-12 rounded-xl bg-rose-500 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
+                            <FaCalendarDay />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Holidays</p>
+                            <p className="text-2xl font-black text-rose-800 tracking-tighter">{Number(monthStats.holidays || 0).toFixed(1)}</p>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        onClick={() => navigate('/student/calendar')}
+                        className="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:shadow-amber-100 transition-all"
+                    >
+                        <div className="h-12 w-12 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
+                            <FaStar />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Special Events</p>
+                            <p className="text-2xl font-black text-amber-800 tracking-tighter">{Number(monthStats.specialEvents || 0).toFixed(1)}</p>
+                        </div>
+                    </motion.div>
+                </div>
+
+                {/* Section Navigation Tabs (When on sub-pages or switching) */}
+                <div className="flex items-center gap-2 border-b border-gray-100 pb-2 overflow-x-auto">
                     <button
-                        onClick={() => setActiveSectionTab('results')}
-                        className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
-                            activeSectionTab === 'results'
+                        onClick={() => {
+                            setActiveSectionTab('dashboard');
+                            navigate('/student');
+                        }}
+                        className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 ${
+                            activeSectionTab === 'dashboard'
                                 ? 'bg-indigo-600 text-white shadow-md'
                                 : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                         }`}
                     >
-                        <FaAward /> Examination Results
+                        <FaUserGraduate /> Dashboard Overview
                     </button>
                     <button
-                        onClick={() => setActiveSectionTab('timetable')}
-                        className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
+                        onClick={() => {
+                            setActiveSectionTab('timetable');
+                            navigate('/student/timetable');
+                        }}
+                        className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 ${
                             activeSectionTab === 'timetable'
                                 ? 'bg-indigo-600 text-white shadow-md'
                                 : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
@@ -149,18 +266,155 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
                         <FaBookOpen /> Class Timetable
                     </button>
                     <button
-                        onClick={() => setActiveSectionTab('attendance')}
-                        className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
+                        onClick={() => {
+                            setActiveSectionTab('attendance');
+                            navigate('/student/attendance');
+                        }}
+                        className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 ${
                             activeSectionTab === 'attendance'
                                 ? 'bg-indigo-600 text-white shadow-md'
                                 : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                         }`}
                     >
-                        <FaCalendarCheck /> Attendance Logs
+                        <FaCalendarCheck /> My Attendance Log
+                    </button>
+                    <button
+                        onClick={() => {
+                            setActiveSectionTab('results');
+                            navigate('/student/results');
+                        }}
+                        className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 ${
+                            activeSectionTab === 'results'
+                                ? 'bg-indigo-600 text-white shadow-md'
+                                : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                        }`}
+                    >
+                        <FaAward /> Examination Results
                     </button>
                 </div>
 
-                {/* Section 1: Examination Results */}
+                {/* VIEW 1: MAIN STUDENT DASHBOARD (defaultTab='dashboard') */}
+                {activeSectionTab === 'dashboard' && (
+                    <div className="space-y-8">
+                        
+                        {/* Section A: Today's Timetable ONLY */}
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                                <div>
+                                    <h2 className="text-sm font-black uppercase tracking-wider text-gray-800 flex items-center gap-2">
+                                        <FaBookOpen className="text-indigo-600" /> Today's Timetable ({todayName})
+                                    </h2>
+                                    <p className="text-xs text-gray-400 font-mono mt-0.5">
+                                        {profile?.department_name || 'Department'} &bull; Year {profile?.academic_year || 1} (Sem {profile?.semester || 1}) Sec {profile?.section || 'A'}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setActiveSectionTab('timetable');
+                                        navigate('/student/timetable');
+                                    }}
+                                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 uppercase tracking-wider"
+                                >
+                                    Full Timetable <FaArrowRight size={10} />
+                                </button>
+                            </div>
+
+                            {loading ? (
+                                <div className="py-8 text-center text-gray-400 text-xs font-semibold">Loading today's schedule...</div>
+                            ) : todayTimetable.length === 0 ? (
+                                <div className="p-8 text-center text-gray-400 bg-gray-50 rounded-2xl space-y-1">
+                                    <FaBookOpen className="text-2xl text-gray-300 mx-auto" />
+                                    <p className="font-bold text-gray-600 text-xs">No classes scheduled for today ({todayName})</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {todayTimetable.map(tt => (
+                                        <div key={tt.id} className="bg-gray-50/80 p-4 rounded-2xl border border-gray-100 hover:border-indigo-200 transition-all space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[9px] font-black uppercase text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md">
+                                                    Period {tt.period_number}
+                                                </span>
+                                                <span className="text-[10px] font-mono font-bold text-gray-500">
+                                                    {tt.start_time ? String(tt.start_time).slice(0, 5) : ''} - {tt.end_time ? String(tt.end_time).slice(0, 5) : ''}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <p className="font-black text-gray-800 text-sm leading-snug">{tt.subject}</p>
+                                                {tt.subject_code && (
+                                                    <span className="text-[10px] font-mono font-bold text-sky-600 block mt-0.5">{tt.subject_code}</span>
+                                                )}
+                                            </div>
+                                            <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between text-[10px] text-gray-500">
+                                                <span>Room: <strong className="text-gray-700">{tt.room_number || 'TBA'}</strong></span>
+                                                {tt.staff_name && (
+                                                    <span className="font-semibold text-indigo-600 truncate max-w-[120px]">{tt.staff_name}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Section B: Recent Attendance History (Last 10 Days ONLY) */}
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                                <h2 className="text-sm font-black uppercase tracking-wider text-gray-800 flex items-center gap-2">
+                                    <FaCalendarCheck className="text-indigo-600" /> Recent Attendance History (Last 10 Days)
+                                </h2>
+                                <button
+                                    onClick={() => {
+                                        setActiveSectionTab('attendance');
+                                        navigate('/student/attendance');
+                                    }}
+                                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 uppercase tracking-wider"
+                                >
+                                    Full Attendance Log <FaArrowRight size={10} />
+                                </button>
+                            </div>
+
+                            {loading ? (
+                                <div className="py-8 text-center text-gray-400 text-xs font-semibold">Loading attendance...</div>
+                            ) : recentAttendance.length === 0 ? (
+                                <p className="text-xs text-gray-400 py-6 text-center">No attendance logs available for recent period</p>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs">
+                                        <thead className="bg-gray-50 text-gray-400 uppercase font-bold border-b border-gray-100">
+                                            <tr>
+                                                <th className="py-2.5 px-4">Date</th>
+                                                <th className="py-2.5 px-4">In Time</th>
+                                                <th className="py-2.5 px-4">Out Time</th>
+                                                <th className="py-2.5 px-4">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {recentAttendance.map((att) => (
+                                                <tr key={att.id}>
+                                                    <td className="py-2.5 px-4 font-mono font-semibold">{String(att.date).slice(0, 10)}</td>
+                                                    <td className="py-2.5 px-4 font-mono">{att.in_time || '--:--'}</td>
+                                                    <td className="py-2.5 px-4 font-mono">{att.out_time || '--:--'}</td>
+                                                    <td className="py-2.5 px-4">
+                                                        <span className={`px-2 py-0.5 rounded font-bold ${
+                                                            (att.status || '').toUpperCase().includes('PRESENT')
+                                                                ? 'bg-emerald-50 text-emerald-600'
+                                                                : 'bg-red-50 text-red-600'
+                                                        }`}>
+                                                            {att.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+
+                    </div>
+                )}
+
+                {/* VIEW 2: EXAMINATION RESULTS PAGE */}
                 {activeSectionTab === 'results' && (() => {
                     const internalResults = yearFilteredResults.filter(r => {
                         const name = (r.exam_name || '').toLowerCase();
@@ -326,7 +580,7 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
                     );
                 })()}
 
-                {/* Section 2: Class Timetable */}
+                {/* VIEW 3: CLASS TIMETABLE PAGE (FULL WEEK) */}
                 {activeSectionTab === 'timetable' && (
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
@@ -419,36 +673,110 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
                     </div>
                 )}
 
-                {/* Section 3: Attendance Logs */}
+                {/* VIEW 4: ATTENDANCE LOG PAGE (MONTH-WISE & SEMESTER-WISE FILTERS) */}
                 {activeSectionTab === 'attendance' && (
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-                        <h2 className="text-sm font-black uppercase tracking-wider text-gray-800 flex items-center gap-2 border-b border-gray-100 pb-3">
-                            <FaCalendarCheck className="text-indigo-600" /> Attendance History
-                        </h2>
-                        {attendance.length === 0 ? (
-                            <p className="text-xs text-gray-400 py-6 text-center">No attendance logs available for current period</p>
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h2 className="text-sm font-black uppercase tracking-wider text-gray-800 flex items-center gap-2">
+                                    <FaCalendarCheck className="text-indigo-600" /> Full Attendance Log
+                                </h2>
+                                <p className="text-xs text-gray-400 mt-1 font-mono">
+                                    Overall Attendance: <span className="font-bold text-indigo-600">{attPercentage}%</span> ({presentDays} / {totalAttDays} Days)
+                                </p>
+                            </div>
+
+                            {/* Attendance Filter Controls */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                                {/* Mode Selector */}
+                                <div className="flex items-center p-1 bg-gray-100 rounded-xl">
+                                    <button
+                                        onClick={() => setAttFilterMode('all')}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                            attFilterMode === 'all'
+                                                ? 'bg-indigo-600 text-white shadow-sm'
+                                                : 'text-gray-600 hover:text-indigo-600'
+                                        }`}
+                                    >
+                                        All History
+                                    </button>
+                                    <button
+                                        onClick={() => setAttFilterMode('month')}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                            attFilterMode === 'month'
+                                                ? 'bg-indigo-600 text-white shadow-sm'
+                                                : 'text-gray-600 hover:text-indigo-600'
+                                        }`}
+                                    >
+                                        Month-wise
+                                    </button>
+                                    <button
+                                        onClick={() => setAttFilterMode('semester')}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                            attFilterMode === 'semester'
+                                                ? 'bg-indigo-600 text-white shadow-sm'
+                                                : 'text-gray-600 hover:text-indigo-600'
+                                        }`}
+                                    >
+                                        Semester-wise
+                                    </button>
+                                </div>
+
+                                {/* Month Picker Input */}
+                                {attFilterMode === 'month' && (
+                                    <input
+                                        type="month"
+                                        value={selectedAttMonth}
+                                        onChange={(e) => setSelectedAttMonth(e.target.value)}
+                                        className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100"
+                                    />
+                                )}
+
+                                {/* Semester Selector */}
+                                {attFilterMode === 'semester' && (
+                                    <select
+                                        value={selectedAttSem}
+                                        onChange={(e) => setSelectedAttSem(e.target.value)}
+                                        className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100"
+                                    >
+                                        <option value="all">All Semesters</option>
+                                        {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                                            <option key={s} value={s}>Semester {s}</option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
+                        </div>
+
+                        {loading ? (
+                            <div className="py-12 text-center text-gray-400 font-semibold text-xs">Loading attendance history...</div>
+                        ) : filteredAttendanceList.length === 0 ? (
+                            <div className="p-8 text-center text-gray-400 space-y-2">
+                                <FaCalendarCheck className="text-3xl text-gray-300 mx-auto" />
+                                <p className="font-semibold text-gray-600 text-sm">No attendance records found for selected filter criteria</p>
+                            </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-xs">
                                     <thead className="bg-gray-50 text-gray-400 uppercase font-bold border-b border-gray-100">
                                         <tr>
-                                            <th className="py-2.5 px-4">Date</th>
-                                            <th className="py-2.5 px-4">In Time</th>
-                                            <th className="py-2.5 px-4">Out Time</th>
-                                            <th className="py-2.5 px-4">Status</th>
+                                            <th className="py-3 px-4">Date</th>
+                                            <th className="py-3 px-4">In Time</th>
+                                            <th className="py-3 px-4">Out Time</th>
+                                            <th className="py-3 px-4">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
-                                        {attendance.map((att) => (
-                                            <tr key={att.id}>
-                                                <td className="py-2.5 px-4 font-mono font-semibold">{String(att.date).slice(0, 10)}</td>
-                                                <td className="py-2.5 px-4 font-mono">{att.in_time || '--:--'}</td>
-                                                <td className="py-2.5 px-4 font-mono">{att.out_time || '--:--'}</td>
-                                                <td className="py-2.5 px-4">
-                                                    <span className={`px-2 py-0.5 rounded font-bold ${
+                                        {filteredAttendanceList.map((att) => (
+                                            <tr key={att.id} className="hover:bg-gray-50/80 transition-colors">
+                                                <td className="py-3 px-4 font-mono font-semibold">{String(att.date).slice(0, 10)}</td>
+                                                <td className="py-3 px-4 font-mono">{att.in_time || '--:--'}</td>
+                                                <td className="py-3 px-4 font-mono">{att.out_time || '--:--'}</td>
+                                                <td className="py-3 px-4">
+                                                    <span className={`px-2.5 py-1 rounded font-bold text-[10px] uppercase ${
                                                         (att.status || '').toUpperCase().includes('PRESENT')
-                                                            ? 'bg-emerald-50 text-emerald-600'
-                                                            : 'bg-red-50 text-red-600'
+                                                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                                                            : 'bg-red-50 text-red-600 border border-red-200'
                                                     }`}>
                                                         {att.status}
                                                     </span>

@@ -516,9 +516,11 @@ const Timetable = ({ showToggle = true }) => {
                             <h1 className="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-3">
                                 <FaCalendarAlt className="text-sky-600" /> Class Timetable Setup
                             </h1>
-                            <p className="text-xs font-semibold text-gray-500 mt-0.5">
-                                Select Year & Department to setup timetables, import Excel sheets, and view saved schedules
-                            </p>
+                            {!isAdminStudentPage && (
+                                <p className="text-xs font-semibold text-gray-500 mt-0.5">
+                                    Select Year & Department to setup timetables, import Excel sheets, and view saved schedules
+                                </p>
+                            )}
                         </div>
                     </div>
 

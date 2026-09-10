@@ -175,7 +175,7 @@ const StudentFormPage = () => {
                                         name="reg_no"
                                         value={formData.reg_no}
                                         onChange={handleChange}
-                                        placeholder="e.g. 711522104001"
+                                        placeholder="e.g. 712524205001"
                                         disabled={isEdit}
                                         required
                                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 transition-all font-semibold font-mono disabled:opacity-60"
@@ -189,7 +189,7 @@ const StudentFormPage = () => {
                                         name="roll_no"
                                         value={formData.roll_no}
                                         onChange={handleChange}
-                                        placeholder="e.g. 22CSE01"
+                                        placeholder="e.g. 22IT01"
                                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 transition-all font-semibold font-mono"
                                     />
                                 </div>

@@ -607,9 +607,11 @@ const LeaveLimitation = () => {
                         <h1 className="text-3xl font-black text-gray-800 tracking-tight">
                             {isStudentModule ? 'Student Leave Balances' : 'Staff Leave Balances'}
                         </h1>
-                        <p className="text-xs font-bold text-gray-400 mt-1">
-                            {isStudentModule ? 'Managing leave balances for enrolled students' : 'Managing yearly leave limitations and balances for staff members'}
-                        </p>
+                        {!isStudentModule && (
+                            <p className="text-xs font-bold text-gray-400 mt-1">
+                                Managing yearly leave limitations and balances for staff members
+                            </p>
+                        )}
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-3 w-full">
                         <div className="flex items-center gap-3">
