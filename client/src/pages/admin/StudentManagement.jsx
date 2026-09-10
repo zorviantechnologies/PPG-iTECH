@@ -181,7 +181,14 @@ const StudentManagement = () => {
                         <div>
                             <select
                                 value={selectedYear}
-                                onChange={(e) => setSelectedYear(e.target.value)}
+                                onChange={(e) => {
+                                    const yr = e.target.value;
+                                    setSelectedYear(yr);
+                                    if (yr === '1' && !['1', '2'].includes(String(selectedSem))) setSelectedSem('');
+                                    else if (yr === '2' && !['3', '4'].includes(String(selectedSem))) setSelectedSem('');
+                                    else if (yr === '3' && !['5', '6'].includes(String(selectedSem))) setSelectedSem('');
+                                    else if (yr === '4' && !['7', '8'].includes(String(selectedSem))) setSelectedSem('');
+                                }}
                                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-sky-500 transition-colors"
                             >
                                 <option value="">All Academic Years</option>
@@ -200,7 +207,11 @@ const StudentManagement = () => {
                                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-sky-500 transition-colors"
                             >
                                 <option value="">All Semesters</option>
-                                {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                                {(selectedYear === '1' ? [1, 2] :
+                                  selectedYear === '2' ? [3, 4] :
+                                  selectedYear === '3' ? [5, 6] :
+                                  selectedYear === '4' ? [7, 8] :
+                                  [1, 2, 3, 4, 5, 6, 7, 8]).map(s => (
                                     <option key={s} value={s}>Semester {s}</option>
                                 ))}
                             </select>

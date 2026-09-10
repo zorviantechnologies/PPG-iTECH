@@ -78,7 +78,12 @@ const StudentFormPage = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === 'academic_year') {
+            const defaultSem = value === '1' ? '1' : value === '2' ? '3' : value === '3' ? '5' : '7';
+            setFormData(prev => ({ ...prev, [name]: value, semester: defaultSem }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -226,7 +231,11 @@ const StudentFormPage = () => {
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 transition-all font-semibold"
                                     >
-                                        {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                                        {(formData.academic_year === '1' ? [1, 2] :
+                                          formData.academic_year === '2' ? [3, 4] :
+                                          formData.academic_year === '3' ? [5, 6] :
+                                          formData.academic_year === '4' ? [7, 8] :
+                                          [1, 2, 3, 4, 5, 6, 7, 8]).map(s => (
                                             <option key={s} value={s}>Semester {s}</option>
                                         ))}
                                     </select>

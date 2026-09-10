@@ -486,6 +486,20 @@ const Header = () => {
                             </h2>
                         </div>
                     </div>
+                    {/* Switch Module Button in Header (Admin / Accounts / Staff / HOD) */}
+                    {!isManagement && ['admin', 'accounts', 'staff', 'hod'].includes(user?.role) && (
+                        <button
+                            type="button"
+                            onClick={openModuleChooser}
+                            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold transition-all border border-sky-200 shadow-sm shrink-0 ml-2"
+                            title="Switch Portal Module"
+                        >
+                            <FaSync className="text-sky-600 animate-spin-slow" />
+                            <span className="capitalize">
+                                {activeModule === 'students' ? '🎓 Students' : activeModule === 'results' ? '📊 Marks Upload' : '👔 Staff'}
+                            </span>
+                        </button>
+                    )}
                 </div>
 
                 <div className="flex items-center space-x-3">
@@ -637,20 +651,6 @@ const Header = () => {
                         </div>
                     )}
 
-                    {/* Switch Module Button in Header (Admin / Accounts / Staff / HOD) */}
-                    {!isManagement && ['admin', 'accounts', 'staff', 'hod'].includes(user?.role) && (
-                        <button
-                            type="button"
-                            onClick={openModuleChooser}
-                            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold transition-all border border-sky-200 shadow-sm shrink-0"
-                            title="Switch Portal Module"
-                        >
-                            <FaSync className="text-sky-600 animate-spin-slow" />
-                            <span className="capitalize">
-                                {activeModule === 'students' ? '🎓 Students' : activeModule === 'results' ? '📊 Marks Upload' : '👔 Staff'}
-                            </span>
-                        </button>
-                    )}
 
                     <div
                         className="relative"

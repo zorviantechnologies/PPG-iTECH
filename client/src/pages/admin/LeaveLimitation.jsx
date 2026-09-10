@@ -381,8 +381,8 @@ const LeaveLimitation = () => {
     };
 
     const handleDeleteLeaveType = async (leaveType) => {
-        if (leaveType.isDefault) {
-            Swal.fire({ title: 'Cannot Delete', text: 'Default leave types cannot be deleted.', icon: 'warning', confirmButtonColor: '#2563eb' });
+        if (leaveType.isDefault || (!isStudentModule && (leaveType.key === 'comp' || leaveType.key === 'comp_leave'))) {
+            Swal.fire({ title: 'Cannot Delete', text: 'Default or mandatory leave types cannot be deleted.', icon: 'warning', confirmButtonColor: '#2563eb' });
             return;
         }
         const result = await Swal.fire({
@@ -570,6 +570,13 @@ const LeaveLimitation = () => {
             emp.designation?.toLowerCase().includes(search.toLowerCase())
         );
 
+    const displayedLeaveTypes = leaveTypes.filter(t => {
+        if (isStudentModule && (t.key === 'comp' || t.key === 'comp_leave')) {
+            return false;
+        }
+        return true;
+    });
+
     const visibleEmpIds = filtered
         .map((emp) => String(emp?.emp_id || '').trim())
         .filter(Boolean);
@@ -662,7 +669,7 @@ const LeaveLimitation = () => {
                         </button>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                        {leaveTypes.map(t => {
+                        {displayedLeaveTypes.map(t => {
                             const c = colorMap[t.color] || colorMap.blue;
                             return (
                                 <div key={t.key} className={`flex items-center gap-2.5 pl-4 pr-2 py-2 ${c.bg} ${c.border} border rounded-2xl group/lt`}>
@@ -723,7 +730,7 @@ const LeaveLimitation = () => {
                                     <th className="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest min-w-[220px]">
                                         {isStudentModule ? 'Student' : 'Employee'}
                                     </th>
-                                    {leaveTypes.map(t => (
+                                    {displayedLeaveTypes.map(t => (
                                         <th key={t.key} className="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center min-w-[120px]">
                                             {t.label}
                                             <div className="text-[8px] text-gray-300 normal-case font-bold tracking-normal mt-0.5">{t.full}</div>
@@ -735,7 +742,7 @@ const LeaveLimitation = () => {
                             <tbody className="divide-y divide-sky-50/80">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={leaveTypes.length + 3} className="p-16 text-center">
+                                        <td colSpan={displayedLeaveTypes.length + 3} className="p-16 text-center">
                                             <div className="flex items-center justify-center gap-3">
                                                 <div className="h-2 w-2 bg-sky-600 rounded-full animate-bounce" />
                                                 <div className="h-2 w-2 bg-sky-600 rounded-full animate-bounce delay-100" />
@@ -745,7 +752,7 @@ const LeaveLimitation = () => {
                                     </tr>
                                 ) : filtered.length === 0 ? (
                                     <tr>
-                                        <td colSpan={leaveTypes.length + 3} className="p-16 text-center opacity-30">
+                                        <td colSpan={displayedLeaveTypes.length + 3} className="p-16 text-center opacity-30">
                                             <FaUserTie size={40} className="mx-auto mb-3" />
                                             <p className="font-black text-sm">{isStudentModule ? 'No student records found' : 'No staff records found'}</p>
                                         </td>
@@ -810,7 +817,7 @@ const LeaveLimitation = () => {
                                             </td>
 
                                             {/* Leave Type Cells */}
-                                            {leaveTypes.map(t => {
+                                            {displayedLeaveTypes.map(t => {
                                                 const prefix = colPrefix(t.key);
                                                 const limitKey = `${prefix}_limit`;
                                                 const takenKey = `${prefix}_taken`;

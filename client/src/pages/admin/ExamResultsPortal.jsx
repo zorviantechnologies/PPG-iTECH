@@ -1,20 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import Layout from '../../components/Layout';
 import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     FaFileInvoice, FaUpload, FaDownload, FaGlobe, FaEye, 
     FaTrash, FaPlus, FaCheckCircle, FaExclamationTriangle, 
-    FaSearch, FaFilter, FaBuilding, FaGraduationCap, FaSave, FaSync 
+    FaSearch, FaFilter, FaBuilding, FaGraduationCap, FaSave, FaSync, FaLock 
 } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
 const ExamResultsPortal = () => {
+    const { user } = useAuth();
     const [departments, setDepartments] = useState([]);
     const [selectedDept, setSelectedDept] = useState('');
     const [selectedYear, setSelectedYear] = useState('1');
     const [selectedSem, setSelectedSem] = useState('1');
-    const [examName, setExamName] = useState('End Semester Nov 2025');
+    const [resultCategory, setResultCategory] = useState('internal'); // 'internal' | 'semester'
+
+    const examName = resultCategory === 'semester' ? 'Semester Result' : 'Internal / Assessment Result';
+    const isAdmin = user?.role === 'admin';
+    const canManageCurrentType = resultCategory === 'internal' || isAdmin;
     
     const [resultsData, setResultsData] = useState([]);
     const [summaryStats, setSummaryStats] = useState({ totalEntries: 0, passCount: 0, failCount: 0, passPercentage: 0 });
@@ -303,29 +309,66 @@ const ExamResultsPortal = () => {
         <Layout title="Examination Results Portal">
             <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
 
-                {/* Action Buttons: Export CSV, CSV Template & Bulk Upload CSV */}
-                <div className="flex flex-wrap items-center justify-end gap-3">
-                    <button
-                        onClick={handleExportCSV}
-                        disabled={resultsData.length === 0}
-                        className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold px-5 py-3 rounded-2xl shadow-sm hover:shadow transition-all text-xs flex items-center gap-2 active:scale-95"
-                        title="Download uploaded marks for selected department, year, and semester as CSV"
-                    >
-                        <FaDownload /> Download Results CSV
-                    </button>
-                    <button
-                        onClick={handleDownloadTemplate}
-                        className="bg-white hover:bg-gray-50 text-gray-700 font-bold px-5 py-3 rounded-2xl border border-gray-200 shadow-sm hover:shadow transition-all text-xs flex items-center gap-2 active:scale-95"
-                    >
-                        <FaDownload className="text-sky-600" /> CSV Template
-                    </button>
-                    <button
-                        onClick={() => setShowUploadModal(true)}
-                        className="bg-sky-600 hover:bg-sky-700 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-sky-100 transition-all text-xs flex items-center gap-2 active:scale-95"
-                    >
-                        <FaUpload /> Bulk Upload CSV
-                    </button>
+                {/* Top Category Switcher Tabs: Internal / Assessment Result vs Semester Result */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-2xl w-full sm:w-auto">
+                        <button
+                            onClick={() => setResultCategory('internal')}
+                            className={`flex-1 sm:flex-none px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                                resultCategory === 'internal'
+                                    ? 'bg-sky-600 text-white shadow-md'
+                                    : 'text-gray-600 hover:text-sky-600'
+                            }`}
+                        >
+                            <FaFileInvoice /> Internal / Assessment Result
+                        </button>
+                        <button
+                            onClick={() => setResultCategory('semester')}
+                            className={`flex-1 sm:flex-none px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                                resultCategory === 'semester'
+                                    ? 'bg-indigo-600 text-white shadow-md'
+                                    : 'text-gray-600 hover:text-indigo-600'
+                            }`}
+                        >
+                            <FaGraduationCap /> Semester Result
+                        </button>
+                    </div>
+
+                    {/* Action Buttons: Export CSV, CSV Template & Bulk Upload CSV */}
+                    <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-end">
+                        <button
+                            onClick={handleExportCSV}
+                            disabled={resultsData.length === 0}
+                            className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold px-4 py-2.5 rounded-2xl shadow-sm hover:shadow transition-all text-xs flex items-center gap-2 active:scale-95"
+                            title="Download uploaded marks for selected filters"
+                        >
+                            <FaDownload /> Download CSV
+                        </button>
+                        {canManageCurrentType && (
+                            <>
+                                <button
+                                    onClick={handleDownloadTemplate}
+                                    className="bg-white hover:bg-gray-50 text-gray-700 font-bold px-4 py-2.5 rounded-2xl border border-gray-200 shadow-sm hover:shadow transition-all text-xs flex items-center gap-2 active:scale-95"
+                                >
+                                    <FaDownload className="text-sky-600" /> CSV Template
+                                </button>
+                                <button
+                                    onClick={() => setShowUploadModal(true)}
+                                    className="bg-sky-600 hover:bg-sky-700 text-white font-bold px-5 py-2.5 rounded-2xl shadow-lg shadow-sky-100 transition-all text-xs flex items-center gap-2 active:scale-95"
+                                >
+                                    <FaUpload /> Bulk Upload CSV
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
+
+                {!canManageCurrentType && (
+                    <div className="bg-amber-50 border border-amber-200 text-amber-800 px-5 py-3 rounded-2xl text-xs font-bold flex items-center gap-3 shadow-sm">
+                        <FaLock className="text-amber-600 shrink-0 text-base" />
+                        <span>Semester Results upload and publishing options are managed exclusively by Admin. You are in read-only view mode.</span>
+                    </div>
+                )}
 
                 {/* Department & Year / Semester Tabs Selector */}
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-4">
@@ -378,22 +421,15 @@ const ExamResultsPortal = () => {
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black uppercase text-gray-400 mb-1">Exam / Assessment Name</label>
-                            <input
-                                type="text"
-                                list="examNameOptions"
-                                value={examName}
-                                onChange={(e) => setExamName(e.target.value)}
+                            <label className="block text-[10px] font-black uppercase text-gray-400 mb-1">Result Category</label>
+                            <select
+                                value={resultCategory}
+                                onChange={(e) => setResultCategory(e.target.value)}
                                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-500"
-                                placeholder="e.g. Assessment 1 / End Semester"
-                            />
-                            <datalist id="examNameOptions">
-                                <option value="Internal Assessment 1" />
-                                <option value="Internal Assessment 2" />
-                                <option value="Internal Model Exam" />
-                                <option value="End Semester Nov 2025" />
-                                <option value="End Semester May 2026" />
-                            </datalist>
+                            >
+                                <option value="internal">Internal / Assessment Result</option>
+                                <option value="semester">Semester Result</option>
+                            </select>
                         </div>
 
                         <div>
@@ -448,29 +484,32 @@ const ExamResultsPortal = () => {
                         }`}>
                             Status: {isCurrentSetPublished ? 'Published to Students' : 'Draft / Unpublished'}
                         </span>
-                        <button
-                            onClick={handleTogglePublish}
-                            disabled={isPublishing || resultsData.length === 0}
-                            className={`px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-md transition-all flex items-center gap-2 disabled:opacity-50 ${
-                                isCurrentSetPublished 
-                                    ? 'bg-amber-600 hover:bg-amber-700' 
-                                    : 'bg-emerald-600 hover:bg-emerald-700'
-                            }`}
-                        >
-                            <FaGlobe /> {isCurrentSetPublished ? 'Unpublish Results' : 'Publish Results to Students'}
-                        </button>
+                        {canManageCurrentType && (
+                            <button
+                                onClick={handleTogglePublish}
+                                disabled={isPublishing || resultsData.length === 0}
+                                className={`px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-md transition-all flex items-center gap-2 disabled:opacity-50 ${
+                                    isCurrentSetPublished 
+                                        ? 'bg-amber-600 hover:bg-amber-700' 
+                                        : 'bg-emerald-600 hover:bg-emerald-700'
+                                }`}
+                            >
+                                <FaGlobe /> {isCurrentSetPublished ? 'Unpublish Results' : 'Publish Results to Students'}
+                            </button>
+                        )}
                     </div>
 
                 </div>
 
                 {/* Manual Add Form Drawer */}
-                <details className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group">
-                    <summary className="p-4 font-bold text-xs text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-50 flex items-center justify-between">
-                        <span className="flex items-center gap-2 text-indigo-600"><FaPlus /> Add Single Result Entry Manually</span>
-                        <span className="text-gray-400 text-xs">Click to expand</span>
-                    </summary>
-                    <form onSubmit={handleAddManualEntry} className="p-4 border-t border-gray-100 bg-gray-50/50 space-y-3">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                {canManageCurrentType && (
+                    <details className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group">
+                        <summary className="p-4 font-bold text-xs text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-50 flex items-center justify-between">
+                            <span className="flex items-center gap-2 text-indigo-600"><FaPlus /> Add Single Result Entry Manually</span>
+                            <span className="text-gray-400 text-xs">Click to expand</span>
+                        </summary>
+                        <form onSubmit={handleAddManualEntry} className="p-4 border-t border-gray-100 bg-gray-50/50 space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                             <input
                                 type="text"
                                 placeholder="Student Reg No *"
@@ -531,6 +570,7 @@ const ExamResultsPortal = () => {
                         </div>
                     </form>
                 </details>
+                )}
 
                 {/* Results Data Table */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">

@@ -74,8 +74,14 @@ exports.getResults = async (req, res) => {
         }
 
         if (exam_name) {
-            query += ` AND LOWER(r.exam_name) = LOWER($${paramIndex++})`;
-            params.push(exam_name.trim());
+            if (exam_name.toLowerCase().includes('semester')) {
+                query += ` AND (LOWER(r.exam_name) LIKE '%semester%' OR LOWER(r.exam_name) = 'semester result')`;
+            } else if (exam_name.toLowerCase().includes('internal') || exam_name.toLowerCase().includes('assessment')) {
+                query += ` AND (LOWER(r.exam_name) LIKE '%internal%' OR LOWER(r.exam_name) LIKE '%assessment%' OR LOWER(r.exam_name) = 'internal / assessment result')`;
+            } else {
+                query += ` AND LOWER(r.exam_name) = LOWER($${paramIndex++})`;
+                params.push(exam_name.trim());
+            }
         }
 
         if (student_id) {
@@ -121,6 +127,11 @@ exports.getResults = async (req, res) => {
 // @access  Private (Admin, Staff, HOD, Principal)
 exports.uploadBulkResults = async (req, res) => {
     const { results, department_id, academic_year, semester, exam_name, published } = req.body;
+
+    const targetExamName = String(exam_name || '').trim();
+    if (targetExamName.toLowerCase().includes('semester') && req.user?.role !== 'admin') {
+        return res.status(403).json({ message: 'Only Admin is authorized to upload Semester Results.' });
+    }
 
     if (!Array.isArray(results) || results.length === 0) {
         return res.status(400).json({ message: 'No result items provided for upload' });
@@ -242,6 +253,11 @@ exports.uploadBulkResults = async (req, res) => {
 // @access  Private (Admin, Staff, HOD, Principal)
 exports.publishResults = async (req, res) => {
     const { department_id, academic_year, semester, exam_name, published } = req.body;
+
+    const targetExamName = String(exam_name || '').trim();
+    if (targetExamName.toLowerCase().includes('semester') && req.user?.role !== 'admin') {
+        return res.status(403).json({ message: 'Only Admin is authorized to publish or unpublish Semester Results.' });
+    }
 
     const isPublished = Boolean(published);
 

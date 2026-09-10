@@ -24,9 +24,11 @@ const to12h = (timeStr) => {
 };
 
 const Timetable = ({ showToggle = true }) => {
-    const { user } = useAuth();
+    const { user, activeModule } = useAuth();
     const { empId } = useParams();
     const navigate = useNavigate();
+
+    const isAdminStudentPage = ['admin', 'accounts'].includes(user?.role) && activeModule === 'students';
 
     const viewOnlyMode = !!empId;
     const [view, setView] = useState(() => {
@@ -530,7 +532,7 @@ const Timetable = ({ showToggle = true }) => {
                             </button>
                         )}
 
-                        {!viewOnlyMode && isManager && showToggle && (
+                        {!viewOnlyMode && isManager && showToggle && !isAdminStudentPage && (
                             <div className="flex p-1 bg-white rounded-2xl border border-sky-100 shadow-sm">
                                 <button
                                     onClick={() => setView('class')}
@@ -650,7 +652,11 @@ const Timetable = ({ showToggle = true }) => {
                                         className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:ring-2 focus:ring-sky-500 font-bold text-xs text-gray-700 transition-all"
                                     >
                                         <option value="">-- Choose Semester --</option>
-                                        {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                                        {(selectedYear === '1' ? [1, 2] :
+                                          selectedYear === '2' ? [3, 4] :
+                                          selectedYear === '3' ? [5, 6] :
+                                          selectedYear === '4' ? [7, 8] :
+                                          [1, 2, 3, 4, 5, 6, 7, 8]).map(s => (
                                             <option key={s} value={String(s)}>Semester {s}</option>
                                         ))}
                                     </select>

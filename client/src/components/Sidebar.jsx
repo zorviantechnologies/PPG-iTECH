@@ -49,7 +49,6 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
       if (activeModule === 'students') {
         return [
           { label: 'Student Management', path: '/admin/students', icon: <FaUserGraduate /> },
-          { label: 'Add Student', path: '/admin/students/new', icon: <FaUsers /> },
           { label: 'Department Management', path: '/admin/departments', icon: <FaBuilding /> },
           { label: 'Timetable Setup', path: '/admin/timetable', icon: <FaCalendarAlt /> },
           { label: 'Academic Calendar', path: '/admin/calendar', icon: <FaCalendarDay /> },

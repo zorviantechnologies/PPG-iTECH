@@ -21,6 +21,7 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
     const [selectedSemTab, setSelectedSemTab] = useState('all');
     const [selectedDayTab, setSelectedDayTab] = useState('All Days');
     const [activeSectionTab, setActiveSectionTab] = useState(defaultTab); // 'results', 'timetable', 'attendance'
+    const [resultCategoryTab, setResultCategoryTab] = useState('internal'); // 'internal' | 'semester'
 
     useEffect(() => {
         if (defaultTab) {
@@ -160,7 +161,18 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
                 </div>
 
                 {/* Section 1: Examination Results */}
-                {activeSectionTab === 'results' && (
+                {activeSectionTab === 'results' && (() => {
+                    const internalResults = yearFilteredResults.filter(r => {
+                        const name = (r.exam_name || '').toLowerCase();
+                        return name.includes('internal') || name.includes('assessment') || !name.includes('semester');
+                    });
+                    const semesterResults = yearFilteredResults.filter(r => {
+                        const name = (r.exam_name || '').toLowerCase();
+                        return name.includes('semester');
+                    });
+                    const displayedStudentResults = resultCategoryTab === 'semester' ? semesterResults : internalResults;
+
+                    return (
                     <div className="space-y-6">
                         
                         {/* Year & Semester Selector Sub-Tabs */}
@@ -215,23 +227,49 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
 
                         {/* Grade Sheet Card */}
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-6 space-y-4">
-                            <h2 className="text-sm font-black uppercase tracking-wider text-gray-800 flex items-center gap-2 border-b border-gray-100 pb-3">
-                                <FaAward className="text-indigo-600" /> Academic Performance & Grade Card
-                            </h2>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                                <h2 className="text-sm font-black uppercase tracking-wider text-gray-800 flex items-center gap-2">
+                                    <FaAward className="text-indigo-600" /> Academic Performance & Grade Card
+                                </h2>
+                                <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl">
+                                    <button
+                                        onClick={() => setResultCategoryTab('internal')}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                            resultCategoryTab === 'internal'
+                                                ? 'bg-sky-600 text-white shadow-sm'
+                                                : 'text-gray-600 hover:text-sky-600'
+                                        }`}
+                                    >
+                                        Internal / Assessment Results ({internalResults.length})
+                                    </button>
+                                    <button
+                                        onClick={() => setResultCategoryTab('semester')}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                            resultCategoryTab === 'semester'
+                                                ? 'bg-indigo-600 text-white shadow-sm'
+                                                : 'text-gray-600 hover:text-indigo-600'
+                                        }`}
+                                    >
+                                        Semester Results ({semesterResults.length})
+                                    </button>
+                                </div>
+                            </div>
 
                             {loading ? (
                                 <div className="p-8 text-center text-gray-400">Loading exam results...</div>
-                            ) : yearFilteredResults.length === 0 ? (
+                            ) : displayedStudentResults.length === 0 ? (
                                 <div className="p-8 text-center text-gray-400 space-y-2">
                                     <FaFileAlt className="text-3xl text-gray-300 mx-auto" />
-                                    <p className="font-semibold text-gray-600 text-sm">No published examination results available for Year {selectedYearTab} {selectedSemTab !== 'all' ? `(Semester ${selectedSemTab})` : ''}</p>
+                                    <p className="font-semibold text-gray-600 text-sm">
+                                        No published {resultCategoryTab === 'semester' ? 'Semester' : 'Internal / Assessment'} results available for Year {selectedYearTab} {selectedSemTab !== 'all' ? `(Semester ${selectedSemTab})` : ''}
+                                    </p>
                                 </div>
                             ) : (
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-sm">
                                         <thead className="bg-gray-50 text-gray-400 uppercase text-[10px] font-black tracking-wider border-b border-gray-100">
                                             <tr>
-                                                <th className="py-3 px-4">Exam & Semester</th>
+                                                <th className="py-3 px-4">Result Category</th>
                                                 <th className="py-3 px-4">Subject Code & Name</th>
                                                 <th className="py-3 px-3">Internal</th>
                                                 <th className="py-3 px-3">External / Assessment</th>
@@ -241,10 +279,10 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100">
-                                            {yearFilteredResults.map((r) => (
+                                            {displayedStudentResults.map((r) => (
                                                 <tr key={r.id} className="hover:bg-gray-50/80 transition-colors">
                                                     <td className="py-3 px-4">
-                                                        <div className="font-bold text-gray-800 text-xs">{r.exam_name || 'Semester Exam'}</div>
+                                                        <div className="font-bold text-gray-800 text-xs">{r.exam_name || (resultCategoryTab === 'semester' ? 'Semester Result' : 'Internal Result')}</div>
                                                         <span className="inline-block mt-0.5 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
                                                             Sem {r.semester}
                                                         </span>
@@ -285,7 +323,8 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
                         </div>
 
                     </div>
-                )}
+                    );
+                })()}
 
                 {/* Section 2: Class Timetable */}
                 {activeSectionTab === 'timetable' && (
