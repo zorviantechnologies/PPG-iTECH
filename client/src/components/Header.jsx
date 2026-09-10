@@ -473,7 +473,7 @@ const Header = () => {
                 </div>
             )}
 
-            <header className="header h-[72px] flex items-center justify-between px-4 max-[320px]:px-2.5 md:px-6 bg-white/70 backdrop-blur-xl no-print fixed top-0 left-0 right-0 md:sticky md:top-0 transition-all shadow-sm z-50">
+            <header className="header h-[72px] flex items-center justify-between px-4 max-[320px]:px-2.5 md:px-6 bg-white/70 backdrop-blur-xl no-print fixed top-0 left-0 right-0 w-full transition-all shadow-sm z-50">
                 <div className="flex items-center gap-3 max-[320px]:gap-2">
                     <div className="flex items-center gap-3 max-[320px]:gap-2">
                         {/* Institutional Logo */}
