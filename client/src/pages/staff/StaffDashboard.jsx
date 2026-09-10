@@ -5,7 +5,7 @@ import api from '../../utils/api';
 import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSocket } from '@/context/SocketContext';
-import { FaUserCheck, FaUserTimes, FaBus, FaFileAlt, FaCalendarDay, FaCalendarAlt, FaStar, FaBriefcase, FaTimes, FaFilter, FaClock, FaBookOpen, FaDoorOpen, FaChalkboardTeacher, FaUsers } from 'react-icons/fa';
+import { FaUserCheck, FaUserTimes, FaBus, FaFileAlt, FaCalendarDay, FaCalendarAlt, FaStar, FaBriefcase, FaTimes, FaFilter, FaClock, FaBookOpen, FaDoorOpen, FaChalkboardTeacher, FaUsers, FaFileInvoice, FaUpload, FaArrowRight, FaClipboardList } from 'react-icons/fa';
 import AttendanceHistory from '@/components/AttendanceHistory';
 import PersonalAttendanceChart from '@/components/PersonalAttendanceChart';
 import { useTimetableConfig } from '@/hooks/useTimetableConfig';
@@ -22,6 +22,8 @@ const StaffDashboard = () => {
     useEffect(() => {
         if (activeModule === 'students') {
             navigate('/staff/students', { replace: true });
+        } else if (activeModule === 'results') {
+            navigate('/staff/results', { replace: true });
         }
     }, [activeModule, navigate]);
     const [myStats, setMyStats] = useState({ present: 0, absent: 0, od: 0, cl: 0, ml: 0, comp_leave: 0, lop: 0, late_entry: 0 });

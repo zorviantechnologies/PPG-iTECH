@@ -7,16 +7,19 @@ const ModuleSelectionModal = ({ isOpen, onClose }) => {
     const { user, selectModule, activeModule } = useAuth();
     const navigate = useNavigate();
 
-    if (!isOpen || !user || !['admin', 'accounts'].includes(user.role)) return null;
+    const isStaffOrAdmin = user && ['admin', 'accounts', 'staff', 'hod'].includes(user.role);
+
+    if (!isOpen || !user || !isStaffOrAdmin) return null;
 
     const isAdmin = ['admin', 'accounts'].includes(user.role);
+    const isStaffUser = ['staff', 'hod'].includes(user.role);
 
     const handleChoice = (moduleKey) => {
         selectModule(moduleKey);
 
-        if (moduleKey === 'staff') navigate('/admin');
-        else if (moduleKey === 'students') navigate('/admin/students');
-        else if (moduleKey === 'results') navigate('/admin/results');
+        if (moduleKey === 'staff') navigate(isStaffUser ? '/staff' : '/admin');
+        else if (moduleKey === 'students') navigate(isStaffUser ? '/staff/students' : '/admin/students');
+        else if (moduleKey === 'results') navigate(isStaffUser ? '/staff/results' : '/admin/results');
 
         if (onClose) onClose();
     };
@@ -123,37 +126,35 @@ const ModuleSelectionModal = ({ isOpen, onClose }) => {
                             </div>
                         </motion.div>
 
-                        {/* Module 3: Results Portal (Admin Only) */}
-                        {isAdmin && (
-                            <motion.div
-                                whileHover={{ scale: 1.02, y: -4 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => handleChoice('results')}
-                                className={`p-6 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group md:col-span-2 lg:col-span-1 ${
-                                    activeModule === 'results'
-                                        ? 'border-purple-500 bg-purple-50/50 shadow-lg shadow-purple-100'
-                                        : 'border-gray-100 bg-white hover:border-purple-300 hover:shadow-xl'
-                                }`}
-                            >
-                                <div>
-                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-pink-600 text-white flex items-center justify-center text-xl shadow-md mb-4 group-hover:scale-110 transition-transform">
-                                        <FaFileInvoice />
-                                    </div>
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-purple-600 block mb-1">
-                                        Module 3
-                                    </span>
-                                    <h3 className="text-lg font-black text-gray-800 tracking-tight group-hover:text-purple-600 transition-colors">
-                                        Results Upload Portal
-                                    </h3>
-                                    <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                                        Upload, edit, and publish student examination results organized year-wise and department-wise.
-                                    </p>
+                        {/* Module 3: Internal & Assessment Marks Upload Portal */}
+                        <motion.div
+                            whileHover={{ scale: 1.02, y: -4 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => handleChoice('results')}
+                            className={`p-6 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group md:col-span-2 lg:col-span-1 ${
+                                activeModule === 'results'
+                                    ? 'border-purple-500 bg-purple-50/50 shadow-lg shadow-purple-100'
+                                    : 'border-gray-100 bg-white hover:border-purple-300 hover:shadow-xl'
+                            }`}
+                        >
+                            <div>
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-pink-600 text-white flex items-center justify-center text-xl shadow-md mb-4 group-hover:scale-110 transition-transform">
+                                    <FaFileInvoice />
                                 </div>
-                                <div className="mt-6 flex items-center gap-2 text-xs font-bold text-purple-600 group-hover:translate-x-1 transition-transform">
-                                    Enter Results Portal <FaArrowRight />
-                                </div>
-                            </motion.div>
-                        )}
+                                <span className="text-[9px] font-black uppercase tracking-widest text-purple-600 block mb-1">
+                                    Module 3
+                                </span>
+                                <h3 className="text-lg font-black text-gray-800 tracking-tight group-hover:text-purple-600 transition-colors">
+                                    Internal & Assessment Marks Upload
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                                    Upload, edit, and publish student internal and assessment marks organized year-wise (1st–4th Year), semester-wise, and department-wise.
+                                </p>
+                            </div>
+                            <div className="mt-6 flex items-center gap-2 text-xs font-bold text-purple-600 group-hover:translate-x-1 transition-transform">
+                                Enter Marks Portal <FaArrowRight />
+                            </div>
+                        </motion.div>
 
                     </div>
 

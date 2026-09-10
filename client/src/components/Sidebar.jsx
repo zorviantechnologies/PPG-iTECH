@@ -77,9 +77,17 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
     }
 
     if (userRole === 'staff' || userRole === 'hod') {
+      if (activeModule === 'results') {
+        return [
+          { label: 'Marks Upload Portal', path: '/staff/results', icon: <FaClipboardList /> },
+          { label: 'Staff Dashboard', path: '/staff', icon: <FaTachometerAlt /> },
+          { label: 'Timetable', path: '/staff/timetables', icon: <FaCalendarCheck /> },
+          { label: 'Academic Calendar', path: '/staff/calendar', icon: <FaCalendarDay /> },
+        ];
+      }
       return [
         { label: 'Dashboard', path: '/staff', icon: <FaTachometerAlt /> },
-        { label: 'Marks Upload', path: '/staff/results', icon: <FaClipboardList /> },
+        { label: 'Internal Marks Upload', path: '/staff/results', icon: <FaClipboardList /> },
         { label: 'Leave Management', path: '/staff/leaves', icon: <FaClipboardList /> },
         { label: 'Salary Details', path: '/staff/payroll', icon: <FaMoneyBillWave /> },
         { label: 'Timetable', path: '/staff/timetables', icon: <FaCalendarCheck /> },

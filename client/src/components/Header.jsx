@@ -637,8 +637,8 @@ const Header = () => {
                         </div>
                     )}
 
-                    {/* Switch Module Button in Header (Admin / Accounts Only) */}
-                    {!isManagement && ['admin', 'accounts'].includes(user?.role) && (
+                    {/* Switch Module Button in Header (Admin / Accounts / Staff / HOD) */}
+                    {!isManagement && ['admin', 'accounts', 'staff', 'hod'].includes(user?.role) && (
                         <button
                             type="button"
                             onClick={openModuleChooser}
@@ -647,7 +647,7 @@ const Header = () => {
                         >
                             <FaSync className="text-sky-600 animate-spin-slow" />
                             <span className="capitalize">
-                                {activeModule === 'students' ? '🎓 Students' : activeModule === 'results' ? '📊 Results' : '👔 Staff'}
+                                {activeModule === 'students' ? '🎓 Students' : activeModule === 'results' ? '📊 Marks Upload' : '👔 Staff'}
                             </span>
                         </button>
                     )}
