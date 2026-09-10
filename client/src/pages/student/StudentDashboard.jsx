@@ -237,61 +237,7 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
                     </motion.div>
                 </div>
 
-                {/* Section Navigation Tabs (When on sub-pages or switching) */}
-                <div className="flex items-center gap-2 border-b border-gray-100 pb-2 overflow-x-auto">
-                    <button
-                        onClick={() => {
-                            setActiveSectionTab('dashboard');
-                            navigate('/student');
-                        }}
-                        className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 ${
-                            activeSectionTab === 'dashboard'
-                                ? 'bg-indigo-600 text-white shadow-md'
-                                : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                        }`}
-                    >
-                        <FaUserGraduate /> Dashboard Overview
-                    </button>
-                    <button
-                        onClick={() => {
-                            setActiveSectionTab('timetable');
-                            navigate('/student/timetable');
-                        }}
-                        className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 ${
-                            activeSectionTab === 'timetable'
-                                ? 'bg-indigo-600 text-white shadow-md'
-                                : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                        }`}
-                    >
-                        <FaBookOpen /> Class Timetable
-                    </button>
-                    <button
-                        onClick={() => {
-                            setActiveSectionTab('attendance');
-                            navigate('/student/attendance');
-                        }}
-                        className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 ${
-                            activeSectionTab === 'attendance'
-                                ? 'bg-indigo-600 text-white shadow-md'
-                                : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                        }`}
-                    >
-                        <FaCalendarCheck /> My Attendance Log
-                    </button>
-                    <button
-                        onClick={() => {
-                            setActiveSectionTab('results');
-                            navigate('/student/results');
-                        }}
-                        className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 ${
-                            activeSectionTab === 'results'
-                                ? 'bg-indigo-600 text-white shadow-md'
-                                : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                        }`}
-                    >
-                        <FaAward /> Examination Results
-                    </button>
-                </div>
+
 
                 {/* VIEW 1: MAIN STUDENT DASHBOARD (defaultTab='dashboard') */}
                 {activeSectionTab === 'dashboard' && (
