@@ -297,6 +297,7 @@ const AppContent = () => {
         <ProtectedRoute allowedRoles={['hod']}>
           <Routes>
             <Route path="/" element={<HODDashboard />} />
+            <Route path="results" element={<ExamResultsPortal />} />
             <Route path="leaves" element={<StaffLeaveApply />} />
             <Route path="payroll" element={<SalaryManagement />} />
             <Route path="payroll/history" element={<SalaryManagement />} />
@@ -324,6 +325,8 @@ const AppContent = () => {
         <ProtectedRoute allowedRoles={['staff', 'accounts']}>
           <Routes>
             <Route path="/" element={<StaffDashboard />} />
+            <Route path="results" element={<ExamResultsPortal />} />
+            <Route path="marks" element={<ExamResultsPortal />} />
             <Route path="leaves" element={<StaffLeaveApply />} />
             <Route path="payroll" element={<SalaryManagement />} />
             <Route path="payroll/history" element={<SalaryManagement />} />

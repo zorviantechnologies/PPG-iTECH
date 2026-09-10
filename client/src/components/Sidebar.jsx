@@ -79,6 +79,7 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
     if (userRole === 'staff' || userRole === 'hod') {
       return [
         { label: 'Dashboard', path: '/staff', icon: <FaTachometerAlt /> },
+        { label: 'Marks Upload', path: '/staff/results', icon: <FaClipboardList /> },
         { label: 'Leave Management', path: '/staff/leaves', icon: <FaClipboardList /> },
         { label: 'Salary Details', path: '/staff/payroll', icon: <FaMoneyBillWave /> },
         { label: 'Timetable', path: '/staff/timetables', icon: <FaCalendarCheck /> },

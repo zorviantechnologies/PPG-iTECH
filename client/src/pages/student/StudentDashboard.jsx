@@ -18,6 +18,7 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
     const [loading, setLoading] = useState(true);
     
     const [selectedYearTab, setSelectedYearTab] = useState('1');
+    const [selectedSemTab, setSelectedSemTab] = useState('all');
     const [selectedDayTab, setSelectedDayTab] = useState('All Days');
     const [activeSectionTab, setActiveSectionTab] = useState(defaultTab); // 'results', 'timetable', 'attendance'
 
@@ -58,8 +59,21 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
         }
     }, [user, fetchStudentData]);
 
-    // Filter results for selected year
-    const yearFilteredResults = myResults.filter(r => String(r.academic_year) === String(selectedYearTab));
+    const getSemestersForYear = (year) => {
+        const yr = Number(year) || 1;
+        if (yr === 1) return [1, 2];
+        if (yr === 2) return [3, 4];
+        if (yr === 3) return [5, 6];
+        if (yr === 4) return [7, 8];
+        return [1, 2];
+    };
+
+    // Filter results for selected year & semester
+    const yearFilteredResults = myResults.filter(r => {
+        const matchYear = String(r.academic_year) === String(selectedYearTab);
+        const matchSem = selectedSemTab === 'all' || String(r.semester) === String(selectedSemTab);
+        return matchYear && matchSem;
+    });
 
     // Calculate attendance percentage
     const totalAttDays = attendance.length;
@@ -149,21 +163,54 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
                 {activeSectionTab === 'results' && (
                     <div className="space-y-6">
                         
-                        {/* Year Selector Sub-Tabs */}
-                        <div className="flex items-center gap-2">
-                            {[1, 2, 3, 4].map(yr => (
+                        {/* Year & Semester Selector Sub-Tabs */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                            {/* Year Tabs */}
+                            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                                {[1, 2, 3, 4].map(yr => (
+                                    <button
+                                        key={yr}
+                                        onClick={() => {
+                                            setSelectedYearTab(String(yr));
+                                            setSelectedSemTab('all');
+                                        }}
+                                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                                            String(selectedYearTab) === String(yr)
+                                                ? 'bg-indigo-600 text-white shadow-md'
+                                                : 'bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        Year {yr}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Semester Tabs for Selected Year */}
+                            <div className="flex items-center gap-2 overflow-x-auto pb-1">
                                 <button
-                                    key={yr}
-                                    onClick={() => setSelectedYearTab(String(yr))}
-                                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                                        String(selectedYearTab) === String(yr)
-                                            ? 'bg-sky-50 text-sky-700 border-2 border-sky-500'
-                                            : 'bg-white text-gray-400 border border-gray-200 hover:bg-gray-50'
+                                    onClick={() => setSelectedSemTab('all')}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                                        selectedSemTab === 'all'
+                                            ? 'bg-sky-500 text-white shadow-sm'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                                 >
-                                    Year {yr}
+                                    All Semesters
                                 </button>
-                            ))}
+                                {getSemestersForYear(selectedYearTab).map(sem => (
+                                    <button
+                                        key={sem}
+                                        onClick={() => setSelectedSemTab(String(sem))}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                                            String(selectedSemTab) === String(sem)
+                                                ? 'bg-sky-500 text-white shadow-sm'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        }`}
+                                    >
+                                        Semester {sem}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Grade Sheet Card */}
@@ -177,17 +224,17 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
                             ) : yearFilteredResults.length === 0 ? (
                                 <div className="p-8 text-center text-gray-400 space-y-2">
                                     <FaFileAlt className="text-3xl text-gray-300 mx-auto" />
-                                    <p className="font-semibold text-gray-600 text-sm">No published examination results available for Year {selectedYearTab}</p>
+                                    <p className="font-semibold text-gray-600 text-sm">No published examination results available for Year {selectedYearTab} {selectedSemTab !== 'all' ? `(Semester ${selectedSemTab})` : ''}</p>
                                 </div>
                             ) : (
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-sm">
                                         <thead className="bg-gray-50 text-gray-400 uppercase text-[10px] font-black tracking-wider border-b border-gray-100">
                                             <tr>
-                                                <th className="py-3 px-4">Subject Code</th>
-                                                <th className="py-3 px-4">Subject Name</th>
+                                                <th className="py-3 px-4">Exam & Semester</th>
+                                                <th className="py-3 px-4">Subject Code & Name</th>
                                                 <th className="py-3 px-3">Internal</th>
-                                                <th className="py-3 px-3">External</th>
+                                                <th className="py-3 px-3">External / Assessment</th>
                                                 <th className="py-3 px-3">Total</th>
                                                 <th className="py-3 px-3">Grade</th>
                                                 <th className="py-3 px-3">Status</th>
@@ -196,11 +243,19 @@ const StudentDashboard = ({ defaultTab = 'results' }) => {
                                         <tbody className="divide-y divide-gray-100">
                                             {yearFilteredResults.map((r) => (
                                                 <tr key={r.id} className="hover:bg-gray-50/80 transition-colors">
-                                                    <td className="py-3 px-4 font-mono font-bold text-indigo-600">{r.subject_code}</td>
-                                                    <td className="py-3 px-4 font-semibold text-gray-800">{r.subject_name}</td>
-                                                    <td className="py-3 px-3 text-gray-600">{r.internal_marks}</td>
-                                                    <td className="py-3 px-3 text-gray-600">{r.external_marks}</td>
-                                                    <td className="py-3 px-3 font-bold text-gray-900">{r.total_marks} / {r.max_marks}</td>
+                                                    <td className="py-3 px-4">
+                                                        <div className="font-bold text-gray-800 text-xs">{r.exam_name || 'Semester Exam'}</div>
+                                                        <span className="inline-block mt-0.5 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                                            Sem {r.semester}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 px-4">
+                                                        <div className="font-mono font-bold text-indigo-600 text-xs">{r.subject_code}</div>
+                                                        <div className="text-xs text-gray-700">{r.subject_name}</div>
+                                                    </td>
+                                                    <td className="py-3 px-3 font-semibold text-xs text-gray-700">{r.internal_marks}</td>
+                                                    <td className="py-3 px-3 font-semibold text-xs text-gray-700">{r.external_marks}</td>
+                                                    <td className="py-3 px-3 font-bold text-xs text-gray-900">{r.total_marks} / {r.max_marks}</td>
                                                     <td className="py-3 px-3">
                                                         <span className={`px-2 py-0.5 rounded font-black text-xs ${
                                                             ['O', 'A+', 'A'].includes(r.grade) 

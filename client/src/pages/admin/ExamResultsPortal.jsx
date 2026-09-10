@@ -39,6 +39,24 @@ const ExamResultsPortal = () => {
         max_marks: '100'
     });
 
+    const getSemestersForYear = (year) => {
+        const yr = Number(year) || 1;
+        if (yr === 1) return [1, 2];
+        if (yr === 2) return [3, 4];
+        if (yr === 3) return [5, 6];
+        if (yr === 4) return [7, 8];
+        return [1, 2];
+    };
+
+    const handleYearChange = (yr) => {
+        const yrStr = String(yr);
+        setSelectedYear(yrStr);
+        const validSemesters = getSemestersForYear(yrStr);
+        if (!validSemesters.includes(Number(selectedSem))) {
+            setSelectedSem(String(validSemesters[0]));
+        }
+    };
+
     const fetchResults = useCallback(async () => {
         setLoading(true);
         try {
@@ -77,8 +95,9 @@ const ExamResultsPortal = () => {
 
     const handleTogglePublish = async () => {
         const targetState = !isCurrentSetPublished;
+        const yearSuffix = selectedYear === '1' ? '1st' : selectedYear === '2' ? '2nd' : selectedYear === '3' ? '3rd' : '4th';
         const confirmMsg = targetState 
-            ? `Publish exam results for ${selectedYear}st/th Year (Semester ${selectedSem})? Students will be able to view their grade cards.`
+            ? `Publish exam results for ${yearSuffix} Year (Semester ${selectedSem})? Students will be able to view their grade cards.`
             : `Unpublish exam results? Students will no longer see these results on their portal.`;
 
         const result = await Swal.fire({
@@ -122,6 +141,31 @@ const ExamResultsPortal = () => {
         const a = document.createElement('a');
         a.href = url;
         a.download = `Exam_Results_Template_Year${selectedYear}_Sem${selectedSem}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    // Export Filtered Results to CSV File
+    const handleExportCSV = () => {
+        if (!resultsData || resultsData.length === 0) {
+            return Swal.fire('Warning', 'No result data available to download', 'warning');
+        }
+
+        const headers = ['Register Number,Student Name,Department,Academic Year,Semester,Exam Name,Subject Code,Subject Name,Internal Marks,External Marks,Total Marks,Max Marks,Grade,Status,Published'];
+        const rows = resultsData.map(r => {
+            const dept = (r.department_name || '').replace(/,/g, ' ');
+            const sName = (r.student_name || '').replace(/,/g, ' ');
+            const subName = (r.subject_name || '').replace(/,/g, ' ');
+            const eName = (r.exam_name || examName || '').replace(/,/g, ' ');
+
+            return `${r.student_reg_no || ''},"${sName}","${dept}",${r.academic_year || selectedYear},${r.semester || selectedSem},"${eName}",${r.subject_code || ''},"${subName}",${r.internal_marks || 0},${r.external_marks || 0},${r.total_marks || 0},${r.max_marks || 100},${r.grade || ''},${r.status || ''},${r.published ? 'Yes' : 'No'}`;
+        });
+
+        const blob = new Blob([[headers.join('\n'), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Exam_Results_Year${selectedYear}_Sem${selectedSem}_Export.csv`;
         a.click();
         URL.revokeObjectURL(url);
     };
@@ -259,8 +303,16 @@ const ExamResultsPortal = () => {
         <Layout title="Examination Results Portal">
             <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
 
-                {/* Action Buttons: CSV Template & Bulk Upload CSV */}
-                <div className="flex items-center justify-end gap-3">
+                {/* Action Buttons: Export CSV, CSV Template & Bulk Upload CSV */}
+                <div className="flex flex-wrap items-center justify-end gap-3">
+                    <button
+                        onClick={handleExportCSV}
+                        disabled={resultsData.length === 0}
+                        className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold px-5 py-3 rounded-2xl shadow-sm hover:shadow transition-all text-xs flex items-center gap-2 active:scale-95"
+                        title="Download uploaded marks for selected department, year, and semester as CSV"
+                    >
+                        <FaDownload /> Download Results CSV
+                    </button>
                     <button
                         onClick={handleDownloadTemplate}
                         className="bg-white hover:bg-gray-50 text-gray-700 font-bold px-5 py-3 rounded-2xl border border-gray-200 shadow-sm hover:shadow transition-all text-xs flex items-center gap-2 active:scale-95"
@@ -283,10 +335,7 @@ const ExamResultsPortal = () => {
                         {[1, 2, 3, 4].map((yr) => (
                             <button
                                 key={yr}
-                                onClick={() => {
-                                    setSelectedYear(String(yr));
-                                    setSelectedSem(String(yr * 2 - 1));
-                                }}
+                                onClick={() => handleYearChange(yr)}
                                 className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shrink-0 flex items-center gap-2 ${
                                     String(selectedYear) === String(yr)
                                         ? 'bg-indigo-600 text-white shadow-md scale-[1.02]'
@@ -322,21 +371,29 @@ const ExamResultsPortal = () => {
                                 onChange={(e) => setSelectedSem(e.target.value)}
                                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-500"
                             >
-                                {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
-                                    <option key={s} value={s}>Semester {s}</option>
+                                {getSemestersForYear(selectedYear).map(s => (
+                                    <option key={s} value={String(s)}>Semester {s}</option>
                                 ))}
                             </select>
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black uppercase text-gray-400 mb-1">Exam Name</label>
+                            <label className="block text-[10px] font-black uppercase text-gray-400 mb-1">Exam / Assessment Name</label>
                             <input
                                 type="text"
+                                list="examNameOptions"
                                 value={examName}
                                 onChange={(e) => setExamName(e.target.value)}
                                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-500"
-                                placeholder="e.g. End Semester Nov 2025"
+                                placeholder="e.g. Assessment 1 / End Semester"
                             />
+                            <datalist id="examNameOptions">
+                                <option value="Internal Assessment 1" />
+                                <option value="Internal Assessment 2" />
+                                <option value="Internal Model Exam" />
+                                <option value="End Semester Nov 2025" />
+                                <option value="End Semester May 2026" />
+                            </datalist>
                         </div>
 
                         <div>
