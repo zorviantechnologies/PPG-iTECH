@@ -11,7 +11,6 @@ const ModuleSelectionModal = ({ isOpen, onClose }) => {
 
     if (!isOpen || !user || !isStaffOrAdmin) return null;
 
-    const isAdmin = ['admin', 'accounts'].includes(user.role);
     const isStaffUser = ['staff', 'hod'].includes(user.role);
 
     const handleChoice = (moduleKey) => {
@@ -47,9 +46,6 @@ const ModuleSelectionModal = ({ isOpen, onClose }) => {
                             <h2 className="text-2xl font-black text-gray-800 tracking-tight mt-1">
                                 Welcome, {user.name}!
                             </h2>
-                            <p className="text-xs text-gray-500 mt-0.5">
-                                Select the portal module you wish to enter for your session:
-                            </p>
                         </div>
                         {activeModule && (
                             <button
@@ -85,11 +81,6 @@ const ModuleSelectionModal = ({ isOpen, onClose }) => {
                                 <h3 className="text-lg font-black text-gray-800 tracking-tight group-hover:text-sky-600 transition-colors">
                                     Staff Management
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                                    {isAdmin 
-                                        ? 'Access employee directory, department hierarchy, payroll, attendance records, and timetable setups.' 
-                                        : 'Access personal timetable, leave applications, attendance history, and salary details.'}
-                                </p>
                             </div>
                             <div className="mt-6 flex items-center gap-2 text-xs font-bold text-sky-600 group-hover:translate-x-1 transition-transform">
                                 Enter Staff Module <FaArrowRight />
@@ -117,9 +108,6 @@ const ModuleSelectionModal = ({ isOpen, onClose }) => {
                                 <h3 className="text-lg font-black text-gray-800 tracking-tight group-hover:text-indigo-600 transition-colors">
                                     Student Information
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                                    Manage student profiles, register numbers, roll numbers, academic year placements (1st-4th Year), and class details.
-                                </p>
                             </div>
                             <div className="mt-6 flex items-center gap-2 text-xs font-bold text-indigo-600 group-hover:translate-x-1 transition-transform">
                                 Enter Student Module <FaArrowRight />
@@ -147,9 +135,6 @@ const ModuleSelectionModal = ({ isOpen, onClose }) => {
                                 <h3 className="text-lg font-black text-gray-800 tracking-tight group-hover:text-purple-600 transition-colors">
                                     Internal & Assessment Marks Upload
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                                    Upload, edit, and publish student internal and assessment marks organized year-wise (1st–4th Year), semester-wise, and department-wise.
-                                </p>
                             </div>
                             <div className="mt-6 flex items-center gap-2 text-xs font-bold text-purple-600 group-hover:translate-x-1 transition-transform">
                                 Enter Marks Portal <FaArrowRight />
@@ -165,3 +150,4 @@ const ModuleSelectionModal = ({ isOpen, onClose }) => {
 };
 
 export default ModuleSelectionModal;
+
