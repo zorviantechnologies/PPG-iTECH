@@ -572,7 +572,6 @@ const Timetable = ({ showToggle = true }) => {
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
                             <div className="flex items-center gap-2">
                                 <FaFilter className="text-sky-600" />
-                                <h2 className="text-xs font-black uppercase tracking-widest text-gray-700">1. Class Selection Filters (Select Department & Year to Setup Timetable)</h2>
                             </div>
 
                             {/* Excel Upload & Download Template Buttons */}
@@ -716,7 +715,6 @@ const Timetable = ({ showToggle = true }) => {
                         <div className="p-4 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
                             <div className="flex items-center gap-2 text-xs font-bold text-gray-700">
                                 <FaBookOpen className="text-indigo-600" />
-                                <span>Displaying Saved Class Timetable Grid</span>
                                 <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-mono text-[10px]">
                                     {departments.find(d => String(d.id) === String(selectedDept))?.name || 'Dept'} &bull; Year {selectedYear} (Sem {selectedSem}) Sec {selectedSec}
                                 </span>
@@ -736,26 +734,31 @@ const Timetable = ({ showToggle = true }) => {
                             <table className="w-full border-collapse min-w-[980px] md:min-w-[1100px] table-fixed">
                                 <thead>
                                     <tr className="bg-sky-50/50">
-                                        <th className="p-3 border-b border-r border-sky-100 font-black text-[10px] text-sky-500 tracking-[0.08em] text-center w-32 md:w-40 whitespace-nowrap">
+                                        <th
+                                            className="p-3 border-b border-r border-sky-100 font-black text-[10px] text-sky-500 tracking-[0.08em] text-center w-32 md:w-40 whitespace-nowrap"
+                                            style={{ writingMode: 'horizontal-tb', textOrientation: 'mixed', transform: 'none', whiteSpace: 'nowrap', wordBreak: 'normal' }}
+                                        >
                                             Timeline
                                         </th>
                                         {displaySlots.map((slot, idx) => {
                                             const isBreak = slot.is_break;
                                             return (
-                                                <th key={idx} className={`border-r text-center ${isBreak ? 'bg-slate-50 border-sky-100 border-b-0' : 'p-4 border-b border-sky-100'}`} style={{ width: `${100 / displaySlots.length}%`, minWidth: isBreak ? '44px' : '140px' }}>
+                                                <th
+                                                    key={idx}
+                                                    className={`border-r text-center ${isBreak ? 'bg-slate-50 border-sky-100 border-b-0' : 'p-3 border-b border-sky-100'}`}
+                                                    style={{ width: `${100 / displaySlots.length}%`, minWidth: isBreak ? '44px' : '140px', writingMode: 'horizontal-tb', textOrientation: 'mixed', transform: 'none', whiteSpace: 'nowrap' }}
+                                                >
                                                     {!isBreak && (
-                                                        <>
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <p className="font-black text-[10px] uppercase tracking-[0.2em] text-gray-600">
-                                                                    {slot.label || (slot.period_number ? `Period ${slot.period_number}` : '')}
-                                                                </p>
-                                                            </div>
+                                                        <div className="flex flex-col items-center justify-center gap-0.5">
+                                                            <p className="font-black text-[10px] uppercase tracking-[0.15em] text-gray-700 whitespace-nowrap">
+                                                                {slot.label || (slot.period_number ? `Period ${slot.period_number}` : '')}
+                                                            </p>
                                                             {slot.start_time && (
-                                                                <p className="text-[9px] font-bold mt-0.5 text-gray-400">
+                                                                <p className="text-[9px] font-bold text-gray-400 whitespace-nowrap">
                                                                     {to12h(slot.start_time)} – {to12h(slot.end_time)}
                                                                 </p>
                                                             )}
-                                                        </>
+                                                        </div>
                                                     )}
                                                 </th>
                                             );
@@ -765,7 +768,10 @@ const Timetable = ({ showToggle = true }) => {
                                 <tbody>
                                     {days.map((day, dIdx) => (
                                         <tr key={day} className="group">
-                                            <td className="p-3 border-b border-r border-sky-50 bg-gray-50/30 text-center font-black text-gray-700 text-[11px] lg:text-xs tracking-[0.08em] whitespace-nowrap w-32 md:w-40">
+                                            <td
+                                                className="p-3 border-b border-r border-sky-50 bg-gray-50/30 text-center font-black text-gray-700 text-[11px] lg:text-xs tracking-[0.08em] whitespace-nowrap w-32 md:w-40"
+                                                style={{ writingMode: 'horizontal-tb', textOrientation: 'mixed', transform: 'none', whiteSpace: 'nowrap', wordBreak: 'normal' }}
+                                            >
                                                 {day}
                                             </td>
                                             {displaySlots.map((slot, idx) => {
@@ -773,11 +779,16 @@ const Timetable = ({ showToggle = true }) => {
                                                 if (isBreak) {
                                                     if (dIdx !== 0) return null;
                                                     return (
-                                                        <td key={idx} rowSpan={days.length} className="border-b border-r border-sky-100 bg-orange-50/60 align-middle text-center p-2">
+                                                        <td
+                                                            key={idx}
+                                                            rowSpan={days.length}
+                                                            className="border-b border-r border-sky-100 bg-orange-50/60 align-middle text-center p-2"
+                                                            style={{ writingMode: 'horizontal-tb', textOrientation: 'mixed', transform: 'none', whiteSpace: 'nowrap' }}
+                                                        >
                                                             <div className="flex flex-col items-center justify-center gap-1 font-black uppercase text-orange-600">
-                                                                <span className="text-[10px] tracking-wider font-extrabold">BREAK</span>
+                                                                <span className="text-[10px] tracking-wider font-extrabold whitespace-nowrap">BREAK</span>
                                                                 {slot.start_time && (
-                                                                    <span className="text-[8px] text-orange-400 font-bold">
+                                                                    <span className="text-[8px] text-orange-400 font-bold whitespace-nowrap">
                                                                         {to12h(slot.start_time)} – {to12h(slot.end_time)}
                                                                     </span>
                                                                 )}
