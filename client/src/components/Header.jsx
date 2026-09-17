@@ -64,6 +64,7 @@ const Header = () => {
         ],
         hod: [
             { label: 'Dashboard', path: '/hod' },
+            { label: 'Student Attendance', path: '/hod/student-attendance' },
             { label: 'Leave Balance', path: '/hod/leaves' },
             { label: 'Department Staff', path: '/hod/department' },
             { label: 'Timetable', path: '/hod/timetable' },
@@ -74,6 +75,7 @@ const Header = () => {
         ],
         staff: [
             { label: 'Dashboard', path: '/staff' },
+            { label: 'Student Attendance', path: '/staff/student-attendance' },
             { label: 'Leave Balance', path: '/staff/leaves' },
             { label: 'Salary Details', path: '/staff/payroll' },
             { label: 'Timetable', path: '/staff/timetables' },

@@ -29,6 +29,7 @@ import HODDashboard from './pages/hod/HODDashboard';
 import StaffLeaveApply from './pages/staff/LeaveApply';
 import StaffDashboard from './pages/staff/StaffDashboard';
 import StaffTimetable from './pages/staff/StaffTimetable';
+import StaffStudentAttendance from './pages/staff/StaffStudentAttendance';
 
 // Admin Pages
 import EmployeeManagement from './pages/admin/EmployeeManagement';
@@ -305,6 +306,7 @@ const AppContent = () => {
             <Route path="timetable" element={<HODTimetable />} />
             <Route path="timetable/:empId" element={<HODTimetable />} />
             <Route path="attendance" element={<PrincipalAttendance />} />
+            <Route path="student-attendance" element={<StaffStudentAttendance />} />
             <Route path="attendance/monthly-summary" element={<AttendanceMonthlySummaryPage />} />
             <Route path="attendance/:empId/:month" element={<DetailedAttendancePage />} />
             <Route path="attendance/:empId/:startDate/:endDate" element={<DetailedAttendancePage />} />
@@ -335,6 +337,7 @@ const AppContent = () => {
             <Route path="conversation" element={<PrincipalConversation />} />
             <Route path="timetables" element={<StaffTimetable />} />
             <Route path="timetables/:empId" element={<StaffTimetable />} />
+            <Route path="student-attendance" element={<StaffStudentAttendance />} />
             <Route path="calendar" element={<InstitutionalCalendar />} />
             <Route path="profile/:id" element={<ProfilePage />} />
             <Route path="notifications" element={<Notifications />} />

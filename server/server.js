@@ -233,6 +233,34 @@ const initDB = async () => {
         await queryWithRetry(`ALTER TABLE timetable ADD COLUMN IF NOT EXISTS semester INT DEFAULT 1;`);
         await queryWithRetry(`ALTER TABLE timetable ADD COLUMN IF NOT EXISTS section VARCHAR(10) DEFAULT 'A';`);
         console.log('--- Timetable Table Verified ---');
+
+        // Ensure student_attendance table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS student_attendance (
+                id SERIAL PRIMARY KEY,
+                student_id INT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+                user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                department_id INT NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
+                academic_year INT NOT NULL,
+                semester INT NOT NULL,
+                section VARCHAR(10) DEFAULT 'A',
+                subject VARCHAR(255) NOT NULL,
+                subject_code VARCHAR(50),
+                date DATE NOT NULL,
+                period_number INT NOT NULL,
+                start_time VARCHAR(20),
+                end_time VARCHAR(20),
+                status VARCHAR(20) NOT NULL CHECK (status IN ('Present', 'Absent')),
+                marked_by_emp_id VARCHAR(50) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (student_id, date, period_number)
+            )
+        `);
+        await queryWithRetry(`CREATE INDEX IF NOT EXISTS idx_student_att_student ON student_attendance(student_id, date)`);
+        await queryWithRetry(`CREATE INDEX IF NOT EXISTS idx_student_att_class ON student_attendance(department_id, academic_year, semester, section, date)`);
+        await queryWithRetry(`CREATE INDEX IF NOT EXISTS idx_student_att_user ON student_attendance(user_id)`);
+        console.log('--- Student Attendance Table & Indexes Verified ---');
     } catch (err) {
         console.error('Database Initialization Error:', err);
     }
@@ -262,6 +290,7 @@ const statusRoutes = require('./routes/statusRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const resultRoutes = require('./routes/resultRoutes');
+const studentAttendanceRoutes = require('./routes/studentAttendanceRoutes');
 const { getDbHealth } = require('./controllers/statusController');
 
 const helmet = require('helmet');
@@ -399,6 +428,7 @@ app.use('/api/status', statusRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/results', resultRoutes);
+app.use('/api/student-attendance', studentAttendanceRoutes);
 
 
 

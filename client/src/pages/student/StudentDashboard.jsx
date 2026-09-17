@@ -10,6 +10,7 @@ import {
     FaClock, FaGraduationCap, FaCalendarAlt, FaCalendarDay, 
     FaStar, FaFilter, FaArrowRight
 } from 'react-icons/fa';
+import StudentAttendanceView from '../../components/student/StudentAttendanceView';
 
 const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
     const { user } = useAuth();
@@ -619,121 +620,9 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
                     </div>
                 )}
 
-                {/* VIEW 4: ATTENDANCE LOG PAGE (MONTH-WISE & SEMESTER-WISE FILTERS) */}
+                {/* VIEW 4: HOUR-WISE STUDENT ATTENDANCE LOG PAGE */}
                 {activeSectionTab === 'attendance' && (
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
-                            <div>
-                                <h2 className="text-sm font-black uppercase tracking-wider text-gray-800 flex items-center gap-2">
-                                    <FaCalendarCheck className="text-indigo-600" /> Full Attendance Log
-                                </h2>
-                                <p className="text-xs text-gray-400 mt-1 font-mono">
-                                    Overall Attendance: <span className="font-bold text-indigo-600">{attPercentage}%</span> ({presentDays} / {totalAttDays} Days)
-                                </p>
-                            </div>
-
-                            {/* Attendance Filter Controls */}
-                            <div className="flex items-center gap-2 flex-wrap">
-                                {/* Mode Selector */}
-                                <div className="flex items-center p-1 bg-gray-100 rounded-xl">
-                                    <button
-                                        onClick={() => setAttFilterMode('all')}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                            attFilterMode === 'all'
-                                                ? 'bg-indigo-600 text-white shadow-sm'
-                                                : 'text-gray-600 hover:text-indigo-600'
-                                        }`}
-                                    >
-                                        All History
-                                    </button>
-                                    <button
-                                        onClick={() => setAttFilterMode('month')}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                            attFilterMode === 'month'
-                                                ? 'bg-indigo-600 text-white shadow-sm'
-                                                : 'text-gray-600 hover:text-indigo-600'
-                                        }`}
-                                    >
-                                        Month-wise
-                                    </button>
-                                    <button
-                                        onClick={() => setAttFilterMode('semester')}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                            attFilterMode === 'semester'
-                                                ? 'bg-indigo-600 text-white shadow-sm'
-                                                : 'text-gray-600 hover:text-indigo-600'
-                                        }`}
-                                    >
-                                        Semester-wise
-                                    </button>
-                                </div>
-
-                                {/* Month Picker Input */}
-                                {attFilterMode === 'month' && (
-                                    <input
-                                        type="month"
-                                        value={selectedAttMonth}
-                                        onChange={(e) => setSelectedAttMonth(e.target.value)}
-                                        className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100"
-                                    />
-                                )}
-
-                                {/* Semester Selector */}
-                                {attFilterMode === 'semester' && (
-                                    <select
-                                        value={selectedAttSem}
-                                        onChange={(e) => setSelectedAttSem(e.target.value)}
-                                        className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100"
-                                    >
-                                        <option value="all">All Semesters</option>
-                                        {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
-                                            <option key={s} value={s}>Semester {s}</option>
-                                        ))}
-                                    </select>
-                                )}
-                            </div>
-                        </div>
-
-                        {loading ? (
-                            <div className="py-12 text-center text-gray-400 font-semibold text-xs">Loading attendance history...</div>
-                        ) : filteredAttendanceList.length === 0 ? (
-                            <div className="p-8 text-center text-gray-400 space-y-2">
-                                <FaCalendarCheck className="text-3xl text-gray-300 mx-auto" />
-                                <p className="font-semibold text-gray-600 text-sm">No attendance records found for selected filter criteria</p>
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left text-xs">
-                                    <thead className="bg-gray-50 text-gray-400 uppercase font-bold border-b border-gray-100">
-                                        <tr>
-                                            <th className="py-3 px-4">Date</th>
-                                            <th className="py-3 px-4">In Time</th>
-                                            <th className="py-3 px-4">Out Time</th>
-                                            <th className="py-3 px-4">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {filteredAttendanceList.map((att) => (
-                                            <tr key={att.id} className="hover:bg-gray-50/80 transition-colors">
-                                                <td className="py-3 px-4 font-mono font-semibold">{String(att.date).slice(0, 10)}</td>
-                                                <td className="py-3 px-4 font-mono">{att.in_time || '--:--'}</td>
-                                                <td className="py-3 px-4 font-mono">{att.out_time || '--:--'}</td>
-                                                <td className="py-3 px-4">
-                                                    <span className={`px-2.5 py-1 rounded font-bold text-[10px] uppercase ${
-                                                        (att.status || '').toUpperCase().includes('PRESENT')
-                                                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                                                            : 'bg-red-50 text-red-600 border border-red-200'
-                                                    }`}>
-                                                        {att.status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
+                    <StudentAttendanceView />
                 )}
 
             </div>

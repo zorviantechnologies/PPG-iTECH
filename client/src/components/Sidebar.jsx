@@ -84,15 +84,17 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
           { label: 'Academic Calendar', path: '/staff/calendar', icon: <FaCalendarDay /> },
         ];
       }
+      const basePrefix = userRole === 'hod' ? '/hod' : '/staff';
       return [
-        { label: 'Dashboard', path: '/staff', icon: <FaTachometerAlt /> },
-        { label: 'Internal Marks Upload', path: '/staff/results', icon: <FaClipboardList /> },
-        { label: 'Leave Management', path: '/staff/leaves', icon: <FaClipboardList /> },
-        { label: 'Salary Details', path: '/staff/payroll', icon: <FaMoneyBillWave /> },
-        { label: 'Timetable', path: '/staff/timetables', icon: <FaCalendarCheck /> },
-        { label: 'Conversation', path: '/staff/conversation', icon: <FaComments /> },
-        { label: 'Purchase Requests', path: '/staff/items', icon: <FaShoppingBag /> },
-        { label: 'Academic Calendar', path: '/staff/calendar', icon: <FaCalendarDay /> },
+        { label: 'Dashboard', path: `${basePrefix}`, icon: <FaTachometerAlt /> },
+        { label: 'Student Attendance', path: `${basePrefix}/student-attendance`, icon: <FaUserGraduate /> },
+        { label: 'Internal Marks Upload', path: `${basePrefix}/results`, icon: <FaClipboardList /> },
+        { label: 'Leave Management', path: `${basePrefix}/leaves`, icon: <FaClipboardList /> },
+        { label: 'Salary Details', path: `${basePrefix}/payroll`, icon: <FaMoneyBillWave /> },
+        { label: 'Timetable', path: `${basePrefix}/timetables`, icon: <FaCalendarCheck /> },
+        { label: 'Conversation', path: `${basePrefix}/conversation`, icon: <FaComments /> },
+        { label: 'Purchase Requests', path: `${basePrefix}/items`, icon: <FaShoppingBag /> },
+        { label: 'Academic Calendar', path: `${basePrefix}/calendar`, icon: <FaCalendarDay /> },
       ];
     }
 
