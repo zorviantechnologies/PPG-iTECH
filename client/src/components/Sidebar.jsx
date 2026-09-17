@@ -114,6 +114,7 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
     if (userRole === 'student') {
       return [
         { label: 'Dashboard', path: '/student', icon: <FaTachometerAlt /> },
+        { label: 'Student Progress', path: '/student/progress', icon: <FaUserGraduate /> },
         { label: 'My Attendance', path: '/student/attendance', icon: <FaCalendarCheck /> },
         { label: 'My Results', path: '/student/results', icon: <FaClipboardList /> },
         { label: 'Class Timetable', path: '/student/timetable', icon: <FaCalendarCheck /> },

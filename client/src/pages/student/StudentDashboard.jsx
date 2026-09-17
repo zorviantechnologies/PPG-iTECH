@@ -11,6 +11,7 @@ import {
     FaStar, FaFilter, FaArrowRight
 } from 'react-icons/fa';
 import StudentAttendanceView from '../../components/student/StudentAttendanceView';
+import StudentProgressView from '../../components/student/StudentProgressView';
 
 const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
     const { user } = useAuth();
@@ -623,6 +624,11 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
                 {/* VIEW 4: HOUR-WISE STUDENT ATTENDANCE LOG PAGE */}
                 {activeSectionTab === 'attendance' && (
                     <StudentAttendanceView />
+                )}
+
+                {/* VIEW 5: COMPREHENSIVE STUDENT PROGRESS PROFILE PAGE */}
+                {activeSectionTab === 'progress' && (
+                    <StudentProgressView />
                 )}
 
             </div>

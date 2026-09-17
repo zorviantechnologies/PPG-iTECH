@@ -261,6 +261,151 @@ const initDB = async () => {
         await queryWithRetry(`CREATE INDEX IF NOT EXISTS idx_student_att_class ON student_attendance(department_id, academic_year, semester, section, date)`);
         await queryWithRetry(`CREATE INDEX IF NOT EXISTS idx_student_att_user ON student_attendance(user_id)`);
         console.log('--- Student Attendance Table & Indexes Verified ---');
+
+        // Ensure student_projects table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS student_projects (
+                id SERIAL PRIMARY KEY,
+                student_id INT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+                user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                technologies VARCHAR(255),
+                project_link VARCHAR(500),
+                github_repo VARCHAR(500),
+                certifications VARCHAR(255),
+                achievements TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Ensure student_certifications table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS student_certifications (
+                id SERIAL PRIMARY KEY,
+                student_id INT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+                user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                title VARCHAR(255) NOT NULL,
+                issuing_organization VARCHAR(255),
+                issue_date DATE,
+                credential_id VARCHAR(100),
+                credential_url VARCHAR(500),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Ensure student_internships table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS student_internships (
+                id SERIAL PRIMARY KEY,
+                student_id INT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+                user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                company_name VARCHAR(255) NOT NULL,
+                role VARCHAR(255),
+                start_date DATE,
+                end_date DATE,
+                description TEXT,
+                achievements TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Ensure student_coding_profiles table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS student_coding_profiles (
+                id SERIAL PRIMARY KEY,
+                student_id INT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+                user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                github_username VARCHAR(100),
+                leetcode_username VARCHAR(100),
+                codechef_username VARCHAR(100),
+                hackerrank_username VARCHAR(100),
+                other_platforms JSONB DEFAULT '{}'::jsonb,
+                cached_data JSONB DEFAULT '{}'::jsonb,
+                last_fetched_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (student_id)
+            )
+        `);
+
+        // Ensure student_skills table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS student_skills (
+                id SERIAL PRIMARY KEY,
+                student_id INT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+                user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                skill_name VARCHAR(100) NOT NULL,
+                proficiency_level VARCHAR(50) DEFAULT 'Intermediate',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Ensure student_academic_details table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS student_academic_details (
+                id SERIAL PRIMARY KEY,
+                student_id INT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+                user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                degree_program VARCHAR(150) DEFAULT 'B.E. Computer Science & Engineering',
+                cgpa DECIMAL(4, 2) DEFAULT 8.25,
+                total_credits INT DEFAULT 120,
+                courses_completed JSONB DEFAULT '[]'::jsonb,
+                courses_continuing JSONB DEFAULT '[]'::jsonb,
+                semester_gpas JSONB DEFAULT '{"1": 8.0, "2": 8.4, "3": 8.2, "4": 8.5}'::jsonb,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (student_id)
+            )
+        `);
+
+        // Ensure attendance_otps table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS attendance_otps (
+                id SERIAL PRIMARY KEY,
+                otp_code VARCHAR(10) NOT NULL,
+                created_by_emp_id VARCHAR(50) NOT NULL,
+                created_by_user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                department_id INT NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
+                academic_year INT NOT NULL,
+                semester INT NOT NULL,
+                section VARCHAR(10) DEFAULT 'A',
+                subject VARCHAR(255) NOT NULL,
+                subject_code VARCHAR(50),
+                date DATE NOT NULL,
+                period_number INT NOT NULL,
+                start_time VARCHAR(20),
+                end_time VARCHAR(20),
+                expires_at TIMESTAMP NOT NULL,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Ensure attendance_audit_logs table exists
+        await queryWithRetry(`
+            CREATE TABLE IF NOT EXISTS attendance_audit_logs (
+                id SERIAL PRIMARY KEY,
+                action VARCHAR(50) NOT NULL,
+                user_id INT REFERENCES users(id) ON DELETE SET NULL,
+                emp_id VARCHAR(50),
+                user_role VARCHAR(30),
+                target_student_id INT REFERENCES students(id) ON DELETE SET NULL,
+                department_id INT,
+                academic_year INT,
+                semester INT,
+                section VARCHAR(10),
+                subject VARCHAR(255),
+                period_number INT,
+                date DATE,
+                otp_code VARCHAR(10),
+                status VARCHAR(50),
+                details TEXT,
+                ip_address VARCHAR(50),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('--- Student Progress & OTP Attendance Schema Verified ---');
     } catch (err) {
         console.error('Database Initialization Error:', err);
     }
@@ -291,6 +436,7 @@ const feedbackRoutes = require('./routes/feedbackRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const resultRoutes = require('./routes/resultRoutes');
 const studentAttendanceRoutes = require('./routes/studentAttendanceRoutes');
+const studentProgressRoutes = require('./routes/studentProgressRoutes');
 const { getDbHealth } = require('./controllers/statusController');
 
 const helmet = require('helmet');
@@ -429,6 +575,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/results', resultRoutes);
 app.use('/api/student-attendance', studentAttendanceRoutes);
+app.use('/api/student-progress', studentProgressRoutes);
 
 
 

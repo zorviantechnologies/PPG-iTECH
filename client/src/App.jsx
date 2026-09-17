@@ -374,6 +374,7 @@ const AppContent = () => {
         <ProtectedRoute allowedRoles={['student']}>
           <Routes>
             <Route path="/" element={<StudentDashboard defaultTab="dashboard" />} />
+            <Route path="progress" element={<StudentDashboard defaultTab="progress" />} />
             <Route path="results" element={<StudentDashboard defaultTab="results" />} />
             <Route path="attendance" element={<StudentDashboard defaultTab="attendance" />} />
             <Route path="timetable" element={<StudentDashboard defaultTab="timetable" />} />

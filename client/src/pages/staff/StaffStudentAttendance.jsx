@@ -5,9 +5,10 @@ import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
 import {
-    FaUserGraduate, FaCalendarCheck, FaCalendarDay, FaChalkboardTeacher,
+    FaUserGraduate, FaCalendarCheck, FaCalendarDay,
     FaCheck, FaTimes, FaSearch, FaSave, FaExclamationTriangle,
-    FaFilter, FaClock, FaBookOpen, FaBuilding, FaLayerGroup
+    FaFilter, FaClock, FaBookOpen, FaBuilding, FaLayerGroup,
+    FaKey, FaBolt, FaShieldAlt, FaHistory, FaSync
 } from 'react-icons/fa';
 
 const StaffStudentAttendance = () => {
@@ -34,6 +35,17 @@ const StaffStudentAttendance = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // OTP Generation State (15-second validity)
+    const [generatingOtp, setGeneratingOtp] = useState(false);
+    const [activeOtpData, setActiveOtpData] = useState(null);
+    const [otpCountdown, setOtpCountdown] = useState(0);
+    const [showOtpModal, setShowOtpModal] = useState(false);
+
+    // Audit Logs State
+    const [showAuditModal, setShowAuditModal] = useState(false);
+    const [auditLogs, setAuditLogs] = useState([]);
+    const [loadingAudit, setLoadingAudit] = useState(false);
 
     // Pre-defined standard period times
     const periodPresets = [
@@ -254,6 +266,73 @@ const StaffStudentAttendance = () => {
         }
     };
 
+    // OTP Countdown effect (15 seconds)
+    useEffect(() => {
+        if (otpCountdown <= 0) return;
+        const timer = setInterval(() => {
+            setOtpCountdown(prev => {
+                if (prev <= 1) {
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [otpCountdown]);
+
+    // Generate 15-second OTP
+    const handleGenerateOTP = async () => {
+        if (!selectedDeptId || !selectedSubject) {
+            Swal.fire({ icon: 'warning', title: 'Subject & Class Required', text: 'Please select a valid department and subject before generating OTP.', confirmButtonColor: '#0ea5e9' });
+            return;
+        }
+
+        setGeneratingOtp(true);
+        try {
+            const payload = {
+                department_id: parseInt(selectedDeptId, 10),
+                academic_year: parseInt(selectedYear, 10),
+                semester: parseInt(selectedSem, 10),
+                section: selectedSection,
+                subject: selectedSubject,
+                subject_code: selectedSubjectCode,
+                date: selectedDate,
+                period_number: parseInt(selectedPeriod, 10),
+                start_time: startTime,
+                end_time: endTime
+            };
+
+            const res = await api.post('/student-attendance/generate-otp', payload);
+            setActiveOtpData(res.data);
+            setOtpCountdown(15);
+            setShowOtpModal(true);
+        } catch (err) {
+            console.error('Error generating OTP:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'OTP Generation Failed',
+                text: err.response?.data?.message || err.message,
+                confirmButtonColor: '#0ea5e9'
+            });
+        } finally {
+            setGeneratingOtp(false);
+        }
+    };
+
+    // Fetch Audit Logs
+    const fetchAuditLogs = async () => {
+        setLoadingAudit(true);
+        try {
+            const res = await api.get('/student-attendance/audit-logs');
+            setAuditLogs(res.data || []);
+            setShowAuditModal(true);
+        } catch (err) {
+            console.error('Error fetching audit logs:', err);
+        } finally {
+            setLoadingAudit(false);
+        }
+    };
+
     // Filter students by search term
     const filteredStudents = students.filter(st => {
         const query = searchTerm.toLowerCase().trim();
@@ -272,24 +351,6 @@ const StaffStudentAttendance = () => {
     return (
         <Layout>
             <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-                
-                {/* Header Section */}
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-sky-900 via-indigo-900 to-slate-900 p-6 sm:p-8 text-white shadow-xl">
-                    <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-sky-500/20 rounded-full blur-3xl pointer-events-none" />
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="space-y-2">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-sky-200">
-                                <FaChalkboardTeacher /> Staff Student Attendance Portal
-                            </div>
-                            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                                Hour-Wise Student Attendance
-                            </h1>
-                            <p className="text-sm text-sky-200/90 max-w-2xl">
-                                Select allocated class, subject, and hour/period to record or update attendance. Records automatically reflect on each student's portal.
-                            </p>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Warning Banner if Staff tries unallocated class */}
                 {!isAllocated && (
@@ -608,31 +669,193 @@ const StaffStudentAttendance = () => {
                         </div>
                     )}
 
-                    {/* Bottom Save Action Panel */}
+                    {/* Bottom Save & OTP Action Panel */}
                     <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="text-xs text-slate-500 font-medium">
                             Recording <strong className="text-slate-800">{students.length}</strong> student entries for <strong className="text-slate-800">{selectedDate}</strong> (Hour {selectedPeriod}).
                         </div>
-                        <button
-                            type="button"
-                            onClick={handleSaveAttendance}
-                            disabled={saving || loading || students.length === 0}
-                            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold shadow-lg shadow-sky-600/30 hover:shadow-sky-600/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                        >
-                            {saving ? (
-                                <>
-                                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Saving Record...
-                                </>
-                            ) : (
-                                <>
-                                    <FaSave /> Save Attendance Record
-                                </>
-                            )}
-                        </button>
+
+                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                            <button
+                                type="button"
+                                onClick={fetchAuditLogs}
+                                className="w-full sm:w-auto px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                            >
+                                <FaHistory /> Audit Logs
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleGenerateOTP}
+                                disabled={generatingOtp || !selectedSubject}
+                                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-black shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                            >
+                                {generatingOtp ? (
+                                    <>
+                                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Generating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaKey /> Generate 15s Attendance OTP
+                                    </>
+                                )}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleSaveAttendance}
+                                disabled={saving || loading || students.length === 0}
+                                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold shadow-lg shadow-sky-600/30 hover:shadow-sky-600/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                                {saving ? (
+                                    <>
+                                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Saving Record...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaSave /> Save Attendance Record
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* STAFF 15-SECOND OTP DISPLAY MODAL */}
+            {showOtpModal && activeOtpData && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full text-center space-y-6 border border-amber-200 shadow-2xl relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500" />
+
+                        <div className="space-y-1 pt-2">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-wider">
+                                <FaBolt /> Temporary Attendance OTP
+                            </span>
+                            <h3 className="text-xl font-black text-slate-900">Period {selectedPeriod} Attendance OTP</h3>
+                            <p className="text-xs font-medium text-slate-500">
+                                Display this code to students. It expires in <strong>15 seconds</strong>.
+                            </p>
+                        </div>
+
+                        {/* Large OTP Code Display */}
+                        <div className="bg-slate-900 text-amber-400 p-6 rounded-2xl border-2 border-amber-400/40 shadow-inner space-y-2">
+                            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block">OTP Code</span>
+                            <span className="text-4xl sm:text-5xl font-mono font-black tracking-widest block text-amber-300">
+                                {activeOtpData.otp_code}
+                            </span>
+                        </div>
+
+                        {/* Live 15s Countdown Ring */}
+                        <div className="flex flex-col items-center justify-center space-y-1">
+                            <div className={`w-14 h-14 rounded-full font-black text-xl flex items-center justify-center border-4 ${
+                                otpCountdown > 5 ? 'bg-amber-50 text-amber-600 border-amber-400' : 'bg-rose-50 text-rose-600 border-rose-500 animate-pulse'
+                            }`}>
+                                {otpCountdown}s
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                {otpCountdown > 0 ? 'Remaining Validity' : 'OTP EXPIRED'}
+                            </span>
+                        </div>
+
+                        <div className="pt-2 border-t flex gap-2">
+                            <button
+                                type="button"
+                                onClick={handleGenerateOTP}
+                                className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-1"
+                            >
+                                <FaSync /> Regenerate OTP
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setShowOtpModal(false)}
+                                className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all"
+                            >
+                                Close Window
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
+            {/* AUDIT LOGS MODAL */}
+            {showAuditModal && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+                    <motion.div
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="bg-white rounded-3xl p-6 max-w-4xl w-full max-h-[85vh] flex flex-col space-y-4 border border-slate-200 shadow-2xl"
+                    >
+                        <div className="flex items-center justify-between border-b pb-3">
+                            <div>
+                                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                                    <FaHistory className="text-sky-600" /> Attendance Audit Logs & Transparency History
+                                </h3>
+                                <p className="text-xs text-slate-400">Detailed records for OTP generation, OTP verification, attendance marking, and modifications.</p>
+                            </div>
+                            <button onClick={() => setShowAuditModal(false)} className="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto">
+                            {loadingAudit ? (
+                                <div className="py-12 text-center text-slate-400 text-xs font-semibold">Loading audit history...</div>
+                            ) : auditLogs.length === 0 ? (
+                                <div className="py-12 text-center text-slate-400 text-xs">No audit logs recorded yet.</div>
+                            ) : (
+                                <table className="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50 text-slate-600 uppercase font-bold border-b border-slate-200">
+                                            <th className="py-2.5 px-3">Timestamp</th>
+                                            <th className="py-2.5 px-3">Action</th>
+                                            <th className="py-2.5 px-3">Performed By</th>
+                                            <th className="py-2.5 px-3">Student / Details</th>
+                                            <th className="py-2.5 px-3">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {auditLogs.map((log) => (
+                                            <tr key={log.id} className="hover:bg-slate-50/80">
+                                                <td className="py-2.5 px-3 font-mono text-[11px] text-slate-500">
+                                                    {log.created_at ? new Date(log.created_at).toLocaleString() : ''}
+                                                </td>
+                                                <td className="py-2.5 px-3">
+                                                    <span className="font-extrabold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-[10px]">
+                                                        {log.action}
+                                                    </span>
+                                                </td>
+                                                <td className="py-2.5 px-3 font-bold text-slate-700">
+                                                    {log.user_name || log.emp_id || 'System'} ({log.user_role || 'staff'})
+                                                </td>
+                                                <td className="py-2.5 px-3 text-slate-600">
+                                                    {log.student_name ? <strong className="text-slate-800 font-bold mr-1">{log.student_name}:</strong> : ''}
+                                                    {log.details}
+                                                </td>
+                                                <td className="py-2.5 px-3">
+                                                    <span className={`px-2 py-0.5 rounded font-extrabold text-[10px] uppercase ${
+                                                        log.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                                                    }`}>
+                                                        {log.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+
+                        <div className="pt-3 border-t text-right">
+                            <button onClick={() => setShowAuditModal(false)} className="px-5 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">Close Logs</button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </Layout>
     );
 };

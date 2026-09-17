@@ -265,6 +265,26 @@ exports.markStudentAttendance = async (req, res) => {
                 ]);
             }
 
+            // Record audit log for manual marking
+            await client.query(`
+                INSERT INTO attendance_audit_logs (
+                    action, user_id, emp_id, user_role, department_id, academic_year, semester, section, subject, period_number, date, status, details
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'SUCCESS', $12)
+            `, [
+                'ATTENDANCE_MARKED',
+                req.user.id,
+                marked_by_emp_id,
+                req.user.role,
+                department_id,
+                academic_year,
+                semester,
+                section,
+                subject,
+                period_number,
+                date,
+                `Recorded manual attendance for ${attendance_records.length} students`
+            ]);
+
             await client.query('COMMIT');
         });
 
@@ -278,6 +298,345 @@ exports.markStudentAttendance = async (req, res) => {
         res.status(500).json({ message: 'Failed to record attendance: ' + error.message });
     }
 };
+
+// @desc    Generate temporary attendance OTP (valid for 15 seconds ONLY)
+// @route   POST /api/student-attendance/generate-otp
+// @access  Private (Staff, HOD, Admin, Principal)
+exports.generateAttendanceOTP = async (req, res) => {
+    const {
+        department_id,
+        academic_year,
+        semester,
+        section = 'A',
+        subject,
+        subject_code,
+        date,
+        period_number,
+        start_time,
+        end_time
+    } = req.body;
+
+    if (!department_id || !academic_year || !semester || !subject || !date || !period_number) {
+        return res.status(400).json({ message: 'Department, Academic Year, Semester, Subject, Date, and Period Number are required.' });
+    }
+
+    try {
+        const emp_id = req.user.emp_id || String(req.user.id);
+        const otp_code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+        const expiresAt = new Date(Date.now() + 15 * 1000); // 15 Seconds Expiry!
+
+        await withDbClient(async (client) => {
+            await client.query('BEGIN');
+
+            // Deactivate previous active OTPs for the same session
+            await client.query(`
+                UPDATE attendance_otps 
+                SET is_active = FALSE 
+                WHERE department_id = $1 AND academic_year = $2 AND semester = $3 
+                  AND section = $4 AND period_number = $5 AND date = $6
+            `, [department_id, academic_year, semester, section, period_number, date]);
+
+            // Insert new 15s OTP
+            await client.query(`
+                INSERT INTO attendance_otps (
+                    otp_code, created_by_emp_id, created_by_user_id, department_id, academic_year,
+                    semester, section, subject, subject_code, date, period_number, start_time,
+                    end_time, expires_at, is_active
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE)
+            `, [
+                otp_code,
+                emp_id,
+                req.user.id,
+                department_id,
+                academic_year,
+                semester,
+                section,
+                subject,
+                subject_code || '',
+                date,
+                period_number,
+                start_time || '',
+                end_time || '',
+                expiresAt
+            ]);
+
+            // Insert Audit Log
+            await client.query(`
+                INSERT INTO attendance_audit_logs (
+                    action, user_id, emp_id, user_role, department_id, academic_year, semester, section,
+                    subject, period_number, date, otp_code, status, details
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'SUCCESS', $13)
+            `, [
+                'OTP_GENERATED',
+                req.user.id,
+                emp_id,
+                req.user.role,
+                department_id,
+                academic_year,
+                semester,
+                section,
+                subject,
+                period_number,
+                date,
+                otp_code,
+                `Generated 15s attendance OTP for Period ${period_number}`
+            ]);
+
+            await client.query('COMMIT');
+        });
+
+        res.status(201).json({
+            message: 'Attendance OTP generated successfully (Valid for 15 Seconds)',
+            otp_code,
+            validity_seconds: 15,
+            expires_at: expiresAt.toISOString()
+        });
+
+    } catch (error) {
+        console.error('Error generating attendance OTP:', error);
+        res.status(500).json({ message: 'Failed to generate attendance OTP: ' + error.message });
+    }
+};
+
+// @desc    Get active attendance OTP for class session
+// @route   GET /api/student-attendance/active-otp
+// @access  Private (All authenticated roles)
+exports.getActiveAttendanceOTP = async (req, res) => {
+    try {
+        const { department_id, academic_year, semester, section = 'A', date, period_number } = req.query;
+
+        const { rows } = await queryWithRetry(`
+            SELECT 
+                id, otp_code, created_by_emp_id, department_id, academic_year, semester, section,
+                subject, subject_code, date, period_number, start_time, end_time, expires_at,
+                GREATEST(0, ROUND(EXTRACT(EPOCH FROM (expires_at - CURRENT_TIMESTAMP)))) as remaining_seconds
+            FROM attendance_otps
+            WHERE is_active = TRUE
+              AND expires_at > CURRENT_TIMESTAMP
+              ${department_id ? 'AND department_id = $1' : ''}
+              ${academic_year ? `AND academic_year = ${department_id ? '$2' : '$1'}` : ''}
+              ${semester ? `AND semester = ${department_id ? '$3' : '$2'}` : ''}
+            ORDER BY expires_at DESC LIMIT 1
+        `, [department_id, academic_year, semester].filter(Boolean));
+
+        if (rows.length === 0) {
+            return res.json({ has_active_otp: false, active_otp: null });
+        }
+
+        const activeOtp = rows[0];
+
+        // For student role, omit raw otp_code so they must enter the code displayed by staff
+        if (req.user.role === 'student') {
+            return res.json({
+                has_active_otp: true,
+                session_info: {
+                    department_id: activeOtp.department_id,
+                    academic_year: activeOtp.academic_year,
+                    semester: activeOtp.semester,
+                    section: activeOtp.section,
+                    subject: activeOtp.subject,
+                    period_number: activeOtp.period_number,
+                    date: activeOtp.date,
+                    remaining_seconds: parseInt(activeOtp.remaining_seconds, 10) || 0
+                }
+            });
+        }
+
+        // For staff/admin, return OTP code and countdown
+        res.json({
+            has_active_otp: true,
+            active_otp: {
+                ...activeOtp,
+                remaining_seconds: parseInt(activeOtp.remaining_seconds, 10) || 0
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching active attendance OTP:', error);
+        res.status(500).json({ message: 'Failed to fetch active OTP status' });
+    }
+};
+
+// @desc    Verify student attendance using active 15s OTP
+// @route   POST /api/student-attendance/verify-otp
+// @access  Private (Student)
+exports.verifyAttendanceOTP = async (req, res) => {
+    const { otp_code, department_id, academic_year, semester, section, subject, period_number, date } = req.body;
+
+    const cleanOtp = String(otp_code || '').trim();
+
+    if (!cleanOtp) {
+        return res.status(400).json({ message: 'OTP code is required' });
+    }
+
+    try {
+        // 1. Fetch student profile
+        const { rows: stRows } = await queryWithRetry(`
+            SELECT s.id as student_id, s.user_id, s.academic_year, s.semester, s.section, u.department_id, u.name
+            FROM students s
+            JOIN users u ON s.user_id = u.id
+            WHERE u.id = $1
+        `, [req.user.id]);
+
+        if (stRows.length === 0) {
+            return res.status(404).json({ message: 'Student profile record not found' });
+        }
+
+        const student = stRows[0];
+
+        // 2. Query active OTP within the 15-second expiration window
+        const { rows: otpRows } = await queryWithRetry(`
+            SELECT * FROM attendance_otps
+            WHERE otp_code = $1
+              AND is_active = TRUE
+              AND expires_at > CURRENT_TIMESTAMP
+            ORDER BY created_at DESC LIMIT 1
+        `, [cleanOtp]);
+
+        if (otpRows.length === 0) {
+            // Log failed attempt
+            await queryWithRetry(`
+                INSERT INTO attendance_audit_logs (
+                    action, user_id, emp_id, user_role, target_student_id, otp_code, status, details
+                ) VALUES ($1, $2, $3, $4, $5, $6, 'FAILED', $7)
+            `, [
+                'OTP_VERIFICATION_FAILED',
+                req.user.id,
+                req.user.emp_id,
+                req.user.role,
+                student.student_id,
+                cleanOtp,
+                'Attempted entry with expired or invalid OTP code'
+            ]);
+
+            return res.status(400).json({
+                message: 'Invalid or Expired OTP. The attendance OTP remains valid for only 15 seconds after staff generation.'
+            });
+        }
+
+        const activeOtp = otpRows[0];
+
+        // 3. Enforce matching student class & authorized period details
+        if (
+            parseInt(student.department_id, 10) !== parseInt(activeOtp.department_id, 10) ||
+            parseInt(student.academic_year, 10) !== parseInt(activeOtp.academic_year, 10) ||
+            parseInt(student.semester, 10) !== parseInt(activeOtp.semester, 10)
+        ) {
+            await queryWithRetry(`
+                INSERT INTO attendance_audit_logs (
+                    action, user_id, emp_id, user_role, target_student_id, otp_code, status, details
+                ) VALUES ($1, $2, $3, $4, $5, $6, 'UNAUTHORIZED', $7)
+            `, [
+                'OTP_VERIFICATION_UNAUTHORIZED',
+                req.user.id,
+                req.user.emp_id,
+                req.user.role,
+                student.student_id,
+                cleanOtp,
+                'Student attempted marking attendance for a class/department they do not belong to'
+            ]);
+
+            return res.status(403).json({
+                message: 'Unauthorized: You cannot mark attendance for a class or department other than your allocated program.'
+            });
+        }
+
+        // 4. Mark attendance for the student
+        await withDbClient(async (client) => {
+            await client.query('BEGIN');
+
+            await client.query(`
+                INSERT INTO student_attendance (
+                    student_id, user_id, department_id, academic_year, semester, section,
+                    subject, subject_code, date, period_number, start_time, end_time, status, marked_by_emp_id, updated_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'Present', $13, CURRENT_TIMESTAMP)
+                ON CONFLICT (student_id, date, period_number)
+                DO UPDATE SET
+                    status = 'Present',
+                    subject = EXCLUDED.subject,
+                    subject_code = EXCLUDED.subject_code,
+                    marked_by_emp_id = EXCLUDED.marked_by_emp_id,
+                    updated_at = CURRENT_TIMESTAMP
+            `, [
+                student.student_id,
+                student.user_id,
+                activeOtp.department_id,
+                activeOtp.academic_year,
+                activeOtp.semester,
+                activeOtp.section || 'A',
+                activeOtp.subject,
+                activeOtp.subject_code || '',
+                activeOtp.date,
+                activeOtp.period_number,
+                activeOtp.start_time || '',
+                activeOtp.end_time || '',
+                activeOtp.created_by_emp_id
+            ]);
+
+            // Audit log success
+            await client.query(`
+                INSERT INTO attendance_audit_logs (
+                    action, user_id, emp_id, user_role, target_student_id, department_id, academic_year,
+                    semester, section, subject, period_number, date, otp_code, status, details
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'SUCCESS', $14)
+            `, [
+                'OTP_VERIFIED',
+                req.user.id,
+                req.user.emp_id,
+                req.user.role,
+                student.student_id,
+                activeOtp.department_id,
+                activeOtp.academic_year,
+                activeOtp.semester,
+                activeOtp.section,
+                activeOtp.subject,
+                activeOtp.period_number,
+                activeOtp.date,
+                cleanOtp,
+                `Student ${student.name} verified attendance via 15s OTP for Period ${activeOtp.period_number}`
+            ]);
+
+            await client.query('COMMIT');
+        });
+
+        res.status(200).json({
+            success: true,
+            message: `Attendance confirmed successfully for ${activeOtp.subject} (Period ${activeOtp.period_number})!`,
+            period_number: activeOtp.period_number,
+            subject: activeOtp.subject
+        });
+
+    } catch (error) {
+        console.error('Error verifying attendance OTP:', error);
+        res.status(500).json({ message: 'Failed to verify attendance OTP: ' + error.message });
+    }
+};
+
+// @desc    Get attendance audit logs
+// @route   GET /api/student-attendance/audit-logs
+// @access  Private (Staff, HOD, Admin, Principal)
+exports.getAttendanceAuditLogs = async (req, res) => {
+    try {
+        const { rows } = await queryWithRetry(`
+            SELECT 
+                al.*,
+                u.name as user_name,
+                st_user.name as student_name
+            FROM attendance_audit_logs al
+            LEFT JOIN users u ON al.user_id = u.id
+            LEFT JOIN students s ON al.target_student_id = s.id
+            LEFT JOIN users st_user ON s.user_id = st_user.id
+            ORDER BY al.created_at DESC
+            LIMIT 100
+        `);
+
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching audit logs:', error);
+        res.status(500).json({ message: 'Failed to fetch attendance audit logs' });
+    }
+};
+
 
 // @desc    Get student's own attendance (Hour-wise, Date-wise, Subject breakdown)
 // @route   GET /api/student-attendance/my-attendance
