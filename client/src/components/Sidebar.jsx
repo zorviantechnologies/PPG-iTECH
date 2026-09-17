@@ -49,6 +49,7 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
       if (activeModule === 'students') {
         return [
           { label: 'Student Management', path: '/admin/students', icon: <FaUserGraduate /> },
+          { label: 'Student Attendance', path: '/admin/student-attendance', icon: <FaUserGraduate /> },
           { label: 'Department Management', path: '/admin/departments', icon: <FaBuilding /> },
           { label: 'Timetable Setup', path: '/admin/timetable', icon: <FaCalendarAlt /> },
           { label: 'Academic Calendar', path: '/admin/calendar', icon: <FaCalendarDay /> },
@@ -59,11 +60,13 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
       if (activeModule === 'results') {
         return [
           { label: 'Results Portal', path: '/admin/results', icon: <FaClipboardList /> },
+          { label: 'Student Attendance', path: '/admin/student-attendance', icon: <FaUserGraduate /> },
         ];
       }
       // Default / Staff Module
       return [
         { label: 'Dashboard', path: '/admin', icon: <FaTachometerAlt /> },
+        { label: 'Student Attendance', path: '/admin/student-attendance', icon: <FaUserGraduate /> },
         { label: 'Employee Management', path: '/admin/employees', icon: <FaUsers /> },
         { label: 'Department Management', path: '/admin/departments', icon: <FaBuilding /> },
         { label: 'Salary Management', path: '/admin/payroll', icon: <FaMoneyBillWave /> },
@@ -76,15 +79,25 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
     }
 
     if (userRole === 'staff' || userRole === 'hod') {
+      const basePrefix = userRole === 'hod' ? '/hod' : '/staff';
       if (activeModule === 'results') {
         return [
-          { label: 'Marks Upload Portal', path: '/staff/results', icon: <FaClipboardList /> },
-          { label: 'Staff Dashboard', path: '/staff', icon: <FaTachometerAlt /> },
-          { label: 'Timetable', path: '/staff/timetables', icon: <FaCalendarCheck /> },
-          { label: 'Academic Calendar', path: '/staff/calendar', icon: <FaCalendarDay /> },
+          { label: 'Marks Upload Portal', path: `${basePrefix}/results`, icon: <FaClipboardList /> },
+          { label: 'Student Attendance', path: `${basePrefix}/student-attendance`, icon: <FaUserGraduate /> },
+          { label: 'Staff Dashboard', path: `${basePrefix}`, icon: <FaTachometerAlt /> },
+          { label: 'Timetable', path: `${basePrefix}/timetables`, icon: <FaCalendarCheck /> },
+          { label: 'Academic Calendar', path: `${basePrefix}/calendar`, icon: <FaCalendarDay /> },
         ];
       }
-      const basePrefix = userRole === 'hod' ? '/hod' : '/staff';
+      if (activeModule === 'students') {
+        return [
+          { label: 'Student Attendance', path: `${basePrefix}/student-attendance`, icon: <FaUserGraduate /> },
+          { label: 'Staff Dashboard', path: `${basePrefix}`, icon: <FaTachometerAlt /> },
+          { label: 'Internal Marks Upload', path: `${basePrefix}/results`, icon: <FaClipboardList /> },
+          { label: 'Timetable', path: `${basePrefix}/timetables`, icon: <FaCalendarCheck /> },
+          { label: 'Academic Calendar', path: `${basePrefix}/calendar`, icon: <FaCalendarDay /> },
+        ];
+      }
       return [
         { label: 'Dashboard', path: `${basePrefix}`, icon: <FaTachometerAlt /> },
         { label: 'Student Attendance', path: `${basePrefix}/student-attendance`, icon: <FaUserGraduate /> },
@@ -101,8 +114,8 @@ const Sidebar = ({ userRole = 'staff', isOpen, onClose }) => {
     if (userRole === 'student') {
       return [
         { label: 'Dashboard', path: '/student', icon: <FaTachometerAlt /> },
-        { label: 'My Results', path: '/student/results', icon: <FaClipboardList /> },
         { label: 'My Attendance', path: '/student/attendance', icon: <FaCalendarCheck /> },
+        { label: 'My Results', path: '/student/results', icon: <FaClipboardList /> },
         { label: 'Class Timetable', path: '/student/timetable', icon: <FaCalendarCheck /> },
         { label: 'Academic Calendar', path: '/student/calendar', icon: <FaCalendarDay /> },
         { label: 'Leave Requests', path: '/student/leaves', icon: <FaClipboardCheck /> },

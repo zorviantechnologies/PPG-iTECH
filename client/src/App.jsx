@@ -260,6 +260,7 @@ const AppContent = () => {
             <Route path="students" element={<StudentManagement />} />
             <Route path="students/new" element={<StudentFormPage />} />
             <Route path="students/edit/:id" element={<StudentFormPage />} />
+            <Route path="student-attendance" element={<StaffStudentAttendance />} />
             <Route path="results" element={<ExamResultsPortal />} />
           </Routes>
         </ProtectedRoute>
