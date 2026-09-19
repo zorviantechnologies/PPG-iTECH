@@ -151,7 +151,7 @@ exports.getStudentsForAttendance = async (req, res) => {
             const att = existingAttendanceMap[st.student_id];
             return {
                 ...st,
-                status: att ? att.status : 'Present', // Default to Present for quick marking
+                status: att ? att.status : 'Absent', // Default to Absent as per requirement
                 is_marked: !!att,
                 marked_by_emp_id: att ? att.marked_by_emp_id : null
             };
