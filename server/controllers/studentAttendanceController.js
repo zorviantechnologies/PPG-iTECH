@@ -436,10 +436,10 @@ exports.getActiveAttendanceOTP = async (req, res) => {
     try {
         let { department_id, academic_year, semester, section = 'A', date, period_number } = req.query;
 
-        // For student role, query student's own department_id, academic_year, semester
+        // For student role, query student's own department_id, academic_year, semester, section
         if (req.user.role === 'student') {
             const { rows: stRows } = await queryWithRetry(`
-                SELECT u.department_id, s.academic_year, s.semester
+                SELECT u.department_id, s.academic_year, s.semester, s.section
                 FROM students s
                 JOIN users u ON s.user_id = u.id
                 WHERE u.id = $1
@@ -449,6 +449,7 @@ exports.getActiveAttendanceOTP = async (req, res) => {
                 department_id = stRows[0].department_id;
                 academic_year = stRows[0].academic_year;
                 semester = stRows[0].semester;
+                section = stRows[0].section || 'A';
             }
         }
 
@@ -458,15 +459,19 @@ exports.getActiveAttendanceOTP = async (req, res) => {
 
         if (department_id) {
             whereClause += ` AND department_id = $${paramIndex++}`;
-            queryParams.push(department_id);
+            queryParams.push(parseInt(department_id, 10));
         }
         if (academic_year) {
             whereClause += ` AND academic_year = $${paramIndex++}`;
-            queryParams.push(academic_year);
+            queryParams.push(parseInt(academic_year, 10));
         }
         if (semester) {
             whereClause += ` AND semester = $${paramIndex++}`;
-            queryParams.push(semester);
+            queryParams.push(parseInt(semester, 10));
+        }
+        if (section && section !== 'All') {
+            whereClause += ` AND (section = $${paramIndex++} OR section = 'All' OR section IS NULL OR section = '')`;
+            queryParams.push(section);
         }
 
         const { rows } = await queryWithRetry(`
@@ -576,11 +581,12 @@ exports.verifyAttendanceOTP = async (req, res) => {
 
         const activeOtp = otpRows[0];
 
-        // 3. Enforce matching student class & authorized period details
+        // 3. Enforce matching student class & authorized period details (Department, Year, Semester, Section)
         if (
             parseInt(student.department_id, 10) !== parseInt(activeOtp.department_id, 10) ||
             parseInt(student.academic_year, 10) !== parseInt(activeOtp.academic_year, 10) ||
-            parseInt(student.semester, 10) !== parseInt(activeOtp.semester, 10)
+            parseInt(student.semester, 10) !== parseInt(activeOtp.semester, 10) ||
+            (activeOtp.section && activeOtp.section !== 'All' && student.section && activeOtp.section !== student.section)
         ) {
             await queryWithRetry(`
                 INSERT INTO attendance_audit_logs (
@@ -593,11 +599,11 @@ exports.verifyAttendanceOTP = async (req, res) => {
                 req.user.role,
                 student.student_id,
                 cleanOtp,
-                'Student attempted marking attendance for a class/department they do not belong to'
+                `Student attempted marking attendance for a class (Dept: ${activeOtp.department_id}, Year: ${activeOtp.academic_year}, Sem: ${activeOtp.semester}, Sec: ${activeOtp.section}) they do not belong to.`
             ]);
 
             return res.status(403).json({
-                message: 'Unauthorized: You cannot mark attendance for a class or department other than your allocated program.'
+                message: 'Unauthorized: This OTP was generated for a different Department, Year, Semester, or Section than your registered class profile.'
             });
         }
 
