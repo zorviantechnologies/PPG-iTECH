@@ -182,6 +182,25 @@ const StaffStudentAttendance = () => {
         }
     };
 
+    // Helper to get allowed semesters for a given academic year
+    const getSemestersForYear = (yearStr) => {
+        const yr = parseInt(yearStr, 10);
+        if (yr === 1) return [1, 2];
+        if (yr === 2) return [3, 4];
+        if (yr === 3) return [5, 6];
+        if (yr === 4) return [7, 8];
+        return [1, 2];
+    };
+
+    // Handle Year change and automatically align Semester selection
+    const handleYearChange = (newYear) => {
+        setSelectedYear(newYear);
+        const availableSems = getSemestersForYear(newYear);
+        if (!availableSems.includes(parseInt(selectedSem, 10))) {
+            setSelectedSem(String(availableSems[0]));
+        }
+    };
+
     // Fetch students & attendance for selected class
     const fetchClassStudents = useCallback(async () => {
         if (!selectedDeptId || !selectedYear || !selectedSem) return;
@@ -482,7 +501,7 @@ const StaffStudentAttendance = () => {
                             <label className="text-[11px] font-bold uppercase text-slate-500">Academic Year</label>
                             <select
                                 value={selectedYear}
-                                onChange={(e) => setSelectedYear(e.target.value)}
+                                onChange={(e) => handleYearChange(e.target.value)}
                                 className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 focus:ring-2 focus:ring-sky-500"
                             >
                                 <option value="1">Year 1</option>
@@ -500,8 +519,8 @@ const StaffStudentAttendance = () => {
                                 onChange={(e) => setSelectedSem(e.target.value)}
                                 className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 focus:ring-2 focus:ring-sky-500"
                             >
-                                {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
-                                    <option key={s} value={s}>Semester {s}</option>
+                                {getSemestersForYear(selectedYear).map(s => (
+                                    <option key={s} value={String(s)}>Semester {s}</option>
                                 ))}
                             </select>
                         </div>
