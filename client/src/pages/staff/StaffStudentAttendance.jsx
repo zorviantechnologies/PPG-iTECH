@@ -69,82 +69,36 @@ const StaffStudentAttendance = () => {
         { period: 7, label: 'Hour 7 (04:00 PM - 05:00 PM)', start: '04:00 PM', end: '05:00 PM' },
     ];
 
-    // Dynamic Year-wise Semester Options (1st Yr -> Sem 1 & 2; 2nd Yr -> Sem 3 & 4; 3rd Yr -> Sem 5 & 6; 4th Yr -> Sem 7 & 8)
-    const getSemestersForYear = (yrStr) => {
-        const yr = parseInt(yrStr, 10) || 1;
-        switch (yr) {
-            case 1: return [1, 2];
-            case 2: return [3, 4];
-            case 3: return [5, 6];
-            case 4: return [7, 8];
-            default: return [1, 2];
-        }
-    };
-
-    // Open Generate OTP Prompt Modal
-    const handleOpenOtpGenModal = () => {
+    // Generate 15-second OTP directly using current class selection
+    const handleGenerateOTP = async () => {
         if (isAdmin) {
             Swal.fire({ icon: 'warning', title: 'Admin View Only', text: 'Administrators cannot generate attendance OTPs. Only staff members can generate OTPs.', confirmButtonColor: '#0ea5e9' });
             return;
         }
 
-        const initialYr = selectedYear || '1';
-        const sems = getSemestersForYear(initialYr);
-        const initialSem = sems.includes(parseInt(selectedSem, 10)) ? selectedSem : String(sems[0]);
-
-        setOtpDeptId(selectedDeptId || (departments[0] ? String(departments[0].id) : ''));
-        setOtpYear(initialYr);
-        setOtpSem(initialSem);
-        setOtpSection(selectedSection || 'A');
-        setOtpSubject(selectedSubject || '');
-        setOtpSubjectCode(selectedSubjectCode || '');
-        setOtpPeriod(selectedPeriod || '1');
-        setShowOtpGenModal(true);
-    };
-
-    // Handle Year Change inside OTP Modal
-    const handleOtpYearChange = (newYear) => {
-        setOtpYear(newYear);
-        const sems = getSemestersForYear(newYear);
-        setOtpSem(String(sems[0]));
-    };
-
-    // Submit OTP Generation Request with Selected Filters
-    const submitGenerateOTP = async (e) => {
-        if (e) e.preventDefault();
-
-        if (!otpDeptId) {
-            Swal.fire({ icon: 'warning', title: 'Department Required', text: 'Please select a target department.', confirmButtonColor: '#0ea5e9' });
-            return;
-        }
-        if (!otpSubject.trim()) {
-            Swal.fire({ icon: 'warning', title: 'Subject Name Required', text: 'Please enter a subject name for this session.', confirmButtonColor: '#0ea5e9' });
+        if (!selectedDeptId || !selectedSubject) {
+            Swal.fire({ icon: 'warning', title: 'Subject & Department Required', text: 'Please select a valid department and enter a subject before generating OTP.', confirmButtonColor: '#0ea5e9' });
             return;
         }
 
         setGeneratingOtp(true);
         try {
-            const preset = periodPresets.find(p => p.period === parseInt(otpPeriod, 10));
-            const sTime = preset ? preset.start : startTime;
-            const eTime = preset ? preset.end : endTime;
-
             const payload = {
-                department_id: parseInt(otpDeptId, 10),
-                academic_year: parseInt(otpYear, 10),
-                semester: parseInt(otpSem, 10),
-                section: otpSection,
-                subject: otpSubject.trim(),
-                subject_code: otpSubjectCode.trim(),
+                department_id: parseInt(selectedDeptId, 10),
+                academic_year: parseInt(selectedYear, 10),
+                semester: parseInt(selectedSem, 10),
+                section: selectedSection || 'A',
+                subject: selectedSubject.trim(),
+                subject_code: selectedSubjectCode ? selectedSubjectCode.trim() : '',
                 date: selectedDate,
-                period_number: parseInt(otpPeriod, 10),
-                start_time: sTime,
-                end_time: eTime
+                period_number: parseInt(selectedPeriod, 10),
+                start_time: startTime,
+                end_time: endTime
             };
 
             const res = await api.post('/student-attendance/generate-otp', payload);
             setActiveOtpData(res.data);
             setOtpCountdown(15);
-            setShowOtpGenModal(false);
             setShowOtpModal(true);
         } catch (err) {
             console.error('Error generating OTP:', err);
@@ -387,49 +341,7 @@ const StaffStudentAttendance = () => {
         return () => clearInterval(timer);
     }, [otpCountdown]);
 
-    // Generate 15-second OTP
-    const handleGenerateOTP = async () => {
-        if (isAdmin) {
-            Swal.fire({ icon: 'warning', title: 'Admin View Only', text: 'Administrators cannot generate attendance OTPs. Only staff members can generate OTPs.', confirmButtonColor: '#0ea5e9' });
-            return;
-        }
 
-        if (!selectedDeptId || !selectedSubject) {
-            Swal.fire({ icon: 'warning', title: 'Subject & Class Required', text: 'Please select a valid department and subject before generating OTP.', confirmButtonColor: '#0ea5e9' });
-            return;
-        }
-
-        setGeneratingOtp(true);
-        try {
-            const payload = {
-                department_id: parseInt(selectedDeptId, 10),
-                academic_year: parseInt(selectedYear, 10),
-                semester: parseInt(selectedSem, 10),
-                section: selectedSection,
-                subject: selectedSubject,
-                subject_code: selectedSubjectCode,
-                date: selectedDate,
-                period_number: parseInt(selectedPeriod, 10),
-                start_time: startTime,
-                end_time: endTime
-            };
-
-            const res = await api.post('/student-attendance/generate-otp', payload);
-            setActiveOtpData(res.data);
-            setOtpCountdown(15);
-            setShowOtpModal(true);
-        } catch (err) {
-            console.error('Error generating OTP:', err);
-            Swal.fire({
-                icon: 'error',
-                title: 'OTP Generation Failed',
-                text: err.response?.data?.message || err.message,
-                confirmButtonColor: '#0ea5e9'
-            });
-        } finally {
-            setGeneratingOtp(false);
-        }
-    };
 
     // Fetch Audit Logs
     const fetchAuditLogs = async () => {
@@ -824,7 +736,7 @@ const StaffStudentAttendance = () => {
                                 <>
                                     <button
                                         type="button"
-                                        onClick={handleOpenOtpGenModal}
+                                        onClick={handleGenerateOTP}
                                         disabled={generatingOtp}
                                         className="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-black shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
                                     >
@@ -868,169 +780,6 @@ const StaffStudentAttendance = () => {
                 </div>
             </div>
 
-            {/* INTERACTIVE GENERATE OTP SELECTION MODAL */}
-            {showOtpGenModal && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
-                    <motion.div
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="bg-white rounded-3xl p-6 max-w-lg w-full space-y-5 border border-slate-200 shadow-2xl"
-                    >
-                        <div className="flex items-center justify-between border-b pb-3">
-                            <div>
-                                <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                                    <FaKey className="text-amber-500" /> Generate 15-Second Attendance OTP
-                                </h3>
-                                <p className="text-xs text-slate-400">Select target department, academic year, semester & section for this session.</p>
-                            </div>
-                            <button onClick={() => setShowOtpGenModal(false)} className="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
-                        </div>
-
-                        <form onSubmit={submitGenerateOTP} className="space-y-4 text-xs">
-                            {/* 1. Department Selection */}
-                            <div className="space-y-1">
-                                <label className="font-extrabold text-slate-700 flex items-center gap-1.5">
-                                    <FaBuilding className="text-sky-600" /> Target Department
-                                </label>
-                                <select
-                                    value={otpDeptId}
-                                    onChange={(e) => setOtpDeptId(e.target.value)}
-                                    className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                                >
-                                    {departments.map(d => (
-                                        <option key={d.id} value={d.id}>{d.name} ({d.code})</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                {/* 2. Academic Year Selection */}
-                                <div className="space-y-1">
-                                    <label className="font-extrabold text-slate-700 flex items-center gap-1.5">
-                                        <FaLayerGroup className="text-sky-600" /> Academic Year
-                                    </label>
-                                    <select
-                                        value={otpYear}
-                                        onChange={(e) => handleOtpYearChange(e.target.value)}
-                                        className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                                    >
-                                        <option value="1">1st Year</option>
-                                        <option value="2">2nd Year</option>
-                                        <option value="3">3rd Year</option>
-                                        <option value="4">4th Year</option>
-                                    </select>
-                                </div>
-
-                                {/* 3. Semester Selection (Year-wise dynamic) */}
-                                <div className="space-y-1">
-                                    <label className="font-extrabold text-slate-700 flex items-center gap-1.5">
-                                        <FaCalendarAlt className="text-sky-600" /> Semester (Yearwise)
-                                    </label>
-                                    <select
-                                        value={otpSem}
-                                        onChange={(e) => setOtpSem(e.target.value)}
-                                        className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                                    >
-                                        {getSemestersForYear(otpYear).map(s => (
-                                            <option key={s} value={s}>Semester {s}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                {/* 4. Section Selection */}
-                                <div className="space-y-1">
-                                    <label className="font-extrabold text-slate-700 flex items-center gap-1.5">
-                                        <FaUserGraduate className="text-sky-600" /> Section
-                                    </label>
-                                    <select
-                                        value={otpSection}
-                                        onChange={(e) => setOtpSection(e.target.value)}
-                                        className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                                    >
-                                        <option value="A">Section A</option>
-                                        <option value="B">Section B</option>
-                                        <option value="C">Section C</option>
-                                        <option value="D">Section D</option>
-                                        <option value="All">All Sections</option>
-                                    </select>
-                                </div>
-
-                                {/* 5. Period Selection */}
-                                <div className="space-y-1">
-                                    <label className="font-extrabold text-slate-700 flex items-center gap-1.5">
-                                        <FaClock className="text-sky-600" /> Hour / Period
-                                    </label>
-                                    <select
-                                        value={otpPeriod}
-                                        onChange={(e) => setOtpPeriod(e.target.value)}
-                                        className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                                    >
-                                        {periodPresets.map(p => (
-                                            <option key={p.period} value={p.period}>{p.label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* 6. Subject Name & Code */}
-                            <div className="grid grid-cols-3 gap-3">
-                                <div className="col-span-2 space-y-1">
-                                    <label className="font-extrabold text-slate-700 flex items-center gap-1.5">
-                                        <FaBookOpen className="text-sky-600" /> Subject Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={otpSubject}
-                                        onChange={(e) => setOtpSubject(e.target.value)}
-                                        placeholder="e.g. Operating Systems"
-                                        required
-                                        className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="font-extrabold text-slate-700">Code</label>
-                                    <input
-                                        type="text"
-                                        value={otpSubjectCode}
-                                        onChange={(e) => setOtpSubjectCode(e.target.value)}
-                                        placeholder="e.g. CS302"
-                                        className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="pt-3 border-t flex gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowOtpGenModal(false)}
-                                    className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={generatingOtp}
-                                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-extrabold shadow-lg shadow-amber-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                                >
-                                    {generatingOtp ? (
-                                        <>
-                                            <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Generating...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <FaBolt /> 🚀 Generate 15s OTP
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </form>
-                    </motion.div>
-                </div>
-            )}
-
             {/* STAFF 15-SECOND OTP DISPLAY MODAL */}
             {showOtpModal && activeOtpData && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
@@ -1045,7 +794,7 @@ const StaffStudentAttendance = () => {
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-wider">
                                 <FaBolt /> Temporary Attendance OTP
                             </span>
-                            <h3 className="text-xl font-black text-slate-900">Period {otpPeriod || selectedPeriod} Attendance OTP</h3>
+                            <h3 className="text-xl font-black text-slate-900">Period {selectedPeriod} Attendance OTP</h3>
                             <p className="text-xs font-medium text-slate-500">
                                 Display this code to students. It expires in <strong>15 seconds</strong>.
                             </p>
@@ -1074,7 +823,7 @@ const StaffStudentAttendance = () => {
                         <div className="pt-2 border-t flex gap-2">
                             <button
                                 type="button"
-                                onClick={submitGenerateOTP}
+                                onClick={handleGenerateOTP}
                                 className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-1"
                             >
                                 <FaSync /> Regenerate OTP
