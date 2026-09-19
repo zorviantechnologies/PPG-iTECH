@@ -47,6 +47,7 @@ import StudentManagement from './pages/admin/StudentManagement';
 import StudentFormPage from './pages/admin/StudentFormPage';
 import ExamResultsPortal from './pages/admin/ExamResultsPortal';
 import StudentDashboard from './pages/student/StudentDashboard';
+import StudentLeaveApply from './pages/student/StudentLeaveApply';
 
 // Shared Pages
 import ProfilePage from './pages/shared/ProfilePage';
@@ -379,7 +380,7 @@ const AppContent = () => {
             <Route path="attendance" element={<StudentDashboard defaultTab="attendance" />} />
             <Route path="timetable" element={<StudentDashboard defaultTab="timetable" />} />
             <Route path="calendar" element={<InstitutionalCalendar />} />
-            <Route path="leaves" element={<StaffLeaveApply />} />
+            <Route path="leaves" element={<StudentLeaveApply />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="profile/:id" element={<ProfilePage />} />
           </Routes>
