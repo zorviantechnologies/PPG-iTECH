@@ -1,5 +1,12 @@
 const { pool } = require('../config/db');
 
+// Helper to safely parse integers and avoid "undefined" string casting errors in PostgreSQL
+const safeInt = (val, fallback = null) => {
+    if (val === undefined || val === null || val === 'undefined' || val === 'null' || val === '') return fallback;
+    const parsed = parseInt(val, 10);
+    return isNaN(parsed) ? fallback : parsed;
+};
+
 // @desc    Get timetable
 // @route   GET /api/timetable
 // @access  Private
@@ -8,13 +15,13 @@ exports.getTimetable = async (req, res) => {
         let { emp_id, department_id, academic_year, semester, section, day, all } = req.query;
         
         // If logged-in user is a student and filters aren't specified, automatically resolve student's class profile
-        if (req.user.role === 'student' && !department_id && !emp_id) {
+        if (req.user.role === 'student' && (!department_id || department_id === 'undefined') && (!emp_id || emp_id === 'undefined')) {
             const { rows: studentProfile } = await pool.query(
                 `SELECT u.department_id, s.academic_year, s.semester, s.section 
                  FROM users u 
                  JOIN students s ON u.id = s.user_id 
                  WHERE u.emp_id = $1 OR u.id = $2`,
-                [req.user.emp_id, req.user.id || 0]
+                [req.user.emp_id || '', req.user.id || 0]
             );
             if (studentProfile.length > 0) {
                 department_id = studentProfile[0].department_id;
@@ -33,22 +40,25 @@ exports.getTimetable = async (req, res) => {
         `;
         const params = [];
 
-        if (emp_id) {
+        if (emp_id && emp_id !== 'undefined' && emp_id !== 'null') {
             query += ' AND t.emp_id = $' + (params.push(emp_id));
         }
-        if (department_id) {
-            query += ' AND t.department_id = $' + (params.push(department_id));
+        if (department_id && department_id !== 'undefined' && department_id !== 'null') {
+            const dId = safeInt(department_id, null);
+            if (dId !== null) query += ' AND t.department_id = $' + (params.push(dId));
         }
-        if (academic_year) {
-            query += ' AND t.academic_year = $' + (params.push(parseInt(academic_year, 10)));
+        if (academic_year && academic_year !== 'undefined' && academic_year !== 'null') {
+            const yr = safeInt(academic_year, null);
+            if (yr !== null) query += ' AND t.academic_year = $' + (params.push(yr));
         }
-        if (semester) {
-            query += ' AND t.semester = $' + (params.push(parseInt(semester, 10)));
+        if (semester && semester !== 'undefined' && semester !== 'null') {
+            const sem = safeInt(semester, null);
+            if (sem !== null) query += ' AND t.semester = $' + (params.push(sem));
         }
-        if (section && section !== 'All') {
+        if (section && section !== 'All' && section !== 'undefined') {
             query += ' AND (t.section = $' + (params.push(section)) + " OR t.section IS NULL OR t.section = '')";
         }
-        if (day) {
+        if (day && day !== 'undefined') {
             query += ' AND t.day_of_week = $' + (params.push(day));
         }
 
@@ -90,26 +100,26 @@ exports.createTimetableEntry = async (req, res) => {
         day_of_week, start_time, end_time, subject, subject_code, room_number
     } = req.body;
 
-    const period_number = req.body.period_number !== undefined && req.body.period_number !== null && req.body.period_number !== ''
-        ? parseInt(req.body.period_number, 10)
-        : null;
+    const period_number = safeInt(req.body.period_number, null);
 
-    if (period_number === null || isNaN(period_number) || period_number < 1) {
+    if (period_number === null || period_number < 1) {
         return res.status(400).json({ message: 'Period number is required and must be a valid positive integer.' });
     }
-    if (!day_of_week) {
+    if (!day_of_week || day_of_week === 'undefined') {
         return res.status(400).json({ message: 'Day of week is required.' });
     }
-    if (!department_id && !emp_id) {
+    
+    const resolvedDeptId = safeInt(department_id, null);
+    const resolvedEmpId = (emp_id === 'undefined' || emp_id === 'null' || !emp_id) ? null : emp_id;
+
+    if (!resolvedDeptId && !resolvedEmpId) {
         return res.status(400).json({ message: 'Department or Staff member is required.' });
     }
 
     try {
-        const resolvedEmpId = emp_id || null;
-        const resolvedDeptId = department_id ? parseInt(department_id, 10) : null;
-        const resolvedYear = academic_year ? parseInt(academic_year, 10) : 1;
-        const resolvedSem = semester ? parseInt(semester, 10) : 1;
-        const resolvedSec = section || 'A';
+        const resolvedYear = safeInt(academic_year, 1);
+        const resolvedSem = safeInt(semester, 1);
+        const resolvedSec = section && section !== 'undefined' ? section : 'A';
 
         let finalStartTime = start_time || null;
         let finalEndTime = end_time || null;
@@ -147,28 +157,31 @@ exports.createTimetableEntry = async (req, res) => {
 // @route   PUT /api/timetable/:id
 // @access  Private (Admin, HOD, Staff)
 exports.updateTimetableEntry = async (req, res) => {
+    const entryId = safeInt(req.params.id, null);
+    if (!entryId) {
+        return res.status(400).json({ message: 'Invalid or missing timetable entry ID.' });
+    }
+
     const {
         emp_id, department_id, academic_year, semester, section,
         day_of_week, start_time, end_time, subject, subject_code, room_number
     } = req.body;
 
-    const period_number = req.body.period_number !== undefined && req.body.period_number !== null && req.body.period_number !== ''
-        ? parseInt(req.body.period_number, 10)
-        : null;
-
-    if (period_number === null || isNaN(period_number)) {
-        return res.status(400).json({ message: 'Period number is required and must be a valid integer.' });
-    }
-
     try {
-        const { rows: entryRows } = await pool.query('SELECT * FROM timetable WHERE id = $1', [req.params.id]);
+        const { rows: entryRows } = await pool.query('SELECT * FROM timetable WHERE id = $1', [entryId]);
         if (entryRows.length === 0) return res.status(404).json({ message: 'Timetable entry not found' });
 
-        const resolvedEmpId = emp_id !== undefined ? (emp_id || null) : entryRows[0].emp_id;
-        const resolvedDeptId = department_id !== undefined ? (department_id ? parseInt(department_id, 10) : null) : entryRows[0].department_id;
-        const resolvedYear = academic_year !== undefined ? parseInt(academic_year, 10) : entryRows[0].academic_year;
-        const resolvedSem = semester !== undefined ? parseInt(semester, 10) : entryRows[0].semester;
-        const resolvedSec = section !== undefined ? section : entryRows[0].section;
+        const period_number = safeInt(req.body.period_number, entryRows[0].period_number);
+        if (period_number === null || period_number < 1) {
+            return res.status(400).json({ message: 'Period number is required and must be a valid positive integer.' });
+        }
+
+        const resolvedEmpId = emp_id !== undefined ? ((emp_id === 'undefined' || emp_id === 'null' || !emp_id) ? null : emp_id) : entryRows[0].emp_id;
+        const resolvedDeptId = department_id !== undefined ? safeInt(department_id, entryRows[0].department_id) : entryRows[0].department_id;
+        const resolvedYear = academic_year !== undefined ? safeInt(academic_year, entryRows[0].academic_year) : entryRows[0].academic_year;
+        const resolvedSem = semester !== undefined ? safeInt(semester, entryRows[0].semester) : entryRows[0].semester;
+        const resolvedSec = (section !== undefined && section !== 'undefined') ? section : entryRows[0].section;
+        const resolvedDay = (day_of_week && day_of_week !== 'undefined') ? day_of_week : entryRows[0].day_of_week;
 
         let finalStartTime = start_time || entryRows[0].start_time;
         let finalEndTime = end_time || entryRows[0].end_time;
@@ -192,8 +205,8 @@ exports.updateTimetableEntry = async (req, res) => {
             WHERE id = $13`,
             [
                 resolvedEmpId, resolvedDeptId, resolvedYear, resolvedSem, resolvedSec,
-                day_of_week, period_number, finalStartTime, finalEndTime,
-                subject || null, subject_code || null, room_number || null, req.params.id
+                resolvedDay, period_number, finalStartTime, finalEndTime,
+                subject || null, subject_code || null, room_number || null, entryId
             ]
         );
         res.json({ message: 'Timetable entry updated successfully' });
@@ -280,10 +293,15 @@ exports.bulkCreateTimetableEntries = async (req, res) => {
 // @access  Private (Admin, HOD, Staff)
 exports.deleteTimetableEntry = async (req, res) => {
     try {
-        const { rows: entryRows } = await pool.query('SELECT id FROM timetable WHERE id = $1', [req.params.id]);
+        const entryId = safeInt(req.params.id, null);
+        if (!entryId) {
+            return res.status(400).json({ message: 'Invalid or missing timetable entry ID.' });
+        }
+
+        const { rows: entryRows } = await pool.query('SELECT id FROM timetable WHERE id = $1', [entryId]);
         if (entryRows.length === 0) return res.status(404).json({ message: 'Entry not found' });
 
-        await pool.query('DELETE FROM timetable WHERE id = $1', [req.params.id]);
+        await pool.query('DELETE FROM timetable WHERE id = $1', [entryId]);
         res.json({ message: 'Timetable entry deleted successfully' });
     } catch (error) {
         console.error('DELETE TIMETABLE ERROR:', error);

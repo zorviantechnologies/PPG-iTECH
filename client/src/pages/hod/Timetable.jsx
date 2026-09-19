@@ -382,14 +382,15 @@ const Timetable = ({ showToggle = true }) => {
 
         if (formValues) {
             try {
-                if (entry) {
+                const isEditing = Boolean(entry && entry.id && entry.id !== 'undefined');
+                if (isEditing) {
                     await api.put(`/timetable/${entry.id}`, formValues);
                 } else {
                     await api.post('/timetable', formValues);
                 }
                 Swal.fire({
                     title: 'Timetable Updated',
-                    text: entry ? 'Period entry updated successfully.' : 'New period added to class timetable.',
+                    text: isEditing ? 'Period entry updated successfully.' : 'New period added to class timetable.',
                     icon: 'success',
                     timer: 1500,
                     showConfirmButton: false
@@ -403,6 +404,11 @@ const Timetable = ({ showToggle = true }) => {
     };
 
     const handleDelete = async (id) => {
+        if (!id || id === 'undefined') {
+            Swal.fire({ title: 'Error', text: 'Invalid period entry ID.', icon: 'error', confirmButtonColor: '#2563eb' });
+            return;
+        }
+
         const result = await Swal.fire({
             title: 'Delete Period Entry?',
             text: "This will permanently remove this period from the timetable.",
@@ -426,7 +432,7 @@ const Timetable = ({ showToggle = true }) => {
                     showConfirmButton: false
                 });
             } catch (error) {
-                Swal.fire('Error', 'Failed to delete entry', 'error');
+                Swal.fire('Error', error.response?.data?.message || 'Failed to delete entry', 'error');
             }
         }
     };
