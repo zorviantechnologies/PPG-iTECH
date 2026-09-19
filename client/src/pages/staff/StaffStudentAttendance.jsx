@@ -53,6 +53,22 @@ const StaffStudentAttendance = () => {
     const [otpSubjectCode, setOtpSubjectCode] = useState('');
     const [otpPeriod, setOtpPeriod] = useState('1');
 
+    // Audit Logs State
+    const [showAuditModal, setShowAuditModal] = useState(false);
+    const [auditLogs, setAuditLogs] = useState([]);
+    const [loadingAudit, setLoadingAudit] = useState(false);
+
+    // Pre-defined standard period times
+    const periodPresets = [
+        { period: 1, label: 'Hour 1 (09:00 AM - 10:00 AM)', start: '09:00 AM', end: '10:00 AM' },
+        { period: 2, label: 'Hour 2 (10:00 AM - 11:00 AM)', start: '10:00 AM', end: '11:00 AM' },
+        { period: 3, label: 'Hour 3 (11:15 AM - 12:15 PM)', start: '11:15 AM', end: '12:15 PM' },
+        { period: 4, label: 'Hour 4 (12:15 PM - 01:15 PM)', start: '12:15 PM', end: '01:15 PM' },
+        { period: 5, label: 'Hour 5 (02:00 PM - 03:00 PM)', start: '02:00 PM', end: '03:00 PM' },
+        { period: 6, label: 'Hour 6 (03:00 PM - 04:00 PM)', start: '03:00 PM', end: '04:00 PM' },
+        { period: 7, label: 'Hour 7 (04:00 PM - 05:00 PM)', start: '04:00 PM', end: '05:00 PM' },
+    ];
+
     // Dynamic Year-wise Semester Options (1st Yr -> Sem 1 & 2; 2nd Yr -> Sem 3 & 4; 3rd Yr -> Sem 5 & 6; 4th Yr -> Sem 7 & 8)
     const getSemestersForYear = (yrStr) => {
         const yr = parseInt(yrStr, 10) || 1;
