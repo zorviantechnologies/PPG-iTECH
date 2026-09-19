@@ -233,9 +233,25 @@ const StaffStudentAttendance = () => {
     };
 
     // Bulk status actions
-    const handleMarkAll = (status) => {
+    const handleMarkAll = async (status) => {
         if (isAdmin) return;
-        setStudents(prev => prev.map(st => ({ ...st, status })));
+        if (students.length === 0) return;
+
+        const isPresent = status === 'Present';
+        const result = await Swal.fire({
+            title: isPresent ? 'Mark All Students as Present?' : 'Mark All Students as Absent?',
+            text: `Are you sure you want to mark all ${students.length} student(s) as ${isPresent ? 'PRESENT' : 'ABSENT'} for Hour ${selectedPeriod}?`,
+            icon: isPresent ? 'question' : 'warning',
+            showCancelButton: true,
+            confirmButtonText: `Yes, Mark All ${isPresent ? 'Present' : 'Absent'}`,
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: isPresent ? '#10b981' : '#f43f5e',
+            cancelButtonColor: '#64748b'
+        });
+
+        if (result.isConfirmed) {
+            setStudents(prev => prev.map(st => ({ ...st, status })));
+        }
     };
 
     // Save Attendance Handler
