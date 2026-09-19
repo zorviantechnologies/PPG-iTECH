@@ -8,7 +8,7 @@ import {
     FaUserGraduate, FaCalendarCheck, FaBookOpen, FaFileAlt, 
     FaAward, FaCheckCircle, FaTimesCircle, FaBuilding, 
     FaClock, FaGraduationCap, FaCalendarAlt, FaCalendarDay, 
-    FaStar, FaFilter, FaArrowRight
+    FaStar, FaFilter, FaArrowRight, FaUserTie
 } from 'react-icons/fa';
 import StudentAttendanceView from '../../components/student/StudentAttendanceView';
 import StudentProgressView from '../../components/student/StudentProgressView';
@@ -294,9 +294,10 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
                                             </div>
                                             <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between text-[10px] text-gray-500">
                                                 <span>Room: <strong className="text-gray-700">{tt.room_number || 'TBA'}</strong></span>
-                                                {tt.staff_name && (
-                                                    <span className="font-semibold text-indigo-600 truncate max-w-[120px]">{tt.staff_name}</span>
-                                                )}
+                                                <span className="font-bold text-indigo-600 truncate max-w-[130px] flex items-center gap-1">
+                                                    <FaUserTie className="text-indigo-500 shrink-0 text-[10px]" />
+                                                    <span className="truncate">{tt.staff_name || 'Faculty: TBA'}</span>
+                                                </span>
                                             </div>
                                         </div>
                                     ))}
@@ -605,9 +606,10 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
                                                             </div>
                                                             <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between text-[10px] text-gray-500">
                                                                 <span>Room: <strong className="text-gray-700">{tt.room_number || 'TBA'}</strong></span>
-                                                                {tt.staff_name && (
-                                                                    <span className="font-semibold text-indigo-600 truncate max-w-[120px]">{tt.staff_name}</span>
-                                                                )}
+                                                                <span className="font-bold text-indigo-600 truncate max-w-[130px] flex items-center gap-1">
+                                                                    <FaUserTie className="text-indigo-500 shrink-0 text-[10px]" />
+                                                                    <span className="truncate">{tt.staff_name || 'Faculty: TBA'}</span>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     ))}

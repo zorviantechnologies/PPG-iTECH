@@ -18,10 +18,10 @@ router.use(protect);
 // Allocations & Student list
 router.get('/allocated-classes', restrictTo('staff', 'hod', 'admin', 'principal'), getAllocatedClasses);
 router.get('/students-for-class', restrictTo('staff', 'hod', 'admin', 'principal'), getStudentsForAttendance);
-router.post('/mark', restrictTo('staff', 'hod', 'admin', 'principal'), markStudentAttendance);
+router.post('/mark', restrictTo('staff', 'hod'), markStudentAttendance);
 
 // OTP-based Attendance Mechanism
-router.post('/generate-otp', restrictTo('staff', 'hod', 'admin', 'principal'), generateAttendanceOTP);
+router.post('/generate-otp', restrictTo('staff', 'hod'), generateAttendanceOTP);
 router.get('/active-otp', getActiveAttendanceOTP);
 router.post('/verify-otp', restrictTo('student'), verifyAttendanceOTP);
 router.get('/audit-logs', restrictTo('staff', 'hod', 'admin', 'principal'), getAttendanceAuditLogs);

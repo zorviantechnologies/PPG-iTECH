@@ -30,17 +30,27 @@ exports.saveTimetableConfig = async (req, res) => {
         await client.query('DELETE FROM timetable_config');
 
         for (const p of periods) {
+            const pNum = p.is_break ? null : parseInt(p.period_number, 10);
             await client.query(`
                 INSERT INTO timetable_config (sort_order, period_number, label, start_time, end_time, is_break)
                 VALUES ($1, $2, $3, $4, $5, $6)
             `, [
                 parseInt(p.sort_order),
-                p.is_break ? null : parseInt(p.period_number),
+                pNum,
                 p.label,
                 p.start_time || null,
                 p.end_time || null,
                 p.is_break || false
             ]);
+
+            // Sync period times into existing class timetable entries for matching period_number
+            if (!p.is_break && pNum && p.start_time && p.end_time) {
+                await client.query(`
+                    UPDATE timetable 
+                    SET start_time = $1, end_time = $2 
+                    WHERE period_number = $3
+                `, [p.start_time, p.end_time, pNum]);
+            }
         }
 
         await client.query('COMMIT');

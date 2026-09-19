@@ -195,6 +195,13 @@ exports.markStudentAttendance = async (req, res) => {
         return res.status(400).json({ message: 'No student attendance records provided.' });
     }
 
+    // Admin restriction
+    if (['admin', 'accounts', 'principal'].includes(req.user.role)) {
+        return res.status(403).json({
+            message: 'Access Denied: Administrators cannot mark student attendance. Attendance marking is restricted to teaching staff only.'
+        });
+    }
+
     // Allocation enforcement for staff role
     if (req.user.role === 'staff') {
         const { rows: allocCheck } = await queryWithRetry(`
@@ -320,6 +327,30 @@ exports.generateAttendanceOTP = async (req, res) => {
         return res.status(400).json({ message: 'Department, Academic Year, Semester, Subject, Date, and Period Number are required.' });
     }
 
+    // Admin restriction
+    if (['admin', 'accounts', 'principal'].includes(req.user.role)) {
+        return res.status(403).json({
+            message: 'Access Denied: Administrators cannot generate attendance OTPs. OTP generation is restricted to teaching staff only.'
+        });
+    }
+
+    // Allocation enforcement for staff role
+    if (req.user.role === 'staff') {
+        const { rows: allocCheck } = await queryWithRetry(`
+            SELECT id FROM timetable 
+            WHERE emp_id = $1 
+              AND department_id = $2 
+              AND academic_year = $3 
+              AND semester = $4
+        `, [req.user.emp_id, department_id, academic_year, semester]);
+
+        if (allocCheck.length === 0 && req.user.department_id !== parseInt(department_id, 10)) {
+            return res.status(403).json({
+                message: 'Access Denied: You are not authorized or allocated to generate OTP for this class.'
+            });
+        }
+    }
+
     try {
         const emp_id = req.user.emp_id || String(req.user.id);
         const otp_code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
@@ -403,7 +434,40 @@ exports.generateAttendanceOTP = async (req, res) => {
 // @access  Private (All authenticated roles)
 exports.getActiveAttendanceOTP = async (req, res) => {
     try {
-        const { department_id, academic_year, semester, section = 'A', date, period_number } = req.query;
+        let { department_id, academic_year, semester, section = 'A', date, period_number } = req.query;
+
+        // For student role, query student's own department_id, academic_year, semester
+        if (req.user.role === 'student') {
+            const { rows: stRows } = await queryWithRetry(`
+                SELECT u.department_id, s.academic_year, s.semester
+                FROM students s
+                JOIN users u ON s.user_id = u.id
+                WHERE u.id = $1
+            `, [req.user.id]);
+
+            if (stRows.length > 0) {
+                department_id = stRows[0].department_id;
+                academic_year = stRows[0].academic_year;
+                semester = stRows[0].semester;
+            }
+        }
+
+        const queryParams = [];
+        let paramIndex = 1;
+        let whereClause = `WHERE is_active = TRUE AND expires_at > CURRENT_TIMESTAMP`;
+
+        if (department_id) {
+            whereClause += ` AND department_id = $${paramIndex++}`;
+            queryParams.push(department_id);
+        }
+        if (academic_year) {
+            whereClause += ` AND academic_year = $${paramIndex++}`;
+            queryParams.push(academic_year);
+        }
+        if (semester) {
+            whereClause += ` AND semester = $${paramIndex++}`;
+            queryParams.push(semester);
+        }
 
         const { rows } = await queryWithRetry(`
             SELECT 
@@ -411,13 +475,9 @@ exports.getActiveAttendanceOTP = async (req, res) => {
                 subject, subject_code, date, period_number, start_time, end_time, expires_at,
                 GREATEST(0, ROUND(EXTRACT(EPOCH FROM (expires_at - CURRENT_TIMESTAMP)))) as remaining_seconds
             FROM attendance_otps
-            WHERE is_active = TRUE
-              AND expires_at > CURRENT_TIMESTAMP
-              ${department_id ? 'AND department_id = $1' : ''}
-              ${academic_year ? `AND academic_year = ${department_id ? '$2' : '$1'}` : ''}
-              ${semester ? `AND semester = ${department_id ? '$3' : '$2'}` : ''}
+            ${whereClause}
             ORDER BY expires_at DESC LIMIT 1
-        `, [department_id, academic_year, semester].filter(Boolean));
+        `, queryParams);
 
         if (rows.length === 0) {
             return res.json({ has_active_otp: false, active_otp: null });

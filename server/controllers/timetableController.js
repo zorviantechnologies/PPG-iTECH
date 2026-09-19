@@ -27,7 +27,7 @@ exports.getTimetable = async (req, res) => {
         let query = `
             SELECT t.*, u.name as staff_name, d.name as department_name 
             FROM timetable t
-            LEFT JOIN users u ON t.emp_id = u.emp_id
+            LEFT JOIN users u ON (t.emp_id = u.emp_id OR CAST(u.id AS VARCHAR) = t.emp_id)
             LEFT JOIN departments d ON t.department_id = d.id
             WHERE 1=1
         `;
@@ -111,6 +111,20 @@ exports.createTimetableEntry = async (req, res) => {
         const resolvedSem = semester ? parseInt(semester, 10) : 1;
         const resolvedSec = section || 'A';
 
+        let finalStartTime = start_time || null;
+        let finalEndTime = end_time || null;
+
+        if ((!finalStartTime || !finalEndTime) && period_number) {
+            const { rows: cfgRows } = await pool.query(
+                'SELECT start_time, end_time FROM timetable_config WHERE period_number = $1 LIMIT 1',
+                [period_number]
+            );
+            if (cfgRows.length > 0) {
+                if (!finalStartTime) finalStartTime = cfgRows[0].start_time;
+                if (!finalEndTime) finalEndTime = cfgRows[0].end_time;
+            }
+        }
+
         await pool.query(
             `INSERT INTO timetable (
                 emp_id, department_id, academic_year, semester, section,
@@ -118,7 +132,7 @@ exports.createTimetableEntry = async (req, res) => {
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
             [
                 resolvedEmpId, resolvedDeptId, resolvedYear, resolvedSem, resolvedSec,
-                day_of_week, period_number, start_time || null, end_time || null,
+                day_of_week, period_number, finalStartTime, finalEndTime,
                 subject || null, subject_code || null, room_number || null
             ]
         );
@@ -156,6 +170,20 @@ exports.updateTimetableEntry = async (req, res) => {
         const resolvedSem = semester !== undefined ? parseInt(semester, 10) : entryRows[0].semester;
         const resolvedSec = section !== undefined ? section : entryRows[0].section;
 
+        let finalStartTime = start_time || entryRows[0].start_time;
+        let finalEndTime = end_time || entryRows[0].end_time;
+
+        if ((!finalStartTime || !finalEndTime) && period_number) {
+            const { rows: cfgRows } = await pool.query(
+                'SELECT start_time, end_time FROM timetable_config WHERE period_number = $1 LIMIT 1',
+                [period_number]
+            );
+            if (cfgRows.length > 0) {
+                if (!finalStartTime) finalStartTime = cfgRows[0].start_time;
+                if (!finalEndTime) finalEndTime = cfgRows[0].end_time;
+            }
+        }
+
         await pool.query(
             `UPDATE timetable SET 
                 emp_id = $1, department_id = $2, academic_year = $3, semester = $4, section = $5,
@@ -164,7 +192,7 @@ exports.updateTimetableEntry = async (req, res) => {
             WHERE id = $13`,
             [
                 resolvedEmpId, resolvedDeptId, resolvedYear, resolvedSem, resolvedSec,
-                day_of_week, period_number, start_time || null, end_time || null,
+                day_of_week, period_number, finalStartTime, finalEndTime,
                 subject || null, subject_code || null, room_number || null, req.params.id
             ]
         );

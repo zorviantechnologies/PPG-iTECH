@@ -13,6 +13,7 @@ import {
 
 const StaffStudentAttendance = () => {
     const { user } = useAuth();
+    const isAdmin = ['admin', 'accounts', 'principal'].includes(user?.role);
     const [departments, setDepartments] = useState([]);
     const [allocatedClasses, setAllocatedClasses] = useState([]);
     
@@ -165,6 +166,7 @@ const StaffStudentAttendance = () => {
 
     // Single student status toggle
     const handleToggleStatus = (studentId) => {
+        if (isAdmin) return;
         setStudents(prev => prev.map(st => {
             if (st.student_id === studentId) {
                 return {
@@ -178,11 +180,16 @@ const StaffStudentAttendance = () => {
 
     // Bulk status actions
     const handleMarkAll = (status) => {
+        if (isAdmin) return;
         setStudents(prev => prev.map(st => ({ ...st, status })));
     };
 
     // Save Attendance Handler
     const handleSaveAttendance = async () => {
+        if (isAdmin) {
+            Swal.fire({ icon: 'warning', title: 'Admin View Only', text: 'Administrators are in View-Only mode and cannot mark student attendance.', confirmButtonColor: '#0ea5e9' });
+            return;
+        }
         if (students.length === 0) {
             Swal.fire({ icon: 'warning', title: 'No students to record', confirmButtonColor: '#0ea5e9' });
             return;
@@ -282,6 +289,11 @@ const StaffStudentAttendance = () => {
 
     // Generate 15-second OTP
     const handleGenerateOTP = async () => {
+        if (isAdmin) {
+            Swal.fire({ icon: 'warning', title: 'Admin View Only', text: 'Administrators cannot generate attendance OTPs. Only staff members can generate OTPs.', confirmButtonColor: '#0ea5e9' });
+            return;
+        }
+
         if (!selectedDeptId || !selectedSubject) {
             Swal.fire({ icon: 'warning', title: 'Subject & Class Required', text: 'Please select a valid department and subject before generating OTP.', confirmButtonColor: '#0ea5e9' });
             return;
@@ -352,8 +364,22 @@ const StaffStudentAttendance = () => {
         <Layout>
             <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
 
+                {/* Admin View-Only Notice Banner */}
+                {isAdmin && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900 flex items-center gap-3 shadow-sm"
+                    >
+                        <FaShieldAlt className="text-sky-600 text-xl shrink-0" />
+                        <div className="text-sm">
+                            <span className="font-extrabold text-sky-900">Administrator View-Only Mode:</span> You are viewing student attendance as an Administrator. Admins cannot generate OTPs or mark attendance to students. Only allocated staff members can generate OTPs and record attendance.
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* Warning Banner if Staff tries unallocated class */}
-                {!isAllocated && (
+                {!isAllocated && !isAdmin && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -361,7 +387,7 @@ const StaffStudentAttendance = () => {
                     >
                         <FaExclamationTriangle className="text-amber-500 text-xl shrink-0" />
                         <div className="text-sm">
-                            <span className="font-bold">Notice:</span> You are not explicitly assigned to this class/subject in the active timetable. As an Admin or HOD, you can still view and manage attendance.
+                            <span className="font-bold">Notice:</span> You are not explicitly assigned to this class/subject in the active timetable.
                         </div>
                     </motion.div>
                 )}
@@ -578,20 +604,28 @@ const StaffStudentAttendance = () => {
 
                         {/* Batch Action Buttons */}
                         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                            <button
-                                type="button"
-                                onClick={() => handleMarkAll('Present')}
-                                className="px-3.5 py-2 rounded-xl bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs font-bold transition-all flex items-center gap-1.5"
-                            >
-                                <FaCheck /> Mark All Present
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleMarkAll('Absent')}
-                                className="px-3.5 py-2 rounded-xl bg-rose-100 text-rose-800 hover:bg-rose-200 text-xs font-bold transition-all flex items-center gap-1.5"
-                            >
-                                <FaTimes /> Mark All Absent
-                            </button>
+                            {!isAdmin ? (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleMarkAll('Present')}
+                                        className="px-3.5 py-2 rounded-xl bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs font-bold transition-all flex items-center gap-1.5"
+                                    >
+                                        <FaCheck /> Mark All Present
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleMarkAll('Absent')}
+                                        className="px-3.5 py-2 rounded-xl bg-rose-100 text-rose-800 hover:bg-rose-200 text-xs font-bold transition-all flex items-center gap-1.5"
+                                    >
+                                        <FaTimes /> Mark All Absent
+                                    </button>
+                                </>
+                            ) : (
+                                <span className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500 text-xs font-bold border border-slate-200">
+                                    View Only (Admin)
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -639,23 +673,25 @@ const StaffStudentAttendance = () => {
                                                     <div className="inline-flex p-1 rounded-xl bg-slate-100 border border-slate-200 gap-1">
                                                         <button
                                                             type="button"
+                                                            disabled={isAdmin}
                                                             onClick={() => handleToggleStatus(st.student_id)}
                                                             className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all flex items-center gap-1.5 ${
                                                                 isPresent
                                                                     ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30'
                                                                     : 'text-slate-600 hover:text-emerald-600'
-                                                            }`}
+                                                            } ${isAdmin ? 'cursor-not-allowed opacity-80' : ''}`}
                                                         >
                                                             <FaCheck /> Present
                                                         </button>
                                                         <button
                                                             type="button"
+                                                            disabled={isAdmin}
                                                             onClick={() => handleToggleStatus(st.student_id)}
                                                             className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all flex items-center gap-1.5 ${
                                                                 !isPresent
                                                                     ? 'bg-rose-500 text-white shadow-sm shadow-rose-500/30'
                                                                     : 'text-slate-600 hover:text-rose-600'
-                                                            }`}
+                                                            } ${isAdmin ? 'cursor-not-allowed opacity-80' : ''}`}
                                                         >
                                                             <FaTimes /> Absent
                                                         </button>
@@ -684,41 +720,49 @@ const StaffStudentAttendance = () => {
                                 <FaHistory /> Audit Logs
                             </button>
 
-                            <button
-                                type="button"
-                                onClick={handleGenerateOTP}
-                                disabled={generatingOtp || !selectedSubject}
-                                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-black shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
-                            >
-                                {generatingOtp ? (
-                                    <>
-                                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        Generating...
-                                    </>
-                                ) : (
-                                    <>
-                                        <FaKey /> Generate 15s Attendance OTP
-                                    </>
-                                )}
-                            </button>
+                            {!isAdmin ? (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={handleGenerateOTP}
+                                        disabled={generatingOtp || !selectedSubject}
+                                        className="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-black shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                    >
+                                        {generatingOtp ? (
+                                            <>
+                                                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                Generating...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaKey /> Generate 15s Attendance OTP
+                                            </>
+                                        )}
+                                    </button>
 
-                            <button
-                                type="button"
-                                onClick={handleSaveAttendance}
-                                disabled={saving || loading || students.length === 0}
-                                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold shadow-lg shadow-sky-600/30 hover:shadow-sky-600/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                            >
-                                {saving ? (
-                                    <>
-                                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        Saving Record...
-                                    </>
-                                ) : (
-                                    <>
-                                        <FaSave /> Save Attendance Record
-                                    </>
-                                )}
-                            </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveAttendance}
+                                        disabled={saving || loading || students.length === 0}
+                                        className="w-full sm:w-auto px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold shadow-lg shadow-sky-600/30 hover:shadow-sky-600/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                    >
+                                        {saving ? (
+                                            <>
+                                                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                Saving Record...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaSave /> Save Attendance Record
+                                            </>
+                                        )}
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-500 text-xs font-bold border border-slate-200">
+                                    OTP & Attendance Marking (Staff Only)
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

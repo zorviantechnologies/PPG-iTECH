@@ -251,6 +251,16 @@ const Timetable = ({ showToggle = true }) => {
     };
 
     const handleAction = async (entry = null) => {
+        if (view === 'staff') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Faculty Timetable is Read-Only',
+                text: 'Staff schedules are automatically generated from Student Class Timetables. To assign or change staff periods, please edit the Class Timetable.',
+                confirmButtonColor: '#2563eb'
+            });
+            return;
+        }
+
         if (view === 'class' && (!selectedDept || !selectedYear || !selectedSem)) {
             Swal.fire('Filter Required', 'Please select Department, Academic Year, and Semester first.', 'warning');
             return;
@@ -715,12 +725,18 @@ const Timetable = ({ showToggle = true }) => {
                         <div className="p-4 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
                             <div className="flex items-center gap-2 text-xs font-bold text-gray-700">
                                 <FaBookOpen className="text-indigo-600" />
-                                <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-mono text-[10px]">
-                                    {departments.find(d => String(d.id) === String(selectedDept))?.name || 'Dept'} &bull; Year {selectedYear} (Sem {selectedSem}) Sec {selectedSec}
-                                </span>
+                                {view === 'class' ? (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-mono text-[10px]">
+                                        {departments.find(d => String(d.id) === String(selectedDept))?.name || 'Dept'} &bull; Year {selectedYear} (Sem {selectedSem}) Sec {selectedSec}
+                                    </span>
+                                ) : (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-mono text-[10px]">
+                                        Faculty Schedule (Read-Only - Generated from Class Allocations)
+                                    </span>
+                                )}
                             </div>
 
-                            {isManager && (
+                            {isManager && view === 'class' && (
                                 <button
                                     onClick={() => handleAction()}
                                     className="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-sky-700 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
@@ -813,7 +829,7 @@ const Timetable = ({ showToggle = true }) => {
                                                                             <span className="px-2 py-0.5 bg-sky-100 text-sky-700 rounded-lg text-[8px] font-black uppercase tracking-widest truncate max-w-[75px]">
                                                                                 {entry.subject_code || 'N/A'}
                                                                             </span>
-                                                                            {isManager && (
+                                                                            {isManager && view === 'class' && (
                                                                                 <div className="flex gap-1.5 opacity-100 md:opacity-0 md:group-hover/entry:opacity-100 transition-all">
                                                                                     <button onClick={() => handleAction(entry)} className="text-sky-400 hover:text-sky-600 transition-colors"><FaEdit size={11} /></button>
                                                                                     <button onClick={() => handleDelete(entry.id)} className="text-rose-400 hover:text-rose-600 transition-colors"><FaTrash size={11} /></button>
@@ -843,7 +859,7 @@ const Timetable = ({ showToggle = true }) => {
                                                             ))}
                                                         </AnimatePresence>
 
-                                                        {entries.length === 0 && isManager && (
+                                                        {entries.length === 0 && isManager && view === 'class' && (
                                                             <div className="h-full flex items-center justify-center opacity-100 md:opacity-0 md:group-hover/cell:opacity-100 transition-all duration-300">
                                                                 <button
                                                                     onClick={() => handleAction({ day_of_week: day, period_number: p })}
