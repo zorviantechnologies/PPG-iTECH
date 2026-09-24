@@ -10,6 +10,8 @@ const {
     generateAttendanceOTP,
     getActiveAttendanceOTP,
     verifyAttendanceOTP,
+    generateAttendanceQR,
+    verifyAttendanceQR,
     getAttendanceAuditLogs
 } = require('../controllers/studentAttendanceController');
 
@@ -20,10 +22,12 @@ router.get('/allocated-classes', restrictTo('staff', 'hod', 'admin', 'principal'
 router.get('/students-for-class', restrictTo('staff', 'hod', 'admin', 'principal'), getStudentsForAttendance);
 router.post('/mark', restrictTo('staff', 'hod'), markStudentAttendance);
 
-// OTP-based Attendance Mechanism
+// OTP & 10-Minute QR-based Attendance Mechanism
 router.post('/generate-otp', restrictTo('staff', 'hod'), generateAttendanceOTP);
 router.get('/active-otp', getActiveAttendanceOTP);
 router.post('/verify-otp', restrictTo('student'), verifyAttendanceOTP);
+router.post('/generate-qr', restrictTo('staff', 'hod'), generateAttendanceQR);
+router.post('/verify-qr', restrictTo('staff', 'hod', 'student'), verifyAttendanceQR);
 router.get('/audit-logs', restrictTo('staff', 'hod', 'admin', 'principal'), getAttendanceAuditLogs);
 
 // Student view

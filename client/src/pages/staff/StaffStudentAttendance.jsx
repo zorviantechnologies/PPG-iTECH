@@ -44,6 +44,13 @@ const StaffStudentAttendance = () => {
     const [otpCountdown, setOtpCountdown] = useState(0);
     const [showOtpModal, setShowOtpModal] = useState(false);
 
+    // QR Code Generation State (10-minute validity)
+    const [generatingQr, setGeneratingQr] = useState(false);
+    const [activeQrData, setActiveQrData] = useState(null);
+    const [qrCountdown, setQrCountdown] = useState(0);
+    const [showQrModal, setShowQrModal] = useState(false);
+    const [verifyingQr, setVerifyingQr] = useState(false);
+
     // Interactive Generate OTP Modal States
     const [showOtpGenModal, setShowOtpGenModal] = useState(false);
     const [otpDeptId, setOtpDeptId] = useState('');
@@ -111,6 +118,102 @@ const StaffStudentAttendance = () => {
             });
         } finally {
             setGeneratingOtp(false);
+        }
+    };
+
+    // 10-Minute QR Countdown Timer Effect
+    useEffect(() => {
+        let timer;
+        if (showQrModal && qrCountdown > 0) {
+            timer = setInterval(() => {
+                setQrCountdown(prev => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [showQrModal, qrCountdown]);
+
+    // Format seconds into MM:SS
+    const formatTimeMMSS = (totalSeconds) => {
+        if (totalSeconds <= 0) return '00:00';
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    };
+
+    // Generate 10-minute Attendance QR Code
+    const handleGenerateQR = async () => {
+        if (isAdmin) {
+            Swal.fire({ icon: 'warning', title: 'Admin View Only', text: 'Administrators cannot generate attendance QR codes. Only teaching staff can generate QR codes.', confirmButtonColor: '#0ea5e9' });
+            return;
+        }
+
+        if (!selectedDeptId || !selectedSubject) {
+            Swal.fire({ icon: 'warning', title: 'Subject & Department Required', text: 'Please select a valid department and enter a subject before generating QR Code.', confirmButtonColor: '#0ea5e9' });
+            return;
+        }
+
+        setGeneratingQr(true);
+        try {
+            const payload = {
+                department_id: parseInt(selectedDeptId, 10),
+                academic_year: parseInt(selectedYear, 10),
+                semester: parseInt(selectedSem, 10),
+                section: selectedSection || 'A',
+                subject: selectedSubject.trim(),
+                subject_code: selectedSubjectCode ? selectedSubjectCode.trim() : '',
+                date: selectedDate,
+                period_number: parseInt(selectedPeriod, 10),
+                start_time: startTime,
+                end_time: endTime
+            };
+
+            const res = await api.post('/student-attendance/generate-qr', payload);
+            setActiveQrData(res.data);
+            setQrCountdown(600); // 10 Minutes = 600 Seconds
+            setShowQrModal(true);
+        } catch (err) {
+            console.error('Error generating QR code:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'QR Generation Failed',
+                text: err.response?.data?.message || err.message,
+                confirmButtonColor: '#0ea5e9'
+            });
+        } finally {
+            setGeneratingQr(false);
+        }
+    };
+
+    // Verify QR scan and mark ALL students as Present
+    const handleVerifyQRScanAll = async () => {
+        if (!activeQrData?.qr_code) return;
+        setVerifyingQr(true);
+        try {
+            const res = await api.post('/student-attendance/verify-qr', {
+                qr_code: activeQrData.qr_code,
+                department_id: parseInt(selectedDeptId, 10),
+                academic_year: parseInt(selectedYear, 10),
+                semester: parseInt(selectedSem, 10),
+                section: selectedSection,
+                date: selectedDate,
+                period_number: parseInt(selectedPeriod, 10)
+            });
+            Swal.fire({
+                icon: 'success',
+                title: 'All Students Marked Present!',
+                text: res.data.message || '10-Minute QR Verified successfully!',
+                confirmButtonColor: '#10b981'
+            });
+            fetchClassStudents();
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'QR Verification Failed',
+                text: err.response?.data?.message || err.message,
+                confirmButtonColor: '#0ea5e9'
+            });
+        } finally {
+            setVerifyingQr(false);
         }
     };
 
@@ -772,6 +875,24 @@ const StaffStudentAttendance = () => {
                                 <>
                                     <button
                                         type="button"
+                                        onClick={handleGenerateQR}
+                                        disabled={generatingQr}
+                                        className="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-black shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                    >
+                                        {generatingQr ? (
+                                            <>
+                                                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                Generating QR...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaQrcode /> Generate 10-Min Attendance QR
+                                            </>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        type="button"
                                         onClick={handleGenerateOTP}
                                         disabled={generatingOtp}
                                         className="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-black shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
@@ -815,6 +936,110 @@ const StaffStudentAttendance = () => {
                     </div>
                 </div>
             </div>
+
+            {/* STAFF 10-MINUTE QR DISPLAY MODAL */}
+            {showQrModal && activeQrData && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full text-center space-y-5 border border-emerald-200 shadow-2xl relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500" />
+
+                        <div className="space-y-1 pt-2">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider">
+                                <FaQrcode /> 10-Minute Attendance QR Code
+                            </span>
+                            <h3 className="text-xl font-black text-slate-900">Period {selectedPeriod} - {selectedSubject}</h3>
+                            <p className="text-xs font-medium text-slate-500">
+                                Scanning this QR code marks <strong>all students Present</strong> for this class session. Valid for <strong>10 minutes</strong>.
+                            </p>
+                        </div>
+
+                        {/* QR Code Container */}
+                        <div className="bg-slate-900 p-5 rounded-2xl border-2 border-emerald-400/40 shadow-inner space-y-3 flex flex-col items-center">
+                            <div className="bg-white p-4 rounded-2xl shadow-lg border-2 border-emerald-400">
+                                <QRCodeSVG
+                                    value={activeQrData.qr_payload || JSON.stringify({
+                                        type: 'ATTENDANCE_QR',
+                                        qr_code: activeQrData.qr_code,
+                                        period: selectedPeriod,
+                                        subject: selectedSubject,
+                                        date: selectedDate
+                                    })}
+                                    size={200}
+                                    level="H"
+                                    includeMargin={true}
+                                />
+                            </div>
+                            <div className="text-center space-y-1">
+                                <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center justify-center gap-1">
+                                    <FaShieldAlt className="text-emerald-400" /> Scan QR to Mark All Present
+                                </span>
+                                <span className="text-xs font-mono font-bold tracking-wider text-emerald-300 block">
+                                    Token Code: {activeQrData.qr_code}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Live 10-Minute Countdown Display */}
+                        <div className="flex flex-col items-center justify-center space-y-1">
+                            <div className={`px-5 py-2 rounded-2xl font-mono font-black text-2xl flex items-center justify-center border-2 gap-2 ${
+                                qrCountdown > 120
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                    : qrCountdown > 30
+                                    ? 'bg-amber-50 text-amber-700 border-amber-300 animate-pulse'
+                                    : 'bg-rose-50 text-rose-700 border-rose-400 animate-pulse'
+                            }`}>
+                                <FaClock size={18} />
+                                {formatTimeMMSS(qrCountdown)}
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                {qrCountdown > 0 ? 'Remaining QR Code Validity (10 Minutes Max)' : 'QR CODE EXPIRED'}
+                            </span>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="pt-2 border-t space-y-2">
+                            <button
+                                type="button"
+                                onClick={handleVerifyQRScanAll}
+                                disabled={verifyingQr || qrCountdown <= 0}
+                                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                                {verifyingQr ? (
+                                    <>
+                                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Verifying QR & Marking Present...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaCheck /> Confirm Scan & Mark All Present
+                                    </>
+                                )}
+                            </button>
+
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleGenerateQR}
+                                    className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-1"
+                                >
+                                    <FaSync /> Regenerate 10-Min QR
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowQrModal(false)}
+                                    className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all"
+                                >
+                                    Close Window
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
 
             {/* STAFF 15-SECOND OTP DISPLAY MODAL */}
             {showOtpModal && activeOtpData && (

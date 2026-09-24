@@ -931,3 +931,243 @@ exports.getAttendanceReport = async (req, res) => {
         res.status(500).json({ message: 'Failed to generate attendance report: ' + error.message });
     }
 };
+
+// @desc    Generate 10-Minute Attendance QR Code (valid for 10 minutes = 600 seconds)
+// @route   POST /api/student-attendance/generate-qr
+// @access  Private (Staff, HOD)
+exports.generateAttendanceQR = async (req, res) => {
+    const {
+        department_id,
+        academic_year,
+        semester,
+        section = 'A',
+        subject,
+        subject_code,
+        date,
+        period_number,
+        start_time,
+        end_time
+    } = req.body;
+
+    if (!department_id || !academic_year || !semester || !subject || !date || !period_number) {
+        return res.status(400).json({ message: 'Department, Academic Year, Semester, Subject, Date, and Period Number are required.' });
+    }
+
+    if (['admin', 'accounts', 'principal'].includes(req.user.role)) {
+        return res.status(403).json({
+            message: 'Access Denied: Administrators cannot generate attendance QR codes.'
+        });
+    }
+
+    try {
+        const emp_id = req.user.emp_id || String(req.user.id);
+        const qr_code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 Minutes Expiry!
+
+        await withDbClient(async (client) => {
+            await client.query('BEGIN');
+
+            // Deactivate previous active OTPs/QRs for this session
+            await client.query(`
+                UPDATE attendance_otps 
+                SET is_active = FALSE 
+                WHERE department_id = $1 AND academic_year = $2 AND semester = $3 
+                  AND section = $4 AND period_number = $5 AND date = $6
+            `, [department_id, academic_year, semester, section, period_number, date]);
+
+            // Insert new 10-minute QR entry
+            await client.query(`
+                INSERT INTO attendance_otps (
+                    otp_code, created_by_emp_id, created_by_user_id, department_id, academic_year,
+                    semester, section, subject, subject_code, date, period_number, start_time,
+                    end_time, expires_at, is_active
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE)
+            `, [
+                qr_code,
+                emp_id,
+                req.user.id,
+                department_id,
+                academic_year,
+                semester,
+                section,
+                subject,
+                subject_code || '',
+                date,
+                period_number,
+                start_time || '',
+                end_time || '',
+                expiresAt
+            ]);
+
+            // Audit Log
+            await client.query(`
+                INSERT INTO attendance_audit_logs (
+                    action, user_id, emp_id, user_role, department_id, academic_year, semester, section,
+                    subject, period_number, date, otp_code, status, details
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'SUCCESS', $13)
+            `, [
+                'QR_GENERATED',
+                req.user.id,
+                emp_id,
+                req.user.role,
+                department_id,
+                academic_year,
+                semester,
+                section,
+                subject,
+                period_number,
+                date,
+                qr_code,
+                `Generated 10-minute attendance QR code for Period ${period_number}`
+            ]);
+
+            await client.query('COMMIT');
+        });
+
+        const qrPayload = JSON.stringify({
+            type: 'ATTENDANCE_QR',
+            qr_code,
+            department_id: parseInt(department_id, 10),
+            academic_year: parseInt(academic_year, 10),
+            semester: parseInt(semester, 10),
+            section,
+            subject,
+            period_number: parseInt(period_number, 10),
+            date
+        });
+
+        res.status(201).json({
+            message: 'Attendance QR Code generated successfully (Valid for 10 Minutes)',
+            qr_code,
+            qr_payload: qrPayload,
+            validity_seconds: 600,
+            expires_at: expiresAt.toISOString()
+        });
+
+    } catch (error) {
+        console.error('Error generating attendance QR code:', error);
+        res.status(500).json({ message: 'Failed to generate attendance QR code: ' + error.message });
+    }
+};
+
+// @desc    Verify 10-Minute Attendance QR Code (Marks ALL students present in class session)
+// @route   POST /api/student-attendance/verify-qr
+// @access  Private (Staff, HOD, Student)
+exports.verifyAttendanceQR = async (req, res) => {
+    const { qr_code, department_id, academic_year, semester, section, subject, period_number, date } = req.body;
+    const cleanCode = String(qr_code || '').trim();
+
+    if (!cleanCode) {
+        return res.status(400).json({ message: 'QR Code is required.' });
+    }
+
+    try {
+        // Query active QR code within the 10-minute expiration window
+        const { rows: qrRows } = await queryWithRetry(`
+            SELECT * FROM attendance_otps
+            WHERE otp_code = $1
+              AND is_active = TRUE
+              AND expires_at > CURRENT_TIMESTAMP
+            ORDER BY created_at DESC LIMIT 1
+        `, [cleanCode]);
+
+        if (qrRows.length === 0) {
+            return res.status(400).json({
+                message: 'Invalid or Expired QR Code. Attendance QR Codes are valid for 10 minutes only.'
+            });
+        }
+
+        const activeQr = qrRows[0];
+
+        // Fetch all students belonging to the active class session
+        const { rows: stRows } = await queryWithRetry(`
+            SELECT s.id as student_id, s.user_id, u.name
+            FROM students s
+            JOIN users u ON s.user_id = u.id
+            WHERE u.department_id = $1
+              AND s.academic_year = $2
+              AND s.semester = $3
+              AND ($4 = 'All' OR s.section = $4 OR s.section IS NULL OR s.section = '')
+        `, [
+            activeQr.department_id,
+            activeQr.academic_year,
+            activeQr.semester,
+            activeQr.section || 'All'
+        ]);
+
+        if (stRows.length === 0) {
+            return res.status(404).json({ message: 'No registered students found for this class session.' });
+        }
+
+        // Mark ALL students in the class session as Present
+        await withDbClient(async (client) => {
+            await client.query('BEGIN');
+
+            for (const st of stRows) {
+                await client.query(`
+                    INSERT INTO student_attendance (
+                        student_id, user_id, department_id, academic_year, semester, section,
+                        subject, subject_code, date, period_number, start_time, end_time, status, marked_by_emp_id, updated_at
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'Present', $13, CURRENT_TIMESTAMP)
+                    ON CONFLICT (student_id, date, period_number)
+                    DO UPDATE SET
+                        status = 'Present',
+                        subject = EXCLUDED.subject,
+                        subject_code = EXCLUDED.subject_code,
+                        marked_by_emp_id = EXCLUDED.marked_by_emp_id,
+                        updated_at = CURRENT_TIMESTAMP
+                `, [
+                    st.student_id,
+                    st.user_id,
+                    activeQr.department_id,
+                    activeQr.academic_year,
+                    activeQr.semester,
+                    activeQr.section || 'A',
+                    activeQr.subject,
+                    activeQr.subject_code || '',
+                    activeQr.date,
+                    activeQr.period_number,
+                    activeQr.start_time || '',
+                    activeQr.end_time || '',
+                    activeQr.created_by_emp_id
+                ]);
+            }
+
+            // Audit log
+            await client.query(`
+                INSERT INTO attendance_audit_logs (
+                    action, user_id, emp_id, user_role, department_id, academic_year,
+                    semester, section, subject, period_number, date, otp_code, status, details
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'SUCCESS', $13)
+            `, [
+                'QR_VERIFIED_ALL_PRESENT',
+                req.user.id,
+                req.user.emp_id,
+                req.user.role,
+                activeQr.department_id,
+                activeQr.academic_year,
+                activeQr.semester,
+                activeQr.section,
+                activeQr.subject,
+                activeQr.period_number,
+                activeQr.date,
+                cleanCode,
+                `QR code scanned/verified: Marked all ${stRows.length} student(s) as Present for Period ${activeQr.period_number}`
+            ]);
+
+            await client.query('COMMIT');
+        });
+
+        res.status(200).json({
+            success: true,
+            message: `10-Minute QR Scan Verified! Marked all ${stRows.length} student(s) as Present for ${activeQr.subject} (Period ${activeQr.period_number}).`,
+            marked_count: stRows.length,
+            period_number: activeQr.period_number,
+            subject: activeQr.subject
+        });
+
+    } catch (error) {
+        console.error('Error verifying attendance QR code:', error);
+        res.status(500).json({ message: 'Failed to verify attendance QR code: ' + error.message });
+    }
+};

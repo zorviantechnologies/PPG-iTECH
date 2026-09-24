@@ -133,13 +133,13 @@ const StudentAttendanceView = () => {
         }
     };
 
-    // Process scanned code (either JSON or raw OTP string)
+    // Process scanned code (either JSON or raw OTP/QR string)
     const handleScannedCode = useCallback(async (scannedText) => {
         let cleanCode = String(scannedText || '').trim();
         try {
             const parsed = JSON.parse(cleanCode);
-            if (parsed && parsed.otp_code) {
-                cleanCode = parsed.otp_code;
+            if (parsed && (parsed.otp_code || parsed.qr_code)) {
+                cleanCode = parsed.otp_code || parsed.qr_code;
             }
         } catch (e) {
             // Raw text
@@ -149,7 +149,7 @@ const StudentAttendanceView = () => {
             Swal.fire({
                 icon: 'warning',
                 title: 'Invalid QR Code',
-                text: 'Scanned QR code does not contain a valid OTP payload.',
+                text: 'Scanned QR code does not contain a valid attendance token.',
                 confirmButtonColor: '#0ea5e9'
             });
             return;
@@ -159,9 +159,12 @@ const StudentAttendanceView = () => {
         setVerifyingOtp(true);
 
         try {
-            const res = await api.post('/student-attendance/verify-otp', {
-                otp_code: cleanCode
-            });
+            let res;
+            try {
+                res = await api.post('/student-attendance/verify-qr', { qr_code: cleanCode });
+            } catch (qrErr) {
+                res = await api.post('/student-attendance/verify-otp', { otp_code: cleanCode });
+            }
 
             Swal.fire({
                 icon: 'success',
@@ -181,7 +184,7 @@ const StudentAttendanceView = () => {
             Swal.fire({
                 icon: 'error',
                 title: 'Verification Failed',
-                text: err.response?.data?.message || 'Invalid or expired OTP. The OTP is only valid for 15 seconds after staff generation.',
+                text: err.response?.data?.message || 'Invalid or expired OTP/QR code.',
                 confirmButtonColor: '#0ea5e9'
             });
         } finally {
