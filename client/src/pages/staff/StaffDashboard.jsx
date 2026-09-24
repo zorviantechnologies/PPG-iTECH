@@ -184,6 +184,16 @@ const StaffDashboard = () => {
 
     return (
         <Layout>
+            {/* Welcome Header */}
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 pr-0 md:pr-56">
+                <div>
+                    <span className="text-[10px] font-black text-sky-600 uppercase tracking-[0.2em]">Staff Portal</span>
+                    <h1 className="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">
+                        Welcome, <span className="text-sky-600">{user?.name || profile?.name || 'Staff'}</span>
+                    </h1>
+                </div>
+            </motion.div>
+
             {/* Today's Timetable Section */}
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="mb-10">
                 <div className="flex items-center justify-between mb-4">
@@ -193,9 +203,10 @@ const StaffDashboard = () => {
                     </div>
                     <button 
                         onClick={() => navigate('/staff/timetables')}
-                        className="text-[9px] font-black text-sky-600 uppercase tracking-widest hover:underline"
+                        className="px-3.5 py-1.5 rounded-xl bg-sky-50 border border-sky-100 text-sky-600 hover:bg-sky-100 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 shadow-sm hover:shadow"
                     >
-                        View Full Timetable
+                        <span>View Full Timetable</span>
+                        <FaArrowRight size={10} />
                     </button>
                 </div>
 

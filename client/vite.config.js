@@ -109,6 +109,7 @@ export default defineConfig({
       },
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,woff2}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       }
     })
   ],
@@ -118,11 +119,28 @@ export default defineConfig({
     }
   },
   build: {
-    chunkSizeWarningLimit: 2000, // Increase limit for larger chunks
+    chunkSizeWarningLimit: 2000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom', 'framer-motion'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('jspdf') || id.includes('html2canvas')) {
+              return 'vendor-pdf';
+            }
+            if (id.includes('xlsx')) {
+              return 'vendor-excel';
+            }
+            if (id.includes('chart.js') || id.includes('react-chartjs-2')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('sweetalert2')) {
+              return 'vendor-swal';
+            }
+            if (id.includes('react-icons') || id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            return 'vendor';
+          }
         },
       },
     },
