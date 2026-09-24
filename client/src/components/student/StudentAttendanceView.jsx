@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
+import { Html5Qrcode } from 'html5-qrcode';
 import {
     FaCalendarCheck, FaClock, FaTimes, FaCheck, FaFilter,
     FaBookOpen, FaUserCheck, FaExclamationTriangle, FaCalendarAlt, FaRedo,
-    FaKey, FaShieldAlt, FaBolt
+    FaKey, FaShieldAlt, FaBolt, FaQrcode, FaCamera, FaUpload
 } from 'react-icons/fa';
 
 const StudentAttendanceView = () => {
@@ -17,6 +18,10 @@ const StudentAttendanceView = () => {
     const [countdown, setCountdown] = useState(0);
     const [otpInput, setOtpInput] = useState('');
     const [verifyingOtp, setVerifyingOtp] = useState(false);
+
+    // QR Scanner State
+    const [showQrScanner, setShowQrScanner] = useState(false);
+    const [scannerError, setScannerError] = useState('');
 
     // Filters
     const [filterYear, setFilterYear] = useState('all');
@@ -128,6 +133,127 @@ const StudentAttendanceView = () => {
         }
     };
 
+    // Process scanned code (either JSON or raw OTP string)
+    const handleScannedCode = useCallback(async (scannedText) => {
+        let cleanCode = String(scannedText || '').trim();
+        try {
+            const parsed = JSON.parse(cleanCode);
+            if (parsed && parsed.otp_code) {
+                cleanCode = parsed.otp_code;
+            }
+        } catch (e) {
+            // Raw text
+        }
+
+        if (!cleanCode) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid QR Code',
+                text: 'Scanned QR code does not contain a valid OTP payload.',
+                confirmButtonColor: '#0ea5e9'
+            });
+            return;
+        }
+
+        setShowQrScanner(false);
+        setVerifyingOtp(true);
+
+        try {
+            const res = await api.post('/student-attendance/verify-otp', {
+                otp_code: cleanCode
+            });
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Attendance Confirmed! 🎉',
+                text: res.data?.message || 'Your attendance has been recorded for this period.',
+                timer: 2500,
+                showConfirmButton: false
+            });
+
+            setOtpInput('');
+            setActiveSession(null);
+            setCountdown(0);
+            fetchMyAttendance();
+
+        } catch (err) {
+            console.error('QR Verification Error:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Verification Failed',
+                text: err.response?.data?.message || 'Invalid or expired OTP. The OTP is only valid for 15 seconds after staff generation.',
+                confirmButtonColor: '#0ea5e9'
+            });
+        } finally {
+            setVerifyingOtp(false);
+        }
+    }, [fetchMyAttendance]);
+
+    // Camera Scanner Initialization Effect
+    useEffect(() => {
+        if (!showQrScanner) return;
+
+        let html5QrcodeScanner = null;
+        let isMounted = true;
+
+        const initScanner = async () => {
+            try {
+                setScannerError('');
+                html5QrcodeScanner = new Html5Qrcode("qr-reader-container");
+                const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+                await html5QrcodeScanner.start(
+                    { facingMode: "environment" },
+                    config,
+                    (decodedText) => {
+                        if (isMounted) {
+                            handleScannedCode(decodedText);
+                        }
+                    },
+                    () => {}
+                );
+            } catch (err) {
+                console.error('Camera initialization error:', err);
+                if (isMounted) {
+                    setScannerError('Could not access camera. Please check camera permissions or upload a QR image below.');
+                }
+            }
+        };
+
+        const timer = setTimeout(initScanner, 300);
+
+        return () => {
+            isMounted = false;
+            clearTimeout(timer);
+            if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+                html5QrcodeScanner.stop().catch(() => {}).then(() => {
+                    html5QrcodeScanner.clear().catch(() => {});
+                });
+            }
+        };
+    }, [showQrScanner, handleScannedCode]);
+
+    // Handle QR image file upload fallback
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            const html5Qrcode = new Html5Qrcode("qr-reader-file-temp");
+            const decodedText = await html5Qrcode.scanFile(file, true);
+            handleScannedCode(decodedText);
+            html5Qrcode.clear();
+        } catch (err) {
+            console.error('File scan error:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'QR Code Not Found',
+                text: 'Could not read a valid QR code from the selected image. Please try again or enter the 6-digit OTP code directly.',
+                confirmButtonColor: '#0ea5e9'
+            });
+        }
+    };
+
     const handleResetFilters = () => {
         setFilterYear('all');
         setFilterSem('all');
@@ -172,8 +298,18 @@ const StudentAttendanceView = () => {
                             Personal Attendance & Hours Record
                         </h1>
                         <p className="text-sm text-sky-200/90 max-w-2xl">
-                            Track your hour-wise conducted classes, attended hours, absent hours, and confirm period attendance using staff-generated 15s OTPs.
+                            Track your hour-wise conducted classes, attended hours, absent hours, and confirm period attendance using staff-generated 15s OTPs or QR codes.
                         </p>
+                    </div>
+
+                    <div className="shrink-0">
+                        <button
+                            type="button"
+                            onClick={() => setShowQrScanner(true)}
+                            className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs uppercase tracking-wider shadow-xl flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                        >
+                            <FaQrcode className="text-lg text-slate-900" /> Scan Attendance QR Code
+                        </button>
                     </div>
                 </div>
             </div>
@@ -238,9 +374,17 @@ const StudentAttendanceView = () => {
                                             </>
                                         ) : (
                                             <>
-                                                <FaShieldAlt /> Verify OTP Now
+                                                <FaShieldAlt /> Verify OTP
                                             </>
                                         )}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowQrScanner(true)}
+                                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                                    >
+                                        <FaQrcode className="text-sm text-slate-900" /> Scan QR
                                     </button>
                                 </form>
                             </div>
@@ -530,6 +674,63 @@ const StudentAttendanceView = () => {
                     </div>
                 )}
             </div>
+
+            {/* QR CODE CAMERA SCANNER MODAL */}
+            {showQrScanner && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        className="bg-white rounded-3xl p-6 max-w-md w-full text-center space-y-5 border border-amber-300 shadow-2xl relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500" />
+                        
+                        <div className="space-y-1 pt-2">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-wider">
+                                <FaQrcode /> Scan Attendance QR Code
+                            </span>
+                            <h3 className="text-xl font-black text-slate-900">Scan Staff QR Code</h3>
+                            <p className="text-xs font-medium text-slate-500">
+                                Point your camera at the QR code displayed on your staff's screen to mark attendance.
+                            </p>
+                        </div>
+
+                        {/* Camera Scanner Viewport */}
+                        <div className="relative rounded-2xl overflow-hidden border-2 border-dashed border-amber-400 bg-slate-900 p-2 min-h-[260px] flex flex-col items-center justify-center">
+                            <div id="qr-reader-container" className="w-full h-full rounded-xl overflow-hidden" />
+                            {scannerError && (
+                                <div className="p-3 text-xs text-rose-300 bg-rose-950/80 rounded-xl max-w-xs text-center font-semibold border border-rose-800">
+                                    <FaExclamationTriangle className="text-lg mx-auto mb-1 text-rose-400" />
+                                    {scannerError}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* File Upload Fallback Option */}
+                        <div className="pt-2 border-t border-slate-100 flex flex-col items-center gap-2">
+                            <label className="cursor-pointer inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all w-full">
+                                <FaUpload className="text-amber-500" /> Upload QR Image File
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileUpload}
+                                    className="hidden"
+                                />
+                            </label>
+                            <div id="qr-reader-file-temp" className="hidden" />
+
+                            <button
+                                type="button"
+                                onClick={() => setShowQrScanner(false)}
+                                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all"
+                            >
+                                Cancel / Close Scanner
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </div>
     );
 };
