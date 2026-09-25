@@ -153,91 +153,96 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
         <Layout title="Student Portal">
             <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
                 
-                {/* Profile Header Banner */}
-                <div className="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-700 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
-                    <div className="absolute -right-10 -bottom-10 opacity-10 text-9xl">
-                        <FaUserGraduate />
-                    </div>
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 backdrop-blur-md p-1 border-2 border-white/40 shadow-inner overflow-hidden shrink-0">
-                                {profile?.profile_pic ? (
-                                    <img src={profile.profile_pic} alt={user?.name} className="w-full h-full object-cover rounded-full" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-white text-2xl font-black">
-                                        {user?.name?.charAt(0)?.toUpperCase() || 'S'}
+                {/* Profile Header Banner & Quick Stats (ONLY on Main Dashboard View) */}
+                {activeSectionTab === 'dashboard' && (
+                    <>
+                        {/* Profile Header Banner */}
+                        <div className="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-700 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+                            <div className="absolute -right-10 -bottom-10 opacity-10 text-9xl">
+                                <FaUserGraduate />
+                            </div>
+                            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 backdrop-blur-md p-1 border-2 border-white/40 shadow-inner overflow-hidden shrink-0">
+                                        {profile?.profile_pic ? (
+                                            <img src={profile.profile_pic} alt={user?.name} className="w-full h-full object-cover rounded-full" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-white text-2xl font-black">
+                                                {user?.name?.charAt(0)?.toUpperCase() || 'S'}
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                            <div>
-                                <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider mb-1">
-                                    <FaGraduationCap /> Student Portal
-                                </span>
-                                <h1 className="text-2xl md:text-3xl font-black tracking-tight">{user?.name}</h1>
-                                <p className="text-sky-100 text-xs md:text-sm font-mono mt-0.5">
-                                    Reg No: <span className="font-bold text-white">{user?.emp_id}</span> | Dept: <span className="font-bold text-white">{profile?.department_name || 'Department'}</span>
-                                </p>
+                                    <div>
+                                        <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider mb-1">
+                                            <FaGraduationCap /> Student Portal
+                                        </span>
+                                        <h1 className="text-2xl md:text-3xl font-black tracking-tight">{user?.name}</h1>
+                                        <p className="text-sky-100 text-xs md:text-sm font-mono mt-0.5">
+                                            Reg No: <span className="font-bold text-white">{user?.emp_id}</span> | Dept: <span className="font-bold text-white">{profile?.department_name || 'Department'}</span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Quick Stats Badges */}
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center">
+                                        <span className="text-[10px] uppercase font-bold text-sky-200 block">Attendance</span>
+                                        <span className="text-lg font-black text-white">{attPercentage}%</span>
+                                    </div>
+                                    <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center">
+                                        <span className="text-[10px] uppercase font-bold text-sky-200 block">Current Year</span>
+                                        <span className="text-lg font-black text-white">{profile?.academic_year || 1}st Year</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Quick Stats Badges */}
-                        <div className="flex items-center gap-3">
-                            <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center">
-                                <span className="text-[10px] uppercase font-bold text-sky-200 block">Attendance</span>
-                                <span className="text-lg font-black text-white">{attPercentage}%</span>
-                            </div>
-                            <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center">
-                                <span className="text-[10px] uppercase font-bold text-sky-200 block">Current Year</span>
-                                <span className="text-lg font-black text-white">{profile?.academic_year || 1}st Year</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        {/* 3 Monthly Summary Cards: Working Days, Holidays, Special Events */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <motion.div
+                                whileHover={{ scale: 1.02, y: -2 }}
+                                onClick={() => navigate('/student/calendar')}
+                                className="bg-emerald-50/80 border border-emerald-200/80 rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:shadow-emerald-100 transition-all"
+                            >
+                                <div className="h-12 w-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
+                                    <FaCalendarAlt />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Working Days</p>
+                                    <p className="text-2xl font-black text-emerald-800 tracking-tighter">{Number(monthStats.workingDays || 0).toFixed(1)}</p>
+                                </div>
+                            </motion.div>
 
-                {/* 3 Monthly Summary Cards: Working Days, Holidays, Special Events */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <motion.div
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        onClick={() => navigate('/student/calendar')}
-                        className="bg-emerald-50/80 border border-emerald-200/80 rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:shadow-emerald-100 transition-all"
-                    >
-                        <div className="h-12 w-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
-                            <FaCalendarAlt />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Working Days</p>
-                            <p className="text-2xl font-black text-emerald-800 tracking-tighter">{Number(monthStats.workingDays || 0).toFixed(1)}</p>
-                        </div>
-                    </motion.div>
+                            <motion.div
+                                whileHover={{ scale: 1.02, y: -2 }}
+                                onClick={() => navigate('/student/calendar')}
+                                className="bg-rose-50/80 border border-rose-200/80 rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:shadow-rose-100 transition-all"
+                            >
+                                <div className="h-12 w-12 rounded-xl bg-rose-500 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
+                                    <FaCalendarDay />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Holidays</p>
+                                    <p className="text-2xl font-black text-rose-800 tracking-tighter">{Number(monthStats.holidays || 0).toFixed(1)}</p>
+                                </div>
+                            </motion.div>
 
-                    <motion.div
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        onClick={() => navigate('/student/calendar')}
-                        className="bg-rose-50/80 border border-rose-200/80 rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:shadow-rose-100 transition-all"
-                    >
-                        <div className="h-12 w-12 rounded-xl bg-rose-500 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
-                            <FaCalendarDay />
+                            <motion.div
+                                whileHover={{ scale: 1.02, y: -2 }}
+                                onClick={() => navigate('/student/calendar')}
+                                className="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:shadow-amber-100 transition-all"
+                            >
+                                <div className="h-12 w-12 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
+                                    <FaStar />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Special Events</p>
+                                    <p className="text-2xl font-black text-amber-800 tracking-tighter">{Number(monthStats.specialEvents || 0).toFixed(1)}</p>
+                                </div>
+                            </motion.div>
                         </div>
-                        <div>
-                            <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Holidays</p>
-                            <p className="text-2xl font-black text-rose-800 tracking-tighter">{Number(monthStats.holidays || 0).toFixed(1)}</p>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        onClick={() => navigate('/student/calendar')}
-                        className="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:shadow-amber-100 transition-all"
-                    >
-                        <div className="h-12 w-12 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
-                            <FaStar />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Special Events</p>
-                            <p className="text-2xl font-black text-amber-800 tracking-tighter">{Number(monthStats.specialEvents || 0).toFixed(1)}</p>
-                        </div>
-                    </motion.div>
-                </div>
+                    </>
+                )}
 
 
 
