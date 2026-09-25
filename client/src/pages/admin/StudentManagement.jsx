@@ -13,7 +13,13 @@ import Swal from 'sweetalert2';
 const StudentManagement = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const initialDeptId = searchParams.get('department_id') || searchParams.get('dept') || '';
+
+    const getValidDeptId = (paramVal) => {
+        if (!paramVal || paramVal === 'undefined' || paramVal === 'null') return '';
+        return paramVal;
+    };
+
+    const initialDeptId = getValidDeptId(searchParams.get('department_id') || searchParams.get('dept'));
 
     const [students, setStudents] = useState([]);
     const [departments, setDepartments] = useState([]);
@@ -25,31 +31,43 @@ const StudentManagement = () => {
     const [selectedSection, setSelectedSection] = useState('');
 
     useEffect(() => {
-        const deptId = searchParams.get('department_id') || searchParams.get('dept');
-        if (deptId !== null) {
-            setSelectedDept(deptId);
-        }
+        const deptId = getValidDeptId(searchParams.get('department_id') || searchParams.get('dept'));
+        setSelectedDept(deptId);
     }, [searchParams]);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const queryParams = new URLSearchParams();
-            if (selectedDept) queryParams.append('department_id', selectedDept);
-            if (selectedYear) queryParams.append('academic_year', selectedYear);
-            if (selectedSem) queryParams.append('semester', selectedSem);
-            if (selectedSection) queryParams.append('section', selectedSection);
-            if (search) queryParams.append('search', search);
+            if (selectedDept && selectedDept !== 'undefined' && selectedDept !== 'null') {
+                queryParams.append('department_id', selectedDept);
+            }
+            if (selectedYear && selectedYear !== 'undefined') queryParams.append('academic_year', selectedYear);
+            if (selectedSem && selectedSem !== 'undefined') queryParams.append('semester', selectedSem);
+            if (selectedSection && selectedSection !== 'undefined') queryParams.append('section', selectedSection);
+            if (search) queryParams.append('search', search.trim());
 
-            const [studRes, deptRes] = await Promise.all([
-                api.get(`/students?${queryParams.toString()}`),
-                api.get('/departments')
-            ]);
+            let studData = [];
+            let deptData = [];
 
-            setStudents(studRes.data || []);
-            setDepartments(deptRes.data || []);
+            try {
+                const studRes = await api.get(`/students?${queryParams.toString()}`);
+                studData = Array.isArray(studRes.data) ? studRes.data : [];
+            } catch (stErr) {
+                console.error('Error loading students:', stErr);
+            }
+
+            try {
+                const deptRes = await api.get('/departments');
+                deptData = Array.isArray(deptRes.data) ? deptRes.data : [];
+            } catch (dpErr) {
+                console.error('Error loading departments:', dpErr);
+            }
+
+            setStudents(studData);
+            setDepartments(deptData);
         } catch (error) {
-            console.error('Error loading students:', error);
+            console.error('Error loading student management data:', error);
         } finally {
             setLoading(false);
         }
@@ -82,11 +100,12 @@ const StudentManagement = () => {
     };
 
     // Calculate metrics
-    const totalStudents = students.length;
-    const year1Count = students.filter(s => Number(s.academic_year) === 1).length;
-    const year2Count = students.filter(s => Number(s.academic_year) === 2).length;
-    const year3Count = students.filter(s => Number(s.academic_year) === 3).length;
-    const year4Count = students.filter(s => Number(s.academic_year) === 4).length;
+    const safeStudents = Array.isArray(students) ? students : [];
+    const totalStudents = safeStudents.length;
+    const year1Count = safeStudents.filter(s => Number(s.academic_year) === 1).length;
+    const year2Count = safeStudents.filter(s => Number(s.academic_year) === 2).length;
+    const year3Count = safeStudents.filter(s => Number(s.academic_year) === 3).length;
+    const year4Count = safeStudents.filter(s => Number(s.academic_year) === 4).length;
 
     return (
         <Layout title="Student Management Portal">
@@ -252,7 +271,7 @@ const StudentManagement = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
-                                    {students.map((student) => (
+                                    {safeStudents.map((student) => (
                                         <tr key={student.student_table_id || student.user_id} className="hover:bg-gray-50/80 transition-colors">
                                             <td className="py-4 px-6">
                                                 <div className="flex items-center gap-3">

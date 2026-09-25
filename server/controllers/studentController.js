@@ -39,22 +39,31 @@ exports.getStudents = async (req, res) => {
         const params = [];
         let paramIndex = 1;
 
-        if (department_id) {
-            query += ` AND u.department_id = $${paramIndex++}`;
-            params.push(department_id);
+        if (department_id && department_id !== 'undefined' && department_id !== 'null' && department_id !== 'all') {
+            const parsedDept = parseInt(department_id, 10);
+            if (!isNaN(parsedDept)) {
+                query += ` AND u.department_id = $${paramIndex++}`;
+                params.push(parsedDept);
+            }
         }
 
-        if (academic_year) {
-            query += ` AND s.academic_year = $${paramIndex++}`;
-            params.push(academic_year);
+        if (academic_year && academic_year !== 'undefined' && academic_year !== 'null' && academic_year !== 'all') {
+            const parsedYr = parseInt(academic_year, 10);
+            if (!isNaN(parsedYr)) {
+                query += ` AND s.academic_year = $${paramIndex++}`;
+                params.push(parsedYr);
+            }
         }
 
-        if (semester) {
-            query += ` AND s.semester = $${paramIndex++}`;
-            params.push(semester);
+        if (semester && semester !== 'undefined' && semester !== 'null' && semester !== 'all') {
+            const parsedSem = parseInt(semester, 10);
+            if (!isNaN(parsedSem)) {
+                query += ` AND s.semester = $${paramIndex++}`;
+                params.push(parsedSem);
+            }
         }
 
-        if (section) {
+        if (section && section !== 'undefined' && section !== 'null' && section !== 'all' && section !== 'All') {
             query += ` AND LOWER(s.section) = LOWER($${paramIndex++})`;
             params.push(section);
         }

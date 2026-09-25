@@ -849,54 +849,6 @@ const StaffStudentAttendance = () => {
                     )}
                 </AnimatePresence>
 
-                {/* Summary Metrics & Action Bar */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    
-                    {/* Total Students Card */}
-                    <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Students</p>
-                            <p className="text-2xl font-black text-slate-900 mt-1">{totalStudents}</p>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 text-xl font-bold">
-                            <FaUserGraduate />
-                        </div>
-                    </div>
-
-                    {/* Present Count Card */}
-                    <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Present Count</p>
-                            <p className="text-2xl font-black text-emerald-800 mt-1">{presentCount}</p>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xl font-bold">
-                            <FaCheck />
-                        </div>
-                    </div>
-
-                    {/* Absent Count Card */}
-                    <div className="bg-rose-50/70 border border-rose-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-bold text-rose-700 uppercase tracking-wider">Absent Count</p>
-                            <p className="text-2xl font-black text-rose-800 mt-1">{absentCount}</p>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-rose-500 text-white flex items-center justify-center text-xl font-bold">
-                            <FaTimes />
-                        </div>
-                    </div>
-
-                    {/* Attendance Rate Card */}
-                    <div className="bg-sky-50/70 border border-sky-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-bold text-sky-700 uppercase tracking-wider">Attendance Rate</p>
-                            <p className="text-2xl font-black text-sky-900 mt-1">{attPercentage}%</p>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-sky-500 text-white flex items-center justify-center text-xl font-bold">
-                            <FaCalendarCheck />
-                        </div>
-                    </div>
-                </div>
-
                 {/* Session Action Buttons Bar (Audit Logs, Generate QR, Generate OTP, Save Attendance Record) */}
                 <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4">
                     <div className="text-xs text-slate-500 font-medium">
@@ -973,6 +925,54 @@ const StaffStudentAttendance = () => {
                                 OTP & Attendance Marking (Staff Only)
                             </div>
                         )}
+                    </div>
+                </div>
+
+                {/* Summary Metrics & Action Bar */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    
+                    {/* Total Students Card */}
+                    <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Students</p>
+                            <p className="text-2xl font-black text-slate-900 mt-1">{totalStudents}</p>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 text-xl font-bold">
+                            <FaUserGraduate />
+                        </div>
+                    </div>
+
+                    {/* Present Count Card */}
+                    <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Present Count</p>
+                            <p className="text-2xl font-black text-emerald-800 mt-1">{presentCount}</p>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xl font-bold">
+                            <FaCheck />
+                        </div>
+                    </div>
+
+                    {/* Absent Count Card */}
+                    <div className="bg-rose-50/70 border border-rose-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-rose-700 uppercase tracking-wider">Absent Count</p>
+                            <p className="text-2xl font-black text-rose-800 mt-1">{absentCount}</p>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-rose-500 text-white flex items-center justify-center text-xl font-bold">
+                            <FaTimes />
+                        </div>
+                    </div>
+
+                    {/* Attendance Rate Card */}
+                    <div className="bg-sky-50/70 border border-sky-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-sky-700 uppercase tracking-wider">Attendance Rate</p>
+                            <p className="text-2xl font-black text-sky-900 mt-1">{attPercentage}%</p>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-sky-500 text-white flex items-center justify-center text-xl font-bold">
+                            <FaCalendarCheck />
+                        </div>
                     </div>
                 </div>
 
