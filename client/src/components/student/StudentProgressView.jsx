@@ -221,51 +221,97 @@ const StudentProgressView = () => {
     const projectScore = Math.min(100, projects.length * 25);
     const overallProgressScore = Math.round((cgpaScore * 0.35) + (attScore * 0.25) + (codingScore * 0.25) + (projectScore * 0.15));
 
+    // Helper to calculate displayed degree program dynamically based on department
+    const getDisplayedDegree = () => {
+        const dept = (personal.department_name || '').toUpperCase();
+        const roll = (personal.roll_no || '').toUpperCase();
+        const isIT = dept === 'IT' || dept.includes('INFORMATION TECHNOLOGY') || dept.includes('IT') || roll.includes('IT');
+
+        if (isIT) {
+            if (!academic.degree_program || academic.degree_program === 'B.E. Computer Science & Engineering' || academic.degree_program.toLowerCase().includes('computer science')) {
+                return 'B.Tech. IT';
+            }
+        }
+        return academic.degree_program || (isIT ? 'B.Tech. IT' : 'B.E. Computer Science & Engineering');
+    };
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             
-            {/* 1. Academic & Personal Profile Header Card */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-sky-900 via-indigo-900 to-slate-900 p-6 sm:p-8 text-white shadow-2xl">
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-sky-500/20 rounded-full blur-3xl pointer-events-none" />
-                <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    <div className="flex items-center gap-5">
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/10 backdrop-blur-xl p-1 border-2 border-white/30 shadow-inner shrink-0 overflow-hidden">
+            {/* 1. Academic & Personal Profile Info - SEPARATED CARDS (NO DARK BACKGROUND) */}
+            <div className="space-y-4">
+                {/* Main Profile Header & Progress Score (2 Separate Cards) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                    
+                    {/* Card 1: Student Identity & Degree Program */}
+                    <div className="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-5 transition-all hover:shadow-md">
+                        <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 p-1 shadow-md shrink-0 overflow-hidden">
                             {personal.profile_pic ? (
                                 <img src={personal.profile_pic} alt={personal.student_name} className="w-full h-full object-cover rounded-xl" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-white text-3xl font-black bg-gradient-to-br from-sky-500 to-indigo-600 rounded-xl">
+                                <div className="w-full h-full flex items-center justify-center text-white text-3xl font-black rounded-xl">
                                     {personal.student_name?.charAt(0)?.toUpperCase() || 'S'}
                                 </div>
                             )}
                         </div>
-                        <div className="space-y-1">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-sky-500/20 backdrop-blur-md border border-sky-400/30 text-[11px] font-extrabold uppercase tracking-wider text-sky-200">
-                                <FaGraduationCap /> {academic.degree_program || 'B.E. Computer Science & Engineering'}
+                        <div className="space-y-2">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-xs font-extrabold uppercase tracking-wider">
+                                <FaGraduationCap className="text-sky-600" /> {getDisplayedDegree()}
                             </span>
-                            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">{personal.student_name}</h1>
-                            <p className="text-xs sm:text-sm text-sky-200/90 font-mono">
-                                Reg No: <strong className="text-white">{personal.reg_no}</strong> &bull; Roll: <strong className="text-white">{personal.roll_no || personal.reg_no}</strong> &bull; Dept: <strong className="text-white">{personal.department_name || 'Engineering'}</strong>
-                            </p>
-                            <p className="text-xs text-sky-300/80 font-semibold">
-                                Year {personal.academic_year || 1} &bull; Semester {personal.semester || 1} &bull; Section {personal.section || 'A'} &bull; Batch {personal.batch || '2023-2027'}
-                            </p>
+                            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{personal.student_name}</h1>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs">
+                                    Dept: <strong className="text-sky-700 font-extrabold">{personal.department_name || 'IT'}</strong>
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Overall Progress Index Widget */}
-                    <div className="flex items-center gap-4 bg-white/10 backdrop-blur-xl p-4 rounded-2xl border border-white/20 shrink-0">
-                        <div className="relative w-16 h-16 flex items-center justify-center">
-                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                <path className="text-white/20" strokeWidth="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path className="text-emerald-400" strokeDasharray={`${overallProgressScore}, 100`} strokeWidth="3.5" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            </svg>
-                            <span className="absolute text-sm font-black text-white">{overallProgressScore}%</span>
+                    {/* Card 2: Overall Progress Score Widget */}
+                    <div className="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center gap-5 justify-between transition-all hover:shadow-md">
+                        <div className="flex items-center gap-4">
+                            <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
+                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                    <path className="text-slate-100" strokeWidth="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path className="text-emerald-500" strokeDasharray={`${overallProgressScore}, 100`} strokeWidth="3.5" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <span className="absolute text-base font-black text-slate-900">{overallProgressScore}%</span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">Overall Progress Score</span>
+                                <h3 className="text-lg font-black text-emerald-600">EXCELLENT INDEX</h3>
+                                <p className="text-[11px] text-slate-500 font-medium">Combined Academic, Coding & Attendance</p>
+                            </div>
                         </div>
-                        <div>
-                            <span className="text-[10px] font-extrabold uppercase text-sky-200 tracking-wider">Overall Progress Score</span>
-                            <h3 className="text-lg font-black text-emerald-300">EXCELLENT INDEX</h3>
-                            <p className="text-[10px] text-sky-200/80 font-medium">Combined Academic, Coding & Attendance</p>
-                        </div>
+                    </div>
+                </div>
+
+                {/* Grid of Separate Metadata Cards: Reg No, Roll No, Academic Year & Semester, Batch */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Reg No Card */}
+                    <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-1">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Register Number</span>
+                        <p className="text-base font-black text-slate-900 font-mono">{personal.reg_no || '712524205001'}</p>
+                    </div>
+
+                    {/* Roll No Card */}
+                    <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-1">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Roll Number</span>
+                        <p className="text-base font-black text-slate-900 font-mono">{personal.roll_no || personal.reg_no || '24IT01'}</p>
+                    </div>
+
+                    {/* Academic Year, Semester & Section Card */}
+                    <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-1">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Academic Placement</span>
+                        <p className="text-base font-black text-slate-900">
+                            Year {personal.academic_year || 1} &bull; Sem {personal.semester || 1} &bull; Sec {personal.section || 'A'}
+                        </p>
+                    </div>
+
+                    {/* Batch Card */}
+                    <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-1">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Batch</span>
+                        <p className="text-base font-black text-slate-900">Batch {personal.batch || '2023-2027'}</p>
                     </div>
                 </div>
             </div>

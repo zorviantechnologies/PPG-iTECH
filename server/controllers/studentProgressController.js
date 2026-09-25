@@ -48,6 +48,12 @@ exports.getStudentProgressProfile = async (req, res) => {
         const studentId = student.student_id;
         const userId = student.user_id;
 
+        const deptUpper = (student.department_name || '').toUpperCase();
+        const rollUpper = (student.roll_no || '').toUpperCase();
+        const isIT = deptUpper === 'IT' || deptUpper.includes('INFORMATION TECHNOLOGY') || deptUpper.includes('IT') || rollUpper.includes('IT');
+
+        const defaultDegree = isIT ? 'B.Tech. IT' : 'B.E. Computer Science & Engineering';
+
         // 2. Fetch or initialize Academic Details
         let { rows: academicRows } = await queryWithRetry(`
             SELECT * FROM student_academic_details WHERE student_id = $1
@@ -76,7 +82,7 @@ exports.getStudentProgressProfile = async (req, res) => {
             `, [
                 studentId,
                 userId,
-                'B.E. Computer Science & Engineering',
+                defaultDegree,
                 8.36,
                 68,
                 JSON.stringify(defaultCoursesCompleted),
@@ -132,9 +138,14 @@ exports.getStudentProgressProfile = async (req, res) => {
         const absent = parseInt(attStats[0]?.absent || 0, 10);
         const attPct = conducted > 0 ? ((attended / conducted) * 100).toFixed(1) : '100.0';
 
+        const academicData = { ...(academicRows[0] || {}) };
+        if (isIT && (!academicData.degree_program || academicData.degree_program === 'B.E. Computer Science & Engineering')) {
+            academicData.degree_program = 'B.Tech. IT';
+        }
+
         res.json({
             personal_info: student,
-            academic_details: academicRows[0] || {},
+            academic_details: academicData,
             projects: projects || [],
             certifications: certifications || [],
             internships: internships || [],
