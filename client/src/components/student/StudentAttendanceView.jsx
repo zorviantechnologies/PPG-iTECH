@@ -53,7 +53,7 @@ const StudentAttendanceView = () => {
     const checkActiveOtpSession = useCallback(async () => {
         try {
             const res = await api.get('/student-attendance/active-otp');
-            if (res.data?.has_active_otp && res.data?.session_info) {
+            if (res.data?.has_active_otp && res.data?.session_info && !res.data?.already_marked) {
                 const info = res.data.session_info;
                 setActiveSession(info);
                 setCountdown(info.remaining_seconds || 15);

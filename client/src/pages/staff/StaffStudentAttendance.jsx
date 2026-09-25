@@ -121,16 +121,56 @@ const StaffStudentAttendance = () => {
         }
     };
 
-    // 10-Minute QR Countdown Timer Effect
+    // 10-Minute QR Countdown Timer Effect (continues running when modal is closed)
     useEffect(() => {
-        let timer;
-        if (showQrModal && qrCountdown > 0) {
-            timer = setInterval(() => {
-                setQrCountdown(prev => prev - 1);
-            }, 1000);
-        }
+        if (qrCountdown <= 0) return;
+        const timer = setInterval(() => {
+            setQrCountdown(prev => {
+                if (prev <= 1) {
+                    setActiveQrData(null);
+                    setShowQrModal(false);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
         return () => clearInterval(timer);
-    }, [showQrModal, qrCountdown]);
+    }, [qrCountdown]);
+
+    // Check for running OTP or QR session from server
+    const checkServerActiveSession = useCallback(async () => {
+        if (isAdmin || !selectedDeptId || !selectedYear || !selectedSem) return;
+        try {
+            const params = new URLSearchParams({
+                department_id: selectedDeptId,
+                academic_year: selectedYear,
+                semester: selectedSem,
+                section: selectedSection,
+                date: selectedDate,
+                period_number: selectedPeriod
+            });
+            const res = await api.get(`/student-attendance/active-otp?${params.toString()}`);
+            if (res.data?.has_active_otp && res.data?.active_otp) {
+                const active = res.data.active_otp;
+                const remSec = active.remaining_seconds || 0;
+                if (remSec > 0) {
+                    if (remSec <= 15) {
+                        setActiveOtpData(active);
+                        setOtpCountdown(remSec);
+                    } else {
+                        setActiveQrData({ qr_code: active.otp_code, ...active });
+                        setQrCountdown(remSec);
+                    }
+                }
+            }
+        } catch (err) {
+            // Quiet fail
+        }
+    }, [isAdmin, selectedDeptId, selectedYear, selectedSem, selectedSection, selectedDate, selectedPeriod]);
+
+    useEffect(() => {
+        checkServerActiveSession();
+    }, [checkServerActiveSession]);
 
     // Format seconds into MM:SS
     const formatTimeMMSS = (totalSeconds) => {
@@ -506,12 +546,14 @@ const StaffStudentAttendance = () => {
         }
     };
 
-    // OTP Countdown effect (15 seconds)
+    // OTP Countdown effect (15 seconds, continues running when modal is closed)
     useEffect(() => {
         if (otpCountdown <= 0) return;
         const timer = setInterval(() => {
             setOtpCountdown(prev => {
                 if (prev <= 1) {
+                    setActiveOtpData(null);
+                    setShowOtpModal(false);
                     return 0;
                 }
                 return prev - 1;
@@ -726,6 +768,86 @@ const StaffStudentAttendance = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* ACTIVE RUNNING SESSION BANNER (when modal is closed but timer is still running) */}
+                <AnimatePresence>
+                    {((!showOtpModal && otpCountdown > 0 && activeOtpData) || (!showQrModal && qrCountdown > 0 && activeQrData)) && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10, scale: 0.99 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.99 }}
+                            className="rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 p-4 text-white shadow-xl border-2 border-amber-300 flex flex-col lg:flex-row items-center justify-between gap-4"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl shrink-0 font-bold border border-white/30">
+                                    {otpCountdown > 0 ? <FaBolt className="text-amber-200 animate-bounce" /> : <FaQrcode className="text-amber-200 animate-pulse" />}
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-2 py-0.5 rounded-md bg-white/20 text-[10px] font-black uppercase tracking-wider text-amber-100 border border-white/20">
+                                            {otpCountdown > 0 ? '15s OTP Active' : '10m QR Active'}
+                                        </span>
+                                        <span className="text-xs font-bold text-amber-100">
+                                            Period {selectedPeriod} • {selectedSubject || 'Current Class'}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-1">
+                                        {otpCountdown > 0 ? (
+                                            <p className="text-base font-black tracking-wider flex items-center gap-2">
+                                                OTP Code: <span className="bg-white text-slate-900 px-2.5 py-0.5 rounded-lg font-mono font-black text-lg shadow-inner">{activeOtpData?.otp_code}</span>
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm font-black text-white flex items-center gap-2">
+                                                Live QR Code Session Active
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-end">
+                                {/* Countdown Badge */}
+                                <div className="px-3.5 py-1.5 rounded-xl bg-black/25 backdrop-blur-md border border-white/20 text-center shrink-0">
+                                    <span className="block text-[9px] font-extrabold uppercase tracking-widest text-amber-200">Time Left</span>
+                                    <span className="text-base font-black font-mono">
+                                        {otpCountdown > 0 ? `${otpCountdown}s` : formatTimeMMSS(qrCountdown)}
+                                    </span>
+                                </div>
+
+                                {/* View Modal button */}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (otpCountdown > 0) setShowOtpModal(true);
+                                        else setShowQrModal(true);
+                                    }}
+                                    className="px-3.5 py-2 rounded-xl bg-white text-slate-900 hover:bg-amber-100 font-black text-xs uppercase tracking-wider shadow-sm flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                                >
+                                    <FaSync className="text-sky-600" /> View {otpCountdown > 0 ? 'OTP Code' : 'QR Code'}
+                                </button>
+
+                                {/* Live Sync button */}
+                                <button
+                                    type="button"
+                                    onClick={handleRefreshScannedAttendance}
+                                    disabled={verifyingQr}
+                                    className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-sm flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                                >
+                                    <FaSync className={verifyingQr ? 'animate-spin' : ''} /> Live Sync
+                                </button>
+
+                                {/* Stop Session button */}
+                                <button
+                                    type="button"
+                                    onClick={handleStopQRSession}
+                                    className="px-3.5 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-black text-xs uppercase tracking-wider shadow-sm flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                                >
+                                    <FaTimesCircle /> Stop Session
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Summary Metrics & Action Bar */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

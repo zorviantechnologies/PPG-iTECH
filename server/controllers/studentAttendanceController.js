@@ -436,16 +436,18 @@ exports.getActiveAttendanceOTP = async (req, res) => {
     try {
         let { department_id, academic_year, semester, section = 'A', date, period_number } = req.query;
 
+        let studentInfo = null;
         // For student role, query student's own department_id, academic_year, semester, section
         if (req.user.role === 'student') {
             const { rows: stRows } = await queryWithRetry(`
-                SELECT u.department_id, s.academic_year, s.semester, s.section
+                SELECT s.id as student_id, u.department_id, s.academic_year, s.semester, s.section
                 FROM students s
                 JOIN users u ON s.user_id = u.id
                 WHERE u.id = $1
             `, [req.user.id]);
 
             if (stRows.length > 0) {
+                studentInfo = stRows[0];
                 department_id = stRows[0].department_id;
                 academic_year = stRows[0].academic_year;
                 semester = stRows[0].semester;
@@ -492,8 +494,28 @@ exports.getActiveAttendanceOTP = async (req, res) => {
 
         // For student role, omit raw otp_code so they must enter the code displayed by staff
         if (req.user.role === 'student') {
+            if (studentInfo && studentInfo.student_id) {
+                const { rows: attCheck } = await queryWithRetry(`
+                    SELECT id FROM student_attendance
+                    WHERE student_id = $1
+                      AND date::text = $2::text
+                      AND period_number = $3
+                      AND status = 'Present'
+                `, [studentInfo.student_id, activeOtp.date, activeOtp.period_number]);
+
+                if (attCheck.length > 0) {
+                    return res.json({
+                        has_active_otp: false,
+                        already_marked: true,
+                        active_otp: null,
+                        message: 'Attendance already recorded present for this period'
+                    });
+                }
+            }
+
             return res.json({
                 has_active_otp: true,
+                already_marked: false,
                 session_info: {
                     department_id: activeOtp.department_id,
                     academic_year: activeOtp.academic_year,
