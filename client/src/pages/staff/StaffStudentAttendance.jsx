@@ -184,34 +184,20 @@ const StaffStudentAttendance = () => {
         }
     };
 
-    // Verify QR scan and mark ALL students as Present
-    const handleVerifyQRScanAll = async () => {
-        if (!activeQrData?.qr_code) return;
+    // Refresh live student attendance list while QR code is active
+    const handleRefreshScannedAttendance = async () => {
         setVerifyingQr(true);
         try {
-            const res = await api.post('/student-attendance/verify-qr', {
-                qr_code: activeQrData.qr_code,
-                department_id: parseInt(selectedDeptId, 10),
-                academic_year: parseInt(selectedYear, 10),
-                semester: parseInt(selectedSem, 10),
-                section: selectedSection,
-                date: selectedDate,
-                period_number: parseInt(selectedPeriod, 10)
-            });
+            await fetchClassStudents();
             Swal.fire({
                 icon: 'success',
-                title: 'All Students Marked Present!',
-                text: res.data.message || '10-Minute QR Verified successfully!',
-                confirmButtonColor: '#10b981'
+                title: 'Attendance List Refreshed!',
+                text: 'Updated table with live student OTP/QR scans for this period.',
+                timer: 1500,
+                showConfirmButton: false
             });
-            fetchClassStudents();
         } catch (err) {
-            Swal.fire({
-                icon: 'error',
-                title: 'QR Verification Failed',
-                text: err.response?.data?.message || err.message,
-                confirmButtonColor: '#0ea5e9'
-            });
+            console.error('Error refreshing attendance:', err);
         } finally {
             setVerifyingQr(false);
         }
@@ -1004,18 +990,18 @@ const StaffStudentAttendance = () => {
                         <div className="pt-2 border-t space-y-2">
                             <button
                                 type="button"
-                                onClick={handleVerifyQRScanAll}
-                                disabled={verifyingQr || qrCountdown <= 0}
-                                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                onClick={handleRefreshScannedAttendance}
+                                disabled={verifyingQr}
+                                className="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {verifyingQr ? (
                                     <>
                                         <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        Verifying QR & Marking Present...
+                                        Refreshing Attendance List...
                                     </>
                                 ) : (
                                     <>
-                                        <FaCheck /> Confirm Scan & Mark All Present
+                                        <FaSync /> Refresh Live Attendance List
                                     </>
                                 )}
                             </button>

@@ -1050,11 +1050,11 @@ exports.generateAttendanceQR = async (req, res) => {
     }
 };
 
-// @desc    Verify 10-Minute Attendance QR Code (Marks ALL students present in class session)
+// @desc    Verify 10-Minute Attendance QR Code (Marks ONLY the scanning student present for the specific hour)
 // @route   POST /api/student-attendance/verify-qr
 // @access  Private (Staff, HOD, Student)
 exports.verifyAttendanceQR = async (req, res) => {
-    const { qr_code, department_id, academic_year, semester, section, subject, period_number, date } = req.body;
+    const { qr_code } = req.body;
     const cleanCode = String(qr_code || '').trim();
 
     if (!cleanCode) {
@@ -1062,7 +1062,7 @@ exports.verifyAttendanceQR = async (req, res) => {
     }
 
     try {
-        // Query active QR code within the 10-minute expiration window
+        // 1. Query active QR code / OTP within expiration window
         const { rows: qrRows } = await queryWithRetry(`
             SELECT * FROM attendance_otps
             WHERE otp_code = $1
@@ -1079,31 +1079,33 @@ exports.verifyAttendanceQR = async (req, res) => {
 
         const activeQr = qrRows[0];
 
-        // Fetch all students belonging to the active class session
+        // 2. Fetch student profile if logged-in user is a student
         const { rows: stRows } = await queryWithRetry(`
-            SELECT s.id as student_id, s.user_id, u.name
+            SELECT s.id as student_id, s.user_id, s.academic_year, s.semester, s.section, u.department_id, u.name
             FROM students s
             JOIN users u ON s.user_id = u.id
-            WHERE u.department_id = $1
-              AND s.academic_year = $2
-              AND s.semester = $3
-              AND ($4 = 'All' OR s.section = $4 OR s.section IS NULL OR s.section = '')
-        `, [
-            activeQr.department_id,
-            activeQr.academic_year,
-            activeQr.semester,
-            activeQr.section || 'All'
-        ]);
+            WHERE u.id = $1
+        `, [req.user.id]);
 
-        if (stRows.length === 0) {
-            return res.status(404).json({ message: 'No registered students found for this class session.' });
-        }
+        if (stRows.length > 0) {
+            const student = stRows[0];
 
-        // Mark ALL students in the class session as Present
-        await withDbClient(async (client) => {
-            await client.query('BEGIN');
+            // 3. Enforce matching class profile (Dept, Year, Semester, Section)
+            if (
+                parseInt(student.department_id, 10) !== parseInt(activeQr.department_id, 10) ||
+                parseInt(student.academic_year, 10) !== parseInt(activeQr.academic_year, 10) ||
+                parseInt(student.semester, 10) !== parseInt(activeQr.semester, 10) ||
+                (activeQr.section && activeQr.section !== 'All' && student.section && activeQr.section !== student.section)
+            ) {
+                return res.status(403).json({
+                    message: 'Unauthorized: This QR Code was generated for a different Department, Year, Semester, or Section than your registered class profile.'
+                });
+            }
 
-            for (const st of stRows) {
+            // 4. Mark ONLY THIS STUDENT as Present for ONLY THIS HOUR (period_number) and date
+            await withDbClient(async (client) => {
+                await client.query('BEGIN');
+
                 await client.query(`
                     INSERT INTO student_attendance (
                         student_id, user_id, department_id, academic_year, semester, section,
@@ -1117,8 +1119,8 @@ exports.verifyAttendanceQR = async (req, res) => {
                         marked_by_emp_id = EXCLUDED.marked_by_emp_id,
                         updated_at = CURRENT_TIMESTAMP
                 `, [
-                    st.student_id,
-                    st.user_id,
+                    student.student_id,
+                    student.user_id,
                     activeQr.department_id,
                     activeQr.academic_year,
                     activeQr.semester,
@@ -1131,37 +1133,44 @@ exports.verifyAttendanceQR = async (req, res) => {
                     activeQr.end_time || '',
                     activeQr.created_by_emp_id
                 ]);
-            }
 
-            // Audit log
-            await client.query(`
-                INSERT INTO attendance_audit_logs (
-                    action, user_id, emp_id, user_role, department_id, academic_year,
-                    semester, section, subject, period_number, date, otp_code, status, details
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'SUCCESS', $13)
-            `, [
-                'QR_VERIFIED_ALL_PRESENT',
-                req.user.id,
-                req.user.emp_id,
-                req.user.role,
-                activeQr.department_id,
-                activeQr.academic_year,
-                activeQr.semester,
-                activeQr.section,
-                activeQr.subject,
-                activeQr.period_number,
-                activeQr.date,
-                cleanCode,
-                `QR code scanned/verified: Marked all ${stRows.length} student(s) as Present for Period ${activeQr.period_number}`
-            ]);
+                // Audit log
+                await client.query(`
+                    INSERT INTO attendance_audit_logs (
+                        action, user_id, emp_id, user_role, target_student_id, department_id, academic_year,
+                        semester, section, subject, period_number, date, otp_code, status, details
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'SUCCESS', $13)
+                `, [
+                    'QR_VERIFIED_INDIVIDUAL',
+                    req.user.id,
+                    req.user.emp_id,
+                    req.user.role,
+                    student.student_id,
+                    activeQr.department_id,
+                    activeQr.academic_year,
+                    activeQr.semester,
+                    activeQr.section,
+                    activeQr.subject,
+                    activeQr.period_number,
+                    activeQr.date,
+                    cleanCode,
+                    `Student ${student.name} scanned QR code: Marked Present for Period ${activeQr.period_number} on ${activeQr.date}`
+                ]);
 
-            await client.query('COMMIT');
-        });
+                await client.query('COMMIT');
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: `Attendance confirmed! Marked Present for ${activeQr.subject} (Period ${activeQr.period_number}) on ${activeQr.date}.`,
+                period_number: activeQr.period_number,
+                subject: activeQr.subject
+            });
+        }
 
         res.status(200).json({
             success: true,
-            message: `10-Minute QR Scan Verified! Marked all ${stRows.length} student(s) as Present for ${activeQr.subject} (Period ${activeQr.period_number}).`,
-            marked_count: stRows.length,
+            message: `Active QR Code verified for ${activeQr.subject} (Period ${activeQr.period_number}).`,
             period_number: activeQr.period_number,
             subject: activeQr.subject
         });
