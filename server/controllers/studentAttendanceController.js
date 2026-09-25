@@ -1180,3 +1180,73 @@ exports.verifyAttendanceQR = async (req, res) => {
         res.status(500).json({ message: 'Failed to verify attendance QR code: ' + error.message });
     }
 };
+
+// @desc    Stop / Deactivate an active attendance OTP or QR Code session
+// @route   POST /api/student-attendance/stop-session
+// @access  Private (Staff, HOD)
+exports.stopAttendanceSession = async (req, res) => {
+    const { otp_code, department_id, academic_year, semester, section, period_number, date } = req.body;
+
+    try {
+        const emp_id = req.user.emp_id || String(req.user.id);
+        const cleanCode = String(otp_code || '').trim();
+
+        await withDbClient(async (client) => {
+            await client.query('BEGIN');
+
+            let whereClause = `WHERE is_active = TRUE`;
+            const params = [];
+            let pIndex = 1;
+
+            if (cleanCode) {
+                whereClause += ` AND otp_code = $${pIndex++}`;
+                params.push(cleanCode);
+            } else if (department_id && academic_year && semester && period_number && date) {
+                whereClause += ` AND department_id = $${pIndex++} AND academic_year = $${pIndex++} AND semester = $${pIndex++} AND period_number = $${pIndex++} AND date = $${pIndex++}`;
+                params.push(parseInt(department_id, 10), parseInt(academic_year, 10), parseInt(semester, 10), parseInt(period_number, 10), date);
+            }
+
+            const { rows: stoppedRows } = await client.query(`
+                UPDATE attendance_otps 
+                SET is_active = FALSE 
+                ${whereClause}
+                RETURNING *
+            `, params);
+
+            if (stoppedRows.length > 0) {
+                const stopped = stoppedRows[0];
+                await client.query(`
+                    INSERT INTO attendance_audit_logs (
+                        action, user_id, emp_id, user_role, department_id, academic_year, semester, section,
+                        subject, period_number, date, otp_code, status, details
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'SUCCESS', $13)
+                `, [
+                    'SESSION_STOPPED',
+                    req.user.id,
+                    emp_id,
+                    req.user.role,
+                    stopped.department_id,
+                    stopped.academic_year,
+                    stopped.semester,
+                    stopped.section,
+                    stopped.subject,
+                    stopped.period_number,
+                    stopped.date,
+                    stopped.otp_code,
+                    `Staff manually stopped active attendance QR/OTP session for Period ${stopped.period_number}`
+                ]);
+            }
+
+            await client.query('COMMIT');
+        });
+
+        res.json({
+            success: true,
+            message: `Active attendance session stopped successfully.`
+        });
+
+    } catch (error) {
+        console.error('Error stopping attendance session:', error);
+        res.status(500).json({ message: 'Failed to stop attendance session: ' + error.message });
+    }
+};

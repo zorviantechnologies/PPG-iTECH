@@ -289,31 +289,25 @@ const StudentAttendanceView = () => {
     return (
         <div className="space-y-6">
             
-            {/* Header Banner */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-sky-900 via-indigo-900 to-slate-900 p-6 sm:p-8 text-white shadow-xl">
-                <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-sky-500/20 rounded-full blur-3xl pointer-events-none" />
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-sky-200">
-                            <FaCalendarCheck /> My Hour-Wise Attendance & OTP Verification
-                        </div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                            Personal Attendance & Hours Record
-                        </h1>
-                        <p className="text-sm text-sky-200/90 max-w-2xl">
-                            Track your hour-wise conducted classes, attended hours, absent hours, and confirm period attendance using staff-generated 15s OTPs or QR codes.
-                        </p>
-                    </div>
+            {/* Clean Header Area (No dark card background) */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+                <div className="space-y-1">
+                    <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 flex items-center gap-2.5">
+                        <FaCalendarCheck className="text-sky-600" /> Personal Attendance & Hours Record
+                    </h1>
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                        Track your hour-wise conducted classes, attended hours, absent hours, and confirm period attendance using staff-generated OTPs or QR codes.
+                    </p>
+                </div>
 
-                    <div className="shrink-0">
-                        <button
-                            type="button"
-                            onClick={() => setShowQrScanner(true)}
-                            className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs uppercase tracking-wider shadow-xl flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-105 active:scale-95"
-                        >
-                            <FaQrcode className="text-lg text-slate-900" /> Scan Attendance QR Code
-                        </button>
-                    </div>
+                <div className="shrink-0">
+                    <button
+                        type="button"
+                        onClick={() => setShowQrScanner(true)}
+                        className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer hover:shadow-md active:scale-95"
+                    >
+                        <FaQrcode className="text-base" /> Scan Attendance QR Code
+                    </button>
                 </div>
             </div>
 

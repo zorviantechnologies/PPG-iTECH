@@ -12,6 +12,7 @@ const {
     verifyAttendanceOTP,
     generateAttendanceQR,
     verifyAttendanceQR,
+    stopAttendanceSession,
     getAttendanceAuditLogs
 } = require('../controllers/studentAttendanceController');
 
@@ -28,6 +29,7 @@ router.get('/active-otp', getActiveAttendanceOTP);
 router.post('/verify-otp', restrictTo('student'), verifyAttendanceOTP);
 router.post('/generate-qr', restrictTo('staff', 'hod'), generateAttendanceQR);
 router.post('/verify-qr', restrictTo('staff', 'hod', 'student'), verifyAttendanceQR);
+router.post('/stop-session', restrictTo('staff', 'hod'), stopAttendanceSession);
 router.get('/audit-logs', restrictTo('staff', 'hod', 'admin', 'principal'), getAttendanceAuditLogs);
 
 // Student view

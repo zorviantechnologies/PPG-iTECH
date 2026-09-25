@@ -9,7 +9,7 @@ import {
     FaUserGraduate, FaCalendarCheck, FaCalendarDay,
     FaCheck, FaTimes, FaSearch, FaSave, FaExclamationTriangle,
     FaFilter, FaClock, FaBookOpen, FaBuilding, FaLayerGroup,
-    FaKey, FaBolt, FaShieldAlt, FaHistory, FaSync, FaQrcode
+    FaKey, FaBolt, FaShieldAlt, FaHistory, FaSync, FaQrcode, FaTimesCircle, FaBan
 } from 'react-icons/fa';
 
 const StaffStudentAttendance = () => {
@@ -200,6 +200,60 @@ const StaffStudentAttendance = () => {
             console.error('Error refreshing attendance:', err);
         } finally {
             setVerifyingQr(false);
+        }
+    };
+
+    // Stop / Deactivate active OTP or QR Code session immediately
+    const handleStopQRSession = async () => {
+        const confirm = await Swal.fire({
+            title: 'Stop Attendance Session?',
+            text: 'This will immediately stop and deactivate the QR Code / OTP so no further students can scan or enter it.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Stop Session'
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const payload = {
+                otp_code: activeQrData?.qr_code || activeOtpData?.otp_code,
+                department_id: parseInt(selectedDeptId, 10),
+                academic_year: parseInt(selectedYear, 10),
+                semester: parseInt(selectedSem, 10),
+                section: selectedSection || 'A',
+                date: selectedDate,
+                period_number: parseInt(selectedPeriod, 10)
+            };
+
+            await api.post('/student-attendance/stop-session', payload);
+
+            setQrCountdown(0);
+            setOtpCountdown(0);
+            setShowQrModal(false);
+            setShowOtpModal(false);
+            setActiveQrData(null);
+            setActiveOtpData(null);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Session Stopped',
+                text: 'The active QR Code / OTP session has been deactivated.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            fetchClassStudents();
+        } catch (err) {
+            console.error('Error stopping QR session:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed to Stop Session',
+                text: err.response?.data?.message || err.message,
+                confirmButtonColor: '#0ea5e9'
+            });
         }
     };
 
@@ -1006,7 +1060,14 @@ const StaffStudentAttendance = () => {
                                 )}
                             </button>
 
-                            <div className="flex gap-2">
+                             <div className="flex flex-col sm:flex-row gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleStopQRSession}
+                                    className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-sm"
+                                >
+                                    <FaTimesCircle /> Stop & Deactivate QR
+                                </button>
                                 <button
                                     type="button"
                                     onClick={handleGenerateQR}
@@ -1017,9 +1078,9 @@ const StaffStudentAttendance = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowQrModal(false)}
-                                    className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all"
+                                    className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all"
                                 >
-                                    Close Window
+                                    Close
                                 </button>
                             </div>
                         </div>
@@ -1085,7 +1146,14 @@ const StaffStudentAttendance = () => {
                             </span>
                         </div>
 
-                        <div className="pt-2 border-t flex gap-2">
+                        <div className="pt-2 border-t flex flex-col sm:flex-row gap-2">
+                            <button
+                                type="button"
+                                onClick={handleStopQRSession}
+                                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-sm"
+                            >
+                                <FaTimesCircle /> Stop Session
+                            </button>
                             <button
                                 type="button"
                                 onClick={handleGenerateOTP}
@@ -1096,9 +1164,9 @@ const StaffStudentAttendance = () => {
                             <button
                                 type="button"
                                 onClick={() => setShowOtpModal(false)}
-                                className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all"
+                                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all"
                             >
-                                Close Window
+                                Close
                             </button>
                         </div>
                     </motion.div>
