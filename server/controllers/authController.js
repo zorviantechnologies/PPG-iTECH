@@ -238,9 +238,19 @@ exports.managementLogin = async (req, res) => {
 exports.getUserProfile = async (req, res) => {
     try {
         const { rows } = await queryWithRetry(`
-            SELECT u.*, d.name as department_name
+            SELECT 
+                u.*, 
+                d.name as department_name,
+                s.id as student_profile_id,
+                s.academic_year,
+                s.semester,
+                s.section,
+                s.batch,
+                s.reg_no,
+                s.roll_no
             FROM users u
             LEFT JOIN departments d ON u.department_id = d.id
+            LEFT JOIN students s ON u.id = s.user_id
             WHERE u.id = $1
         `, [req.user.id]);
         if (rows.length === 0) {

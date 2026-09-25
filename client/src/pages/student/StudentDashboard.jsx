@@ -191,7 +191,13 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
                                     </div>
                                     <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center">
                                         <span className="text-[10px] uppercase font-bold text-sky-200 block">Current Year</span>
-                                        <span className="text-lg font-black text-white">{profile?.academic_year || 1}st Year</span>
+                                        <span className="text-lg font-black text-white">
+                                            {Number(profile?.academic_year) === 1 ? '1st Year' : 
+                                             Number(profile?.academic_year) === 2 ? '2nd Year' : 
+                                             Number(profile?.academic_year) === 3 ? '3rd Year' : 
+                                             Number(profile?.academic_year) === 4 ? '4th Year' : 
+                                             `${profile?.academic_year || 1}st Year`}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
