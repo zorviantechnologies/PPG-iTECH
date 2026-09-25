@@ -542,41 +542,101 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
 
                 {/* VIEW 3: CLASS TIMETABLE PAGE (FULL WEEK) */}
                 {activeSectionTab === 'timetable' && (
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-6">
+                        
+                        {/* Header Title & Controls */}
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5">
                             <div>
-                                <h2 className="text-sm font-black uppercase tracking-wider text-gray-800 flex items-center gap-2">
-                                    <FaBookOpen className="text-indigo-600" /> Class Timetable Schedule
+                                <div className="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider text-indigo-700 mb-1">
+                                    <FaBookOpen className="text-indigo-600" /> Class Master Schedule & Timetable Control
+                                </div>
+                                <h2 className="text-2xl font-black tracking-tight text-slate-900">
+                                    My Class Timetable & Period Timings
                                 </h2>
-                                <p className="text-xs text-gray-400 mt-1 font-mono">
-                                    {profile?.department_name || 'Department'} &bull; Year {profile?.academic_year || 1} (Semester {profile?.semester || 1}) Sec {profile?.section || 'A'}
+                                <p className="text-xs text-slate-500 mt-1 font-mono">
+                                    Class: <strong className="text-slate-800">{profile?.department_name || 'Department'}</strong> &bull; Year <strong className="text-slate-800">{profile?.academic_year || 1}</strong> (Sem <strong className="text-slate-800">{profile?.semester || 1}</strong>) &bull; Sec <strong className="text-slate-800">{profile?.section || 'A'}</strong>
                                 </p>
                             </div>
 
-                            {/* Day Filter Tabs */}
+                            {/* Day Filter Controls with Period Badges */}
                             <div className="flex items-center gap-1.5 flex-wrap">
-                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'All Days'].map((day) => (
-                                    <button
-                                        key={day}
-                                        onClick={() => setSelectedDayTab(day)}
-                                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
-                                            selectedDayTab === day
-                                                ? 'bg-indigo-600 text-white shadow-sm'
-                                                : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                                        }`}
-                                    >
-                                        {day}
-                                    </button>
-                                ))}
+                                {['All Days', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => {
+                                    const count = day === 'All Days' ? timetable.length : timetable.filter(t => t.day_of_week === day).length;
+                                    const isSelected = selectedDayTab === day;
+                                    return (
+                                        <button
+                                            key={day}
+                                            type="button"
+                                            onClick={() => setSelectedDayTab(day)}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                                                isSelected
+                                                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20 scale-105'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200'
+                                            }`}
+                                        >
+                                            <span>{day}</span>
+                                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                                                isSelected ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'
+                                            }`}>
+                                                {count}h
+                                            </span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
+                        {/* Total Hours a Day Summary Stats Bar */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-4 flex items-center justify-between">
+                                <div>
+                                    <span className="text-[10px] font-black uppercase text-indigo-700 tracking-wider">Total Hours A Day</span>
+                                    <p className="text-2xl font-black text-indigo-900 mt-0.5">
+                                        {selectedDayTab === 'All Days'
+                                            ? (timetable.length > 0 ? `${Math.max(...['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(d => timetable.filter(t => t.day_of_week === d).length))} Hours/Day` : '0 Hours/Day')
+                                            : `${timetable.filter(t => t.day_of_week === selectedDayTab).length} Hours Today`
+                                        }
+                                    </p>
+                                </div>
+                                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white font-black flex items-center justify-center text-lg shadow-sm">
+                                    <FaClock />
+                                </div>
+                            </div>
+
+                            <div className="bg-sky-50/70 border border-sky-200 rounded-2xl p-4 flex items-center justify-between">
+                                <div>
+                                    <span className="text-[10px] font-black uppercase text-sky-700 tracking-wider">Total Weekly Periods</span>
+                                    <p className="text-2xl font-black text-sky-900 mt-0.5">{timetable.length} Conducted Hours</p>
+                                </div>
+                                <div className="w-10 h-10 rounded-xl bg-sky-600 text-white font-black flex items-center justify-center text-lg shadow-sm">
+                                    <FaCalendarAlt />
+                                </div>
+                            </div>
+
+                            <div className="bg-purple-50/70 border border-purple-200 rounded-2xl p-4 flex items-center justify-between">
+                                <div>
+                                    <span className="text-[10px] font-black uppercase text-purple-700 tracking-wider">Active Subjects</span>
+                                    <p className="text-2xl font-black text-purple-900 mt-0.5">
+                                        {new Set(timetable.map(t => t.subject).filter(Boolean)).size} Allocated Subjects
+                                    </p>
+                                </div>
+                                <div className="w-10 h-10 rounded-xl bg-purple-600 text-white font-black flex items-center justify-center text-lg shadow-sm">
+                                    <FaBookOpen />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Timetable List Grid */}
                         {loading ? (
-                            <div className="py-12 text-center text-gray-400 font-semibold text-xs">Loading class timetable...</div>
+                            <div className="py-12 text-center text-slate-400 font-semibold text-xs flex flex-col items-center justify-center gap-2">
+                                <div className="h-7 w-7 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                                <span>Loading class timetable & period timings...</span>
+                            </div>
                         ) : timetable.length === 0 ? (
-                            <div className="p-8 text-center text-gray-400 space-y-2">
-                                <FaBookOpen className="text-3xl text-gray-300 mx-auto" />
-                                <p className="font-semibold text-gray-600 text-sm">No class timetable entries set by Admin for your department & year</p>
+                            <div className="p-10 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                                <FaBookOpen className="text-4xl text-slate-300 mx-auto" />
+                                <p className="font-bold text-slate-700 text-sm">No class timetable entries set by Admin for your department & year</p>
+                                <p className="text-xs text-slate-400">Master timetable entries created by Admin will appear here with timings and staff allocations.</p>
                             </div>
                         ) : (
                             <div className="space-y-6">
@@ -586,8 +646,8 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
                                         const dayEntries = timetable.filter(t => t.day_of_week === day);
                                         if (selectedDayTab !== 'All Days' && dayEntries.length === 0) {
                                             return (
-                                                <div key={day} className="p-8 text-center text-gray-400 bg-gray-50 rounded-2xl">
-                                                    No classes scheduled for {day}
+                                                <div key={day} className="p-8 text-center text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
+                                                    No classes scheduled for <strong>{day}</strong>.
                                                 </div>
                                             );
                                         }
@@ -595,29 +655,49 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
 
                                         return (
                                             <div key={day} className="space-y-3">
-                                                <h3 className="text-xs font-black uppercase tracking-widest text-indigo-700 bg-indigo-50/70 inline-block px-3 py-1 rounded-lg">
-                                                    {day}
-                                                </h3>
+                                                {/* Day Header Bar with Total Hours a Day */}
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-gradient-to-r from-slate-900 to-indigo-950 p-3.5 rounded-2xl text-white shadow-md">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-sm font-black uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                                                            <FaCalendarDay className="text-amber-400" /> {day}
+                                                        </span>
+                                                        <span className="text-[11px] font-black text-slate-900 bg-amber-400 px-2.5 py-0.5 rounded-full shadow-xs">
+                                                            Total Hours: {dayEntries.length} {dayEntries.length === 1 ? 'Hour' : 'Hours'} / Day
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-[11px] font-mono text-slate-300">
+                                                        Timing: <strong className="text-white">{dayEntries[0]?.start_time || '09:00 AM'}</strong> to <strong className="text-white">{dayEntries[dayEntries.length - 1]?.end_time || '04:00 PM'}</strong>
+                                                    </div>
+                                                </div>
+
+                                                {/* Period Cards Grid */}
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     {dayEntries.map(tt => (
-                                                        <div key={tt.id} className="bg-gray-50/80 p-4 rounded-2xl border border-gray-100 hover:border-indigo-200 transition-all space-y-2">
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-[9px] font-black uppercase text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md">
-                                                                    Period {tt.period_number}
+                                                        <div key={tt.id} className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition-all space-y-2.5 relative overflow-hidden">
+                                                            <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                                                                <span className="text-[10px] font-black uppercase text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                                                                    <FaClock className="text-indigo-500 text-[9px]" /> Hour {tt.period_number}
                                                                 </span>
-                                                                <span className="text-[10px] font-mono font-bold text-gray-500">
-                                                                    {tt.start_time ? String(tt.start_time).slice(0, 5) : ''} - {tt.end_time ? String(tt.end_time).slice(0, 5) : ''}
+                                                                <span className="text-[11px] font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                                                                    {tt.start_time || ''} {tt.end_time ? `- ${tt.end_time}` : ''}
                                                                 </span>
                                                             </div>
+
                                                             <div>
-                                                                <p className="font-black text-gray-800 text-sm leading-snug">{tt.subject}</p>
+                                                                <h4 className="font-black text-slate-900 text-sm leading-snug">{tt.subject}</h4>
                                                                 {tt.subject_code && (
-                                                                    <span className="text-[10px] font-mono font-bold text-sky-600 block mt-0.5">{tt.subject_code}</span>
+                                                                    <span className="text-[10px] font-mono font-bold text-sky-600 bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-md inline-block mt-1">
+                                                                        {tt.subject_code}
+                                                                    </span>
                                                                 )}
                                                             </div>
-                                                            <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between text-[10px] text-gray-500">
-                                                                <span>Room: <strong className="text-gray-700">{tt.room_number || 'TBA'}</strong></span>
-                                                                <span className="font-bold text-indigo-600 truncate max-w-[130px] flex items-center gap-1">
+
+                                                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 font-medium">
+                                                                <span className="flex items-center gap-1 text-[11px]">
+                                                                    <FaBuilding className="text-slate-400 text-[10px]" />
+                                                                    Room: <strong className="text-slate-800 font-bold">{tt.room_number || 'Classroom'}</strong>
+                                                                </span>
+                                                                <span className="font-bold text-indigo-700 flex items-center gap-1 text-[11px] max-w-[140px] truncate" title={tt.staff_name || 'Faculty: TBA'}>
                                                                     <FaUserTie className="text-indigo-500 shrink-0 text-[10px]" />
                                                                     <span className="truncate">{tt.staff_name || 'Faculty: TBA'}</span>
                                                                 </span>
