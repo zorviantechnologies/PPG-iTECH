@@ -4,11 +4,12 @@ import Layout from '../../components/Layout';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 import { 
     FaUserGraduate, FaCalendarCheck, FaBookOpen, FaFileAlt, 
     FaAward, FaCheckCircle, FaTimesCircle, FaBuilding, 
     FaClock, FaGraduationCap, FaCalendarAlt, FaCalendarDay, 
-    FaStar, FaFilter, FaArrowRight, FaUserTie
+    FaStar, FaFilter, FaArrowRight, FaUserTie, FaCamera
 } from 'react-icons/fa';
 import StudentAttendanceView from '../../components/student/StudentAttendanceView';
 import StudentProgressView from '../../components/student/StudentProgressView';
@@ -21,6 +22,7 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
     const [attendance, setAttendance] = useState([]);
     const [timetable, setTimetable] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [uploadingPic, setUploadingPic] = useState(false);
     
     // Month stats (Working Days, Holidays, Special Events)
     const [monthStats, setMonthStats] = useState({ workingDays: 0, holidays: 0, specialEvents: 0 });
@@ -41,6 +43,57 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
             setActiveSectionTab(defaultTab);
         }
     }, [defaultTab]);
+
+    const handleProfilePicChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'File Too Large',
+                text: 'Please select an image smaller than 5MB.',
+                confirmButtonColor: '#0ea5e9'
+            });
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64Image = reader.result;
+            if (!base64Image) return;
+
+            setUploadingPic(true);
+            try {
+                const res = await api.put('/auth/profile-pic', { profile_pic: base64Image });
+                const updatedPic = res.data?.user?.profile_pic || base64Image;
+
+                setProfile(prev => ({
+                    ...prev,
+                    profile_pic: updatedPic
+                }));
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Profile Photo Saved!',
+                    text: 'Your profile picture has been updated successfully.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } catch (err) {
+                console.error('Error uploading profile picture:', err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Upload Failed',
+                    text: err.response?.data?.message || 'Failed to update profile picture.',
+                    confirmButtonColor: '#0ea5e9'
+                });
+            } finally {
+                setUploadingPic(false);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
 
     const fetchStudentData = useCallback(async () => {
         setLoading(true);
@@ -163,14 +216,36 @@ const StudentDashboard = ({ defaultTab = 'dashboard' }) => {
                             </div>
                             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 backdrop-blur-md p-1 border-2 border-white/40 shadow-inner overflow-hidden shrink-0">
-                                        {profile?.profile_pic ? (
-                                            <img src={profile.profile_pic} alt={user?.name} className="w-full h-full object-cover rounded-full" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-white text-2xl font-black">
-                                                {user?.name?.charAt(0)?.toUpperCase() || 'S'}
-                                            </div>
-                                        )}
+                                    <div className="relative group shrink-0">
+                                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 backdrop-blur-md p-1 border-2 border-white/40 shadow-inner overflow-hidden relative">
+                                            {uploadingPic ? (
+                                                <div className="w-full h-full flex flex-col items-center justify-center bg-black/40 text-white">
+                                                    <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                </div>
+                                            ) : profile?.profile_pic ? (
+                                                <img src={profile.profile_pic} alt={user?.name} className="w-full h-full object-cover rounded-full" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-white text-2xl font-black">
+                                                    {user?.name?.charAt(0)?.toUpperCase() || 'S'}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Camera Upload Badge */}
+                                        <label
+                                            htmlFor="student-profile-photo-input"
+                                            className="absolute -bottom-1 -right-1 w-7 h-7 md:w-8 md:h-8 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-900 flex items-center justify-center shadow-lg border-2 border-white cursor-pointer transition-transform hover:scale-110 active:scale-95"
+                                            title="Upload or Change Profile Photo"
+                                        >
+                                            <FaCamera className="text-xs md:text-sm text-slate-900" />
+                                        </label>
+                                        <input
+                                            id="student-profile-photo-input"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleProfilePicChange}
+                                            className="hidden"
+                                        />
                                     </div>
                                     <div>
                                         <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider mb-1">
