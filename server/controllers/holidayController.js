@@ -34,25 +34,38 @@ exports.updateHoliday = async (req, res) => {
     }
 
     try {
-        // Use UPSERT logic
-        const query = `
-            INSERT INTO holidays (h_date, caption, type)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (h_date) DO UPDATE SET
-            caption = EXCLUDED.caption,
-            type = EXCLUDED.type
-        `;
+        const targetCaption = caption || 'Holiday';
+        const targetType = type || 'Holiday';
 
-        const { rowCount } = await pool.query(query, [date, caption || 'Holiday', type || 'Holiday']);
-        console.log('Update query result rowCount:', rowCount);
+        // 1. Try updating existing holiday record
+        const updateRes = await pool.query(`
+            UPDATE holidays
+            SET caption = $2, type = $3
+            WHERE h_date::date = $1::date
+        `, [date, targetCaption, targetType]);
+
+        // 2. If record does not exist yet, insert a new holiday entry
+        if (updateRes.rowCount === 0) {
+            await pool.query(`
+                INSERT INTO holidays (h_date, caption, type)
+                VALUES ($1, $2, $3)
+            `, [date, targetCaption, targetType]);
+        }
+
+        // 3. Ensure unique index exists on h_date to clean up schema
+        try {
+            await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS idx_holidays_h_date ON holidays (h_date)');
+        } catch (idxErr) {
+            // Ignore index creation errors if duplicates exist
+        }
 
         const io = req.app.get('io');
         if (io) {
             io.emit('calendar_updated', {
                 action: 'upsert',
                 date,
-                type: type || 'Holiday',
-                caption: caption || 'Holiday'
+                type: targetType,
+                caption: targetCaption
             });
         }
 
@@ -60,14 +73,11 @@ exports.updateHoliday = async (req, res) => {
     } catch (error) {
         console.error('CRITICAL: updateHoliday Error:', {
             message: error.message,
-            sql: error.sql,
-            sqlMessage: error.sqlMessage,
             stack: error.stack
         });
         res.status(500).json({
             message: 'Server Error updating holiday',
-            error: error.message,
-            sqlMessage: error.sqlMessage
+            error: error.message
         });
     }
 };
