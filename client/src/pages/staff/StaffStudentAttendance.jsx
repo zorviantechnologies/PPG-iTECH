@@ -154,7 +154,7 @@ const StaffStudentAttendance = () => {
                 const active = res.data.active_otp;
                 const remSec = active.remaining_seconds || 0;
                 if (remSec > 0) {
-                    if (remSec <= 15) {
+                    if (active.type === 'OTP' || (remSec <= 15 && active.type !== 'QR')) {
                         setActiveOtpData(active);
                         setOtpCountdown(remSec);
                     } else {
@@ -1147,10 +1147,7 @@ const StaffStudentAttendance = () => {
                             </div>
                             <div className="text-center space-y-1">
                                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center justify-center gap-1">
-                                    <FaShieldAlt className="text-emerald-400" /> Scan QR to Mark All Present
-                                </span>
-                                <span className="text-xs font-mono font-bold tracking-wider text-emerald-300 block">
-                                    Token Code: {activeQrData.qr_code}
+                                    <FaShieldAlt className="text-emerald-400" /> Scan QR Code via Camera / File Upload
                                 </span>
                             </div>
                         </div>
@@ -1240,30 +1237,14 @@ const StaffStudentAttendance = () => {
                             </p>
                         </div>
 
-                        {/* Large OTP Code & QR Code Display */}
-                        <div className="bg-slate-900 p-5 rounded-2xl border-2 border-amber-400/40 shadow-inner space-y-4 flex flex-col items-center">
-                            <div className="bg-white p-3 rounded-2xl shadow-lg border border-amber-300">
-                                <QRCodeSVG
-                                    value={JSON.stringify({
-                                        type: 'ATTENDANCE_QR',
-                                        otp_code: activeOtpData.otp_code,
-                                        period: selectedPeriod,
-                                        subject: selectedSubject,
-                                        date: selectedDate
-                                    })}
-                                    size={180}
-                                    level="H"
-                                    includeMargin={true}
-                                />
-                            </div>
-                            <div className="text-center space-y-1">
-                                <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center justify-center gap-1">
-                                    <FaQrcode className="text-amber-400" /> Scan QR or Enter OTP Code
-                                </span>
-                                <span className="text-4xl sm:text-5xl font-mono font-black tracking-widest block text-amber-300">
-                                    {activeOtpData.otp_code}
-                                </span>
-                            </div>
+                        {/* Large OTP Code Display */}
+                        <div className="bg-slate-900 p-6 rounded-2xl border-2 border-amber-400/40 shadow-inner space-y-3 flex flex-col items-center justify-center">
+                            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center justify-center gap-1">
+                                <FaKey className="text-amber-400" /> Attendance 6-Digit OTP Code
+                            </span>
+                            <span className="text-5xl sm:text-6xl font-mono font-black tracking-widest block text-amber-300">
+                                {activeOtpData.otp_code}
+                            </span>
                         </div>
 
                         {/* Live 15s Countdown Ring */}

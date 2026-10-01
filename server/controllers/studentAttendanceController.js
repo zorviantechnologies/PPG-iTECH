@@ -372,8 +372,8 @@ exports.generateAttendanceOTP = async (req, res) => {
                 INSERT INTO attendance_otps (
                     otp_code, created_by_emp_id, created_by_user_id, department_id, academic_year,
                     semester, section, subject, subject_code, date, period_number, start_time,
-                    end_time, expires_at, is_active
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE)
+                    end_time, expires_at, is_active, type
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE, 'OTP')
             `, [
                 otp_code,
                 emp_id,
@@ -419,6 +419,7 @@ exports.generateAttendanceOTP = async (req, res) => {
         res.status(201).json({
             message: 'Attendance OTP generated successfully (Valid for 15 Seconds)',
             otp_code,
+            type: 'OTP',
             validity_seconds: 15,
             expires_at: expiresAt.toISOString()
         });
@@ -479,7 +480,7 @@ exports.getActiveAttendanceOTP = async (req, res) => {
         const { rows } = await queryWithRetry(`
             SELECT 
                 id, otp_code, created_by_emp_id, department_id, academic_year, semester, section,
-                subject, subject_code, date, period_number, start_time, end_time, expires_at,
+                subject, subject_code, date, period_number, start_time, end_time, expires_at, type,
                 GREATEST(0, ROUND(EXTRACT(EPOCH FROM (expires_at - CURRENT_TIMESTAMP)))) as remaining_seconds
             FROM attendance_otps
             ${whereClause}
@@ -491,6 +492,7 @@ exports.getActiveAttendanceOTP = async (req, res) => {
         }
 
         const activeOtp = rows[0];
+        const derivedType = activeOtp.type || (parseInt(activeOtp.remaining_seconds, 10) > 30 ? 'QR' : 'OTP');
 
         // For student role, omit raw otp_code so they must enter the code displayed by staff
         if (req.user.role === 'student') {
@@ -524,6 +526,7 @@ exports.getActiveAttendanceOTP = async (req, res) => {
                     subject: activeOtp.subject,
                     period_number: activeOtp.period_number,
                     date: activeOtp.date,
+                    type: derivedType,
                     remaining_seconds: parseInt(activeOtp.remaining_seconds, 10) || 0
                 }
             });
@@ -534,6 +537,7 @@ exports.getActiveAttendanceOTP = async (req, res) => {
             has_active_otp: true,
             active_otp: {
                 ...activeOtp,
+                type: derivedType,
                 remaining_seconds: parseInt(activeOtp.remaining_seconds, 10) || 0
             }
         });
@@ -571,7 +575,7 @@ exports.verifyAttendanceOTP = async (req, res) => {
 
         const student = stRows[0];
 
-        // 2. Query active OTP within the 15-second expiration window
+        // 2. Query active OTP within the expiration window
         const { rows: otpRows } = await queryWithRetry(`
             SELECT * FROM attendance_otps
             WHERE otp_code = $1
@@ -602,6 +606,13 @@ exports.verifyAttendanceOTP = async (req, res) => {
         }
 
         const activeOtp = otpRows[0];
+        const sessionType = activeOtp.type || (activeOtp.expires_at - activeOtp.created_at > 60000 ? 'QR' : 'OTP');
+
+        if (sessionType === 'QR') {
+            return res.status(400).json({
+                message: 'This session was started with a QR Code. Manual 6-digit OTP entry is disabled. Please scan the QR Code using your camera or upload an image.'
+            });
+        }
 
         // 3. Enforce matching student class & authorized period details (Department, Year, Semester, Section)
         if (
@@ -1002,8 +1013,8 @@ exports.generateAttendanceQR = async (req, res) => {
                 INSERT INTO attendance_otps (
                     otp_code, created_by_emp_id, created_by_user_id, department_id, academic_year,
                     semester, section, subject, subject_code, date, period_number, start_time,
-                    end_time, expires_at, is_active
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE)
+                    end_time, expires_at, is_active, type
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE, 'QR')
             `, [
                 qr_code,
                 emp_id,
@@ -1062,6 +1073,7 @@ exports.generateAttendanceQR = async (req, res) => {
             message: 'Attendance QR Code generated successfully (Valid for 10 Minutes)',
             qr_code,
             qr_payload: qrPayload,
+            type: 'QR',
             validity_seconds: 600,
             expires_at: expiresAt.toISOString()
         });

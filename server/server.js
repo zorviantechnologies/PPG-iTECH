@@ -378,9 +378,13 @@ const initDB = async () => {
                 end_time VARCHAR(20),
                 expires_at TIMESTAMP NOT NULL,
                 is_active BOOLEAN DEFAULT TRUE,
+                type VARCHAR(20) DEFAULT 'OTP',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        try {
+            await queryWithRetry("ALTER TABLE attendance_otps ADD COLUMN IF NOT EXISTS type VARCHAR(20) DEFAULT 'OTP'");
+        } catch (e) { /* ignore */ }
 
         // Ensure attendance_audit_logs table exists
         await queryWithRetry(`
