@@ -372,8 +372,8 @@ exports.generateAttendanceOTP = async (req, res) => {
                 INSERT INTO attendance_otps (
                     otp_code, created_by_emp_id, created_by_user_id, department_id, academic_year,
                     semester, section, subject, subject_code, date, period_number, start_time,
-                    end_time, expires_at, is_active, type
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE, 'OTP')
+                    end_time, expires_at, is_active
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE)
             `, [
                 otp_code,
                 emp_id,
@@ -419,7 +419,6 @@ exports.generateAttendanceOTP = async (req, res) => {
         res.status(201).json({
             message: 'Attendance OTP generated successfully (Valid for 15 Seconds)',
             otp_code,
-            type: 'OTP',
             validity_seconds: 15,
             expires_at: expiresAt.toISOString()
         });
@@ -480,7 +479,7 @@ exports.getActiveAttendanceOTP = async (req, res) => {
         const { rows } = await queryWithRetry(`
             SELECT 
                 id, otp_code, created_by_emp_id, department_id, academic_year, semester, section,
-                subject, subject_code, date, period_number, start_time, end_time, expires_at, type,
+                subject, subject_code, date, period_number, start_time, end_time, expires_at,
                 GREATEST(0, ROUND(EXTRACT(EPOCH FROM (expires_at - CURRENT_TIMESTAMP)))) as remaining_seconds
             FROM attendance_otps
             ${whereClause}
@@ -492,7 +491,6 @@ exports.getActiveAttendanceOTP = async (req, res) => {
         }
 
         const activeOtp = rows[0];
-        const derivedType = activeOtp.type || (parseInt(activeOtp.remaining_seconds, 10) > 30 ? 'QR' : 'OTP');
 
         // For student role, omit raw otp_code so they must enter the code displayed by staff
         if (req.user.role === 'student') {
@@ -526,7 +524,6 @@ exports.getActiveAttendanceOTP = async (req, res) => {
                     subject: activeOtp.subject,
                     period_number: activeOtp.period_number,
                     date: activeOtp.date,
-                    type: derivedType,
                     remaining_seconds: parseInt(activeOtp.remaining_seconds, 10) || 0
                 }
             });
@@ -537,7 +534,6 @@ exports.getActiveAttendanceOTP = async (req, res) => {
             has_active_otp: true,
             active_otp: {
                 ...activeOtp,
-                type: derivedType,
                 remaining_seconds: parseInt(activeOtp.remaining_seconds, 10) || 0
             }
         });
@@ -575,7 +571,7 @@ exports.verifyAttendanceOTP = async (req, res) => {
 
         const student = stRows[0];
 
-        // 2. Query active OTP within the expiration window
+        // 2. Query active OTP within the 15-second expiration window
         const { rows: otpRows } = await queryWithRetry(`
             SELECT * FROM attendance_otps
             WHERE otp_code = $1
@@ -606,33 +602,14 @@ exports.verifyAttendanceOTP = async (req, res) => {
         }
 
         const activeOtp = otpRows[0];
-        const sessionType = activeOtp.type || (activeOtp.expires_at - activeOtp.created_at > 60000 ? 'QR' : 'OTP');
-
-        if (sessionType === 'QR') {
-            return res.status(400).json({
-                message: 'This session was started with a QR Code. Manual 6-digit OTP entry is disabled. Please scan the QR Code using your camera or upload an image.'
-            });
-        }
 
         // 3. Enforce matching student class & authorized period details (Department, Year, Semester, Section)
-        const studentDept = student.department_id ? parseInt(student.department_id, 10) : null;
-        const otpDept = activeOtp.department_id ? parseInt(activeOtp.department_id, 10) : null;
-
-        const studentYear = student.academic_year ? parseInt(student.academic_year, 10) : null;
-        const otpYear = activeOtp.academic_year ? parseInt(activeOtp.academic_year, 10) : null;
-
-        const studentSem = student.semester ? parseInt(student.semester, 10) : null;
-        const otpSem = activeOtp.semester ? parseInt(activeOtp.semester, 10) : null;
-
-        const studentSec = String(student.section || 'A').trim().toLowerCase();
-        const otpSec = String(activeOtp.section || 'All').trim().toLowerCase();
-
-        const isDeptMatch = !studentDept || !otpDept || studentDept === otpDept;
-        const isYearMatch = !studentYear || !otpYear || studentYear === otpYear;
-        const isSemMatch = !studentSem || !otpSem || studentSem === otpSem;
-        const isSecMatch = otpSec === 'all' || otpSec === '' || !studentSec || otpSec === studentSec;
-
-        if (!isDeptMatch || !isYearMatch || !isSemMatch || !isSecMatch) {
+        if (
+            parseInt(student.department_id, 10) !== parseInt(activeOtp.department_id, 10) ||
+            parseInt(student.academic_year, 10) !== parseInt(activeOtp.academic_year, 10) ||
+            parseInt(student.semester, 10) !== parseInt(activeOtp.semester, 10) ||
+            (activeOtp.section && activeOtp.section !== 'All' && student.section && activeOtp.section !== student.section)
+        ) {
             await queryWithRetry(`
                 INSERT INTO attendance_audit_logs (
                     action, user_id, emp_id, user_role, target_student_id, otp_code, status, details
@@ -1025,8 +1002,8 @@ exports.generateAttendanceQR = async (req, res) => {
                 INSERT INTO attendance_otps (
                     otp_code, created_by_emp_id, created_by_user_id, department_id, academic_year,
                     semester, section, subject, subject_code, date, period_number, start_time,
-                    end_time, expires_at, is_active, type
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE, 'QR')
+                    end_time, expires_at, is_active
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE)
             `, [
                 qr_code,
                 emp_id,
@@ -1085,7 +1062,6 @@ exports.generateAttendanceQR = async (req, res) => {
             message: 'Attendance QR Code generated successfully (Valid for 10 Minutes)',
             qr_code,
             qr_payload: qrPayload,
-            type: 'QR',
             validity_seconds: 600,
             expires_at: expiresAt.toISOString()
         });
@@ -1136,27 +1112,13 @@ exports.verifyAttendanceQR = async (req, res) => {
         if (stRows.length > 0) {
             const student = stRows[0];
 
-            // 3. Enforce matching class profile (Dept, Year, Semester, Section) safely and case-insensitively
-            const studentDept = student.department_id ? parseInt(student.department_id, 10) : null;
-            const qrDept = activeQr.department_id ? parseInt(activeQr.department_id, 10) : null;
-
-            const studentYear = student.academic_year ? parseInt(student.academic_year, 10) : null;
-            const qrYear = activeQr.academic_year ? parseInt(activeQr.academic_year, 10) : null;
-
-            const studentSem = student.semester ? parseInt(student.semester, 10) : null;
-            const qrSem = activeQr.semester ? parseInt(activeQr.semester, 10) : null;
-
-            const studentSec = String(student.section || 'A').trim().toLowerCase();
-            const qrSec = String(activeQr.section || 'All').trim().toLowerCase();
-
-            const isDeptMatch = !studentDept || !qrDept || studentDept === qrDept;
-            const isYearMatch = !studentYear || !qrYear || studentYear === qrYear;
-            const isSemMatch = !studentSem || !qrSem || studentSem === qrSem;
-            const isSecMatch = qrSec === 'all' || qrSec === '' || !studentSec || qrSec === studentSec;
-
-            if (!isDeptMatch || !isYearMatch || !isSemMatch || !isSecMatch) {
-                console.warn(`QR verification class mismatch for user ${req.user.id}: student(dept:${studentDept}, yr:${studentYear}, sem:${studentSem}, sec:${studentSec}) vs QR(dept:${qrDept}, yr:${qrYear}, sem:${qrSem}, sec:${qrSec})`);
-
+            // 3. Enforce matching class profile (Dept, Year, Semester, Section)
+            if (
+                parseInt(student.department_id, 10) !== parseInt(activeQr.department_id, 10) ||
+                parseInt(student.academic_year, 10) !== parseInt(activeQr.academic_year, 10) ||
+                parseInt(student.semester, 10) !== parseInt(activeQr.semester, 10) ||
+                (activeQr.section && activeQr.section !== 'All' && student.section && activeQr.section !== student.section)
+            ) {
                 return res.status(403).json({
                     message: 'Unauthorized: This QR Code was generated for a different Department, Year, Semester, or Section than your registered class profile.'
                 });

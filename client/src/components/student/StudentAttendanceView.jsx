@@ -159,7 +159,12 @@ const StudentAttendanceView = () => {
         setVerifyingOtp(true);
 
         try {
-            const res = await api.post('/student-attendance/verify-qr', { qr_code: cleanCode });
+            let res;
+            try {
+                res = await api.post('/student-attendance/verify-qr', { qr_code: cleanCode });
+            } catch (qrErr) {
+                res = await api.post('/student-attendance/verify-otp', { otp_code: cleanCode });
+            }
 
             Swal.fire({
                 icon: 'success',
@@ -179,7 +184,7 @@ const StudentAttendanceView = () => {
             Swal.fire({
                 icon: 'error',
                 title: 'Verification Failed',
-                text: err.response?.data?.message || 'Invalid or expired QR code.',
+                text: err.response?.data?.message || 'Invalid or expired OTP/QR code.',
                 confirmButtonColor: '#0ea5e9'
             });
         } finally {
@@ -306,115 +311,79 @@ const StudentAttendanceView = () => {
                 </div>
             </div>
 
-            {/* LIVE OTP / QR ATTENDANCE VERIFICATION WIDGET */}
+            {/* LIVE 15-SECOND OTP ATTENDANCE VERIFICATION WIDGET */}
             <AnimatePresence>
                 {activeSession && countdown > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: -15, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -15 }}
-                        className={`rounded-3xl p-6 text-white shadow-2xl border-2 relative overflow-hidden ${
-                            activeSession.type === 'QR'
-                                ? 'bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 border-emerald-300'
-                                : 'bg-gradient-to-br from-amber-500 via-orange-500 to-red-600 border-amber-300'
-                        }`}
+                        className="rounded-3xl bg-gradient-to-br from-amber-500 via-orange-500 to-red-600 p-6 text-white shadow-2xl border-2 border-amber-300 relative overflow-hidden"
                     >
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
                             
                             <div className="space-y-2">
                                 <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider text-amber-100 border border-white/30">
-                                    {activeSession.type === 'QR' ? (
-                                        <>
-                                            <FaQrcode className="text-emerald-200 animate-pulse" /> Live 10-Min QR Session Active
-                                        </>
-                                    ) : (
-                                        <>
-                                            <FaBolt className="text-amber-300 animate-pulse" /> Active 15s OTP Session
-                                        </>
-                                    )}
+                                    <FaBolt className="text-amber-300 animate-pulse" /> Active Class Attendance Session
                                 </div>
                                 <h2 className="text-2xl font-black tracking-tight">
                                     Confirm Period {activeSession.period_number} Attendance ({activeSession.subject})
                                 </h2>
-                                <p className="text-xs font-medium max-w-lg opacity-90">
-                                    {activeSession.type === 'QR'
-                                        ? 'Authorized staff member generated an attendance QR Code for this class. Scan the QR code to record your attendance.'
-                                        : 'Authorized staff member generated a temporary attendance OTP. Submit the 6-digit code before the 15-second window expires!'}
+                                <p className="text-xs text-amber-100 font-medium max-w-lg">
+                                    Authorized staff member generated a temporary attendance OTP. Submit the 6-digit code before the 15-second window expires!
                                 </p>
                             </div>
 
-                            {/* Timer Badge & Verification Controls */}
+                            {/* Timer Badge & Form */}
                             <div className="flex flex-col sm:flex-row items-center gap-4 bg-black/20 backdrop-blur-xl p-4 rounded-2xl border border-white/20">
                                 
-                                {/* Countdown Display */}
+                                {/* Countdown Ring */}
                                 <div className="flex flex-col items-center shrink-0">
-                                    <div className={`px-3 py-1.5 rounded-2xl font-black text-xl flex items-center justify-center shadow-lg border-4 ${
-                                        activeSession.type === 'QR'
-                                            ? 'bg-white text-emerald-700 border-emerald-300 font-mono'
-                                            : 'w-16 h-16 rounded-full bg-white text-orange-600 text-2xl border-amber-300'
-                                    }`}>
-                                        {activeSession.type === 'QR' ? (
-                                            `${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')}`
-                                        ) : (
-                                            `${countdown}s`
-                                        )}
+                                    <div className="w-16 h-16 rounded-full bg-white text-orange-600 font-black text-2xl flex items-center justify-center shadow-lg border-4 border-amber-300">
+                                        {countdown}s
                                     </div>
-                                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-white/80 mt-1">Validity Left</span>
+                                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-200 mt-1">Validity Left</span>
                                 </div>
 
-                                {/* Verification Inputs */}
-                                {activeSession.type === 'QR' ? (
-                                    /* QR ONLY MODE: Hide OTP text box */
-                                    <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowQrScanner(true)}
-                                            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-white text-emerald-800 hover:bg-emerald-50 font-black text-xs uppercase tracking-wider shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-200"
-                                        >
-                                            <FaQrcode className="text-base text-emerald-600" /> Scan Staff QR Code
-                                        </button>
+                                {/* Verification Form */}
+                                <form onSubmit={handleVerifyOtp} className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
+                                    <div className="relative w-full sm:w-44">
+                                        <FaKey className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                                        <input
+                                            type="text"
+                                            maxLength={6}
+                                            value={otpInput}
+                                            onChange={(e) => setOtpInput(e.target.value)}
+                                            placeholder="Enter 6-Digit OTP"
+                                            className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 font-mono font-black text-center text-base tracking-widest focus:ring-2 focus:ring-white border-0"
+                                        />
                                     </div>
-                                ) : (
-                                    /* OTP MODE: Show 6-digit OTP text box */
-                                    <form onSubmit={handleVerifyOtp} className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
-                                        <div className="relative w-full sm:w-44">
-                                            <FaKey className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-                                            <input
-                                                type="text"
-                                                maxLength={6}
-                                                value={otpInput}
-                                                onChange={(e) => setOtpInput(e.target.value)}
-                                                placeholder="Enter 6-Digit OTP"
-                                                className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 font-mono font-black text-center text-base tracking-widest focus:ring-2 focus:ring-white border-0"
-                                            />
-                                        </div>
 
-                                        <button
-                                            type="submit"
-                                            disabled={verifyingOtp || !otpInput.trim()}
-                                            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white text-orange-700 hover:bg-amber-100 font-black text-xs uppercase tracking-wider shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 shrink-0"
-                                        >
-                                            {verifyingOtp ? (
-                                                <>
-                                                    <div className="h-4 w-4 border-2 border-orange-700/30 border-t-orange-700 rounded-full animate-spin" />
-                                                    Verifying...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <FaShieldAlt /> Verify OTP
-                                                </>
-                                            )}
-                                        </button>
+                                    <button
+                                        type="submit"
+                                        disabled={verifyingOtp || !otpInput.trim()}
+                                        className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white text-orange-700 hover:bg-amber-100 font-black text-xs uppercase tracking-wider shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 shrink-0"
+                                    >
+                                        {verifyingOtp ? (
+                                            <>
+                                                <div className="h-4 w-4 border-2 border-orange-700/30 border-t-orange-700 rounded-full animate-spin" />
+                                                Verifying...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaShieldAlt /> Verify OTP
+                                            </>
+                                        )}
+                                    </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowQrScanner(true)}
-                                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
-                                        >
-                                            <FaQrcode className="text-sm text-slate-900" /> Scan QR
-                                        </button>
-                                    </form>
-                                )}
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowQrScanner(true)}
+                                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                                    >
+                                        <FaQrcode className="text-sm text-slate-900" /> Scan QR
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </motion.div>
