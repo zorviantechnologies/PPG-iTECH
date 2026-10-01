@@ -159,12 +159,7 @@ const StudentAttendanceView = () => {
         setVerifyingOtp(true);
 
         try {
-            let res;
-            try {
-                res = await api.post('/student-attendance/verify-qr', { qr_code: cleanCode });
-            } catch (qrErr) {
-                res = await api.post('/student-attendance/verify-otp', { otp_code: cleanCode });
-            }
+            const res = await api.post('/student-attendance/verify-qr', { qr_code: cleanCode });
 
             Swal.fire({
                 icon: 'success',
@@ -184,7 +179,7 @@ const StudentAttendanceView = () => {
             Swal.fire({
                 icon: 'error',
                 title: 'Verification Failed',
-                text: err.response?.data?.message || 'Invalid or expired OTP/QR code.',
+                text: err.response?.data?.message || 'Invalid or expired QR code.',
                 confirmButtonColor: '#0ea5e9'
             });
         } finally {

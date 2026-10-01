@@ -615,12 +615,24 @@ exports.verifyAttendanceOTP = async (req, res) => {
         }
 
         // 3. Enforce matching student class & authorized period details (Department, Year, Semester, Section)
-        if (
-            parseInt(student.department_id, 10) !== parseInt(activeOtp.department_id, 10) ||
-            parseInt(student.academic_year, 10) !== parseInt(activeOtp.academic_year, 10) ||
-            parseInt(student.semester, 10) !== parseInt(activeOtp.semester, 10) ||
-            (activeOtp.section && activeOtp.section !== 'All' && student.section && activeOtp.section !== student.section)
-        ) {
+        const studentDept = student.department_id ? parseInt(student.department_id, 10) : null;
+        const otpDept = activeOtp.department_id ? parseInt(activeOtp.department_id, 10) : null;
+
+        const studentYear = student.academic_year ? parseInt(student.academic_year, 10) : null;
+        const otpYear = activeOtp.academic_year ? parseInt(activeOtp.academic_year, 10) : null;
+
+        const studentSem = student.semester ? parseInt(student.semester, 10) : null;
+        const otpSem = activeOtp.semester ? parseInt(activeOtp.semester, 10) : null;
+
+        const studentSec = String(student.section || 'A').trim().toLowerCase();
+        const otpSec = String(activeOtp.section || 'All').trim().toLowerCase();
+
+        const isDeptMatch = !studentDept || !otpDept || studentDept === otpDept;
+        const isYearMatch = !studentYear || !otpYear || studentYear === otpYear;
+        const isSemMatch = !studentSem || !otpSem || studentSem === otpSem;
+        const isSecMatch = otpSec === 'all' || otpSec === '' || !studentSec || otpSec === studentSec;
+
+        if (!isDeptMatch || !isYearMatch || !isSemMatch || !isSecMatch) {
             await queryWithRetry(`
                 INSERT INTO attendance_audit_logs (
                     action, user_id, emp_id, user_role, target_student_id, otp_code, status, details
@@ -1124,13 +1136,27 @@ exports.verifyAttendanceQR = async (req, res) => {
         if (stRows.length > 0) {
             const student = stRows[0];
 
-            // 3. Enforce matching class profile (Dept, Year, Semester, Section)
-            if (
-                parseInt(student.department_id, 10) !== parseInt(activeQr.department_id, 10) ||
-                parseInt(student.academic_year, 10) !== parseInt(activeQr.academic_year, 10) ||
-                parseInt(student.semester, 10) !== parseInt(activeQr.semester, 10) ||
-                (activeQr.section && activeQr.section !== 'All' && student.section && activeQr.section !== student.section)
-            ) {
+            // 3. Enforce matching class profile (Dept, Year, Semester, Section) safely and case-insensitively
+            const studentDept = student.department_id ? parseInt(student.department_id, 10) : null;
+            const qrDept = activeQr.department_id ? parseInt(activeQr.department_id, 10) : null;
+
+            const studentYear = student.academic_year ? parseInt(student.academic_year, 10) : null;
+            const qrYear = activeQr.academic_year ? parseInt(activeQr.academic_year, 10) : null;
+
+            const studentSem = student.semester ? parseInt(student.semester, 10) : null;
+            const qrSem = activeQr.semester ? parseInt(activeQr.semester, 10) : null;
+
+            const studentSec = String(student.section || 'A').trim().toLowerCase();
+            const qrSec = String(activeQr.section || 'All').trim().toLowerCase();
+
+            const isDeptMatch = !studentDept || !qrDept || studentDept === qrDept;
+            const isYearMatch = !studentYear || !qrYear || studentYear === qrYear;
+            const isSemMatch = !studentSem || !qrSem || studentSem === qrSem;
+            const isSecMatch = qrSec === 'all' || qrSec === '' || !studentSec || qrSec === studentSec;
+
+            if (!isDeptMatch || !isYearMatch || !isSemMatch || !isSecMatch) {
+                console.warn(`QR verification class mismatch for user ${req.user.id}: student(dept:${studentDept}, yr:${studentYear}, sem:${studentSem}, sec:${studentSec}) vs QR(dept:${qrDept}, yr:${qrYear}, sem:${qrSem}, sec:${qrSec})`);
+
                 return res.status(403).json({
                     message: 'Unauthorized: This QR Code was generated for a different Department, Year, Semester, or Section than your registered class profile.'
                 });
