@@ -548,9 +548,9 @@ exports.getActiveAttendanceOTP = async (req, res) => {
 // @route   POST /api/student-attendance/verify-otp
 // @access  Private (Student)
 exports.verifyAttendanceOTP = async (req, res) => {
-    const { otp_code, department_id, academic_year, semester, section, subject, period_number, date } = req.body;
+    const { otp_code, qr_code, department_id, academic_year, semester, section, subject, period_number, date } = req.body;
 
-    let cleanOtp = String(otp_code || '').trim();
+    let cleanOtp = String(otp_code || qr_code || '').trim();
 
     try {
         if (cleanOtp.startsWith('{') || cleanOtp.startsWith('"')) {
@@ -625,7 +625,7 @@ exports.verifyAttendanceOTP = async (req, res) => {
             parseInt(student.department_id, 10) !== parseInt(activeOtp.department_id, 10) ||
             parseInt(student.academic_year, 10) !== parseInt(activeOtp.academic_year, 10) ||
             parseInt(student.semester, 10) !== parseInt(activeOtp.semester, 10) ||
-            (activeOtp.section && activeOtp.section !== 'All' && student.section && activeOtp.section !== student.section)
+            (activeOtp.section && activeOtp.section !== 'All' && student.section && activeOtp.section.trim().toLowerCase() !== student.section.trim().toLowerCase())
         ) {
             await queryWithRetry(`
                 INSERT INTO attendance_audit_logs (
@@ -1094,8 +1094,8 @@ exports.generateAttendanceQR = async (req, res) => {
 // @route   POST /api/student-attendance/verify-qr
 // @access  Private (Staff, HOD, Student)
 exports.verifyAttendanceQR = async (req, res) => {
-    const { qr_code } = req.body;
-    let cleanCode = String(qr_code || '').trim();
+    const { qr_code, otp_code } = req.body;
+    let cleanCode = String(qr_code || otp_code || '').trim();
 
     try {
         if (cleanCode.startsWith('{') || cleanCode.startsWith('"')) {
@@ -1152,7 +1152,7 @@ exports.verifyAttendanceQR = async (req, res) => {
                 parseInt(student.department_id, 10) !== parseInt(activeQr.department_id, 10) ||
                 parseInt(student.academic_year, 10) !== parseInt(activeQr.academic_year, 10) ||
                 parseInt(student.semester, 10) !== parseInt(activeQr.semester, 10) ||
-                (activeQr.section && activeQr.section !== 'All' && student.section && activeQr.section !== student.section)
+                (activeQr.section && activeQr.section !== 'All' && student.section && activeQr.section.trim().toLowerCase() !== student.section.trim().toLowerCase())
             ) {
                 return res.status(403).json({
                     message: 'Unauthorized: This QR Code was generated for a different Department, Year, Semester, or Section than your registered class profile.'

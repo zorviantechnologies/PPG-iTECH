@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -22,6 +22,10 @@ const StudentAttendanceView = () => {
     // QR Scanner State
     const [showQrScanner, setShowQrScanner] = useState(false);
     const [scannerError, setScannerError] = useState('');
+
+    // Scanner Guard & Instance Refs
+    const isProcessingScanRef = useRef(false);
+    const scannerInstanceRef = useRef(null);
 
     // Filters
     const [filterYear, setFilterYear] = useState('all');
@@ -105,9 +109,9 @@ const StudentAttendanceView = () => {
         try {
             let res;
             try {
-                res = await api.post('/student-attendance/verify-otp', { otp_code: cleanOtp });
+                res = await api.post('/student-attendance/verify-otp', { otp_code: cleanOtp, qr_code: cleanOtp });
             } catch (err1) {
-                res = await api.post('/student-attendance/verify-qr', { qr_code: cleanOtp });
+                res = await api.post('/student-attendance/verify-qr', { qr_code: cleanOtp, otp_code: cleanOtp });
             }
 
             Swal.fire({
@@ -138,6 +142,9 @@ const StudentAttendanceView = () => {
 
     // Process scanned code (either JSON or raw OTP/QR string)
     const handleScannedCode = useCallback(async (scannedText) => {
+        if (isProcessingScanRef.current) return;
+        isProcessingScanRef.current = true;
+
         let rawText = String(scannedText || '').trim();
         let extractedCode = '';
 
@@ -169,10 +176,21 @@ const StudentAttendanceView = () => {
                 text: 'Scanned QR code does not contain a valid attendance token.',
                 confirmButtonColor: '#0ea5e9'
             });
+            isProcessingScanRef.current = false;
             return;
         }
 
-        // Automatically fill the OTP input textbox with the scanned 6-digit code
+        // Immediately stop scanner to avoid camera decoding duplicate frames concurrently
+        if (scannerInstanceRef.current && scannerInstanceRef.current.isScanning) {
+            try {
+                await scannerInstanceRef.current.stop();
+                await scannerInstanceRef.current.clear();
+            } catch (e) {
+                // Ignore stop errors
+            }
+        }
+
+        // Automatically fill input and hide scanner modal
         setOtpInput(extractedCode);
         setShowQrScanner(false);
         setVerifyingOtp(true);
@@ -180,9 +198,9 @@ const StudentAttendanceView = () => {
         try {
             let res;
             try {
-                res = await api.post('/student-attendance/verify-qr', { qr_code: extractedCode });
+                res = await api.post('/student-attendance/verify-qr', { qr_code: extractedCode, otp_code: extractedCode });
             } catch (qrErr) {
-                res = await api.post('/student-attendance/verify-otp', { otp_code: extractedCode });
+                res = await api.post('/student-attendance/verify-otp', { otp_code: extractedCode, qr_code: extractedCode });
             }
 
             Swal.fire({
@@ -208,6 +226,7 @@ const StudentAttendanceView = () => {
             });
         } finally {
             setVerifyingOtp(false);
+            isProcessingScanRef.current = false;
         }
     }, [fetchMyAttendance]);
 
@@ -217,11 +236,13 @@ const StudentAttendanceView = () => {
 
         let html5QrcodeScanner = null;
         let isMounted = true;
+        isProcessingScanRef.current = false;
 
         const initScanner = async () => {
             try {
                 setScannerError('');
                 html5QrcodeScanner = new Html5Qrcode("qr-reader-container");
+                scannerInstanceRef.current = html5QrcodeScanner;
                 const config = { fps: 10, qrbox: { width: 220, height: 220 } };
 
                 await html5QrcodeScanner.start(
