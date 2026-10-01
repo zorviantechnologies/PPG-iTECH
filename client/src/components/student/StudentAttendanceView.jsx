@@ -93,7 +93,7 @@ const StudentAttendanceView = () => {
 
     // Handle Student OTP Submission
     const handleVerifyOtp = async (e) => {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
 
         const cleanOtp = otpInput.trim();
         if (!cleanOtp) {
@@ -103,9 +103,12 @@ const StudentAttendanceView = () => {
 
         setVerifyingOtp(true);
         try {
-            const res = await api.post('/student-attendance/verify-otp', {
-                otp_code: cleanOtp
-            });
+            let res;
+            try {
+                res = await api.post('/student-attendance/verify-otp', { otp_code: cleanOtp });
+            } catch (err1) {
+                res = await api.post('/student-attendance/verify-qr', { qr_code: cleanOtp });
+            }
 
             Swal.fire({
                 icon: 'success',
@@ -125,7 +128,7 @@ const StudentAttendanceView = () => {
             Swal.fire({
                 icon: 'error',
                 title: 'Verification Failed',
-                text: err.response?.data?.message || 'Invalid or expired OTP. The OTP is only valid for 15 seconds after staff generation.',
+                text: err.response?.data?.message || 'Invalid or expired OTP code.',
                 confirmButtonColor: '#0ea5e9'
             });
         } finally {
@@ -138,11 +141,11 @@ const StudentAttendanceView = () => {
         let cleanCode = String(scannedText || '').trim();
         try {
             const parsed = JSON.parse(cleanCode);
-            if (parsed && (parsed.otp_code || parsed.qr_code)) {
-                cleanCode = parsed.otp_code || parsed.qr_code;
+            if (parsed && typeof parsed === 'object') {
+                cleanCode = String(parsed.otp_code || parsed.qr_code || parsed.code || parsed.token || cleanCode).trim();
             }
         } catch (e) {
-            // Raw text
+            // Raw text format
         }
 
         if (!cleanCode) {
@@ -155,6 +158,8 @@ const StudentAttendanceView = () => {
             return;
         }
 
+        // Automatically fill the OTP input textbox with the scanned code
+        setOtpInput(cleanCode);
         setShowQrScanner(false);
         setVerifyingOtp(true);
 
@@ -339,8 +344,8 @@ const StudentAttendanceView = () => {
                                 
                                 {/* Countdown Ring */}
                                 <div className="flex flex-col items-center shrink-0">
-                                    <div className="w-16 h-16 rounded-full bg-white text-orange-600 font-black text-2xl flex items-center justify-center shadow-lg border-4 border-amber-300">
-                                        {countdown}s
+                                    <div className="w-16 h-16 rounded-full bg-white text-orange-600 font-black text-sm sm:text-base flex items-center justify-center shadow-lg border-4 border-amber-300">
+                                        {countdown > 60 ? `${Math.floor(countdown / 60)}m ${countdown % 60}s` : `${countdown}s`}
                                     </div>
                                     <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-200 mt-1">Validity Left</span>
                                 </div>
