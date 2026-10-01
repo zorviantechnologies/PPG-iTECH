@@ -550,7 +550,24 @@ exports.getActiveAttendanceOTP = async (req, res) => {
 exports.verifyAttendanceOTP = async (req, res) => {
     const { otp_code, department_id, academic_year, semester, section, subject, period_number, date } = req.body;
 
-    const cleanOtp = String(otp_code || '').trim();
+    let cleanOtp = String(otp_code || '').trim();
+
+    try {
+        if (cleanOtp.startsWith('{') || cleanOtp.startsWith('"')) {
+            let parsed = JSON.parse(cleanOtp);
+            if (typeof parsed === 'string') {
+                try { parsed = JSON.parse(parsed); } catch (e2) {}
+            }
+            if (parsed && typeof parsed === 'object') {
+                cleanOtp = String(parsed.otp_code || parsed.qr_code || parsed.code || cleanOtp).trim();
+            }
+        }
+    } catch (e) {}
+
+    const matchOtp = cleanOtp.match(/\b\d{6}\b/) || cleanOtp.match(/\d{6}/);
+    if (matchOtp) {
+        cleanOtp = matchOtp[0];
+    }
 
     if (!cleanOtp) {
         return res.status(400).json({ message: 'OTP code is required' });
@@ -1049,6 +1066,7 @@ exports.generateAttendanceQR = async (req, res) => {
         const qrPayload = JSON.stringify({
             type: 'ATTENDANCE_QR',
             qr_code,
+            otp_code: qr_code,
             department_id: parseInt(department_id, 10),
             academic_year: parseInt(academic_year, 10),
             semester: parseInt(semester, 10),
@@ -1077,7 +1095,24 @@ exports.generateAttendanceQR = async (req, res) => {
 // @access  Private (Staff, HOD, Student)
 exports.verifyAttendanceQR = async (req, res) => {
     const { qr_code } = req.body;
-    const cleanCode = String(qr_code || '').trim();
+    let cleanCode = String(qr_code || '').trim();
+
+    try {
+        if (cleanCode.startsWith('{') || cleanCode.startsWith('"')) {
+            let parsed = JSON.parse(cleanCode);
+            if (typeof parsed === 'string') {
+                try { parsed = JSON.parse(parsed); } catch (e2) {}
+            }
+            if (parsed && typeof parsed === 'object') {
+                cleanCode = String(parsed.qr_code || parsed.otp_code || parsed.code || cleanCode).trim();
+            }
+        }
+    } catch (e) {}
+
+    const matchCode = cleanCode.match(/\b\d{6}\b/) || cleanCode.match(/\d{6}/);
+    if (matchCode) {
+        cleanCode = matchCode[0];
+    }
 
     if (!cleanCode) {
         return res.status(400).json({ message: 'QR Code is required.' });

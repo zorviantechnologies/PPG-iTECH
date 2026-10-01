@@ -138,17 +138,31 @@ const StudentAttendanceView = () => {
 
     // Process scanned code (either JSON or raw OTP/QR string)
     const handleScannedCode = useCallback(async (scannedText) => {
-        let cleanCode = String(scannedText || '').trim();
+        let rawText = String(scannedText || '').trim();
+        let extractedCode = '';
+
         try {
-            const parsed = JSON.parse(cleanCode);
+            let parsed = JSON.parse(rawText);
+            if (typeof parsed === 'string') {
+                try { parsed = JSON.parse(parsed); } catch (e2) {}
+            }
             if (parsed && typeof parsed === 'object') {
-                cleanCode = String(parsed.otp_code || parsed.qr_code || parsed.code || parsed.token || cleanCode).trim();
+                extractedCode = String(parsed.otp_code || parsed.qr_code || parsed.code || parsed.token || '').trim();
             }
         } catch (e) {
-            // Raw text format
+            // Raw text
         }
 
-        if (!cleanCode) {
+        if (!extractedCode) {
+            const match = rawText.match(/\b\d{6}\b/) || rawText.match(/\d{6}/);
+            if (match) {
+                extractedCode = match[0];
+            } else {
+                extractedCode = rawText;
+            }
+        }
+
+        if (!extractedCode) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Invalid QR Code',
@@ -158,17 +172,17 @@ const StudentAttendanceView = () => {
             return;
         }
 
-        // Automatically fill the OTP input textbox with the scanned code
-        setOtpInput(cleanCode);
+        // Automatically fill the OTP input textbox with the scanned 6-digit code
+        setOtpInput(extractedCode);
         setShowQrScanner(false);
         setVerifyingOtp(true);
 
         try {
             let res;
             try {
-                res = await api.post('/student-attendance/verify-qr', { qr_code: cleanCode });
+                res = await api.post('/student-attendance/verify-qr', { qr_code: extractedCode });
             } catch (qrErr) {
-                res = await api.post('/student-attendance/verify-otp', { otp_code: cleanCode });
+                res = await api.post('/student-attendance/verify-otp', { otp_code: extractedCode });
             }
 
             Swal.fire({
