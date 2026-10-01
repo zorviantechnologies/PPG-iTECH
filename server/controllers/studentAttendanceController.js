@@ -620,12 +620,11 @@ exports.verifyAttendanceOTP = async (req, res) => {
 
         const activeOtp = otpRows[0];
 
-        // 3. Enforce matching student class & authorized period details (Department, Year, Semester, Section)
+        // 3. Enforce matching department details
         if (
-            parseInt(student.department_id, 10) !== parseInt(activeOtp.department_id, 10) ||
-            parseInt(student.academic_year, 10) !== parseInt(activeOtp.academic_year, 10) ||
-            parseInt(student.semester, 10) !== parseInt(activeOtp.semester, 10) ||
-            (activeOtp.section && activeOtp.section !== 'All' && student.section && activeOtp.section.trim().toLowerCase() !== student.section.trim().toLowerCase())
+            activeOtp.department_id &&
+            student.department_id &&
+            parseInt(student.department_id, 10) !== parseInt(activeOtp.department_id, 10)
         ) {
             await queryWithRetry(`
                 INSERT INTO attendance_audit_logs (
@@ -638,11 +637,11 @@ exports.verifyAttendanceOTP = async (req, res) => {
                 req.user.role,
                 student.student_id,
                 cleanOtp,
-                `Student attempted marking attendance for a class (Dept: ${activeOtp.department_id}, Year: ${activeOtp.academic_year}, Sem: ${activeOtp.semester}, Sec: ${activeOtp.section}) they do not belong to.`
+                `Student attempted marking attendance for a class in a different department (Dept: ${activeOtp.department_id}).`
             ]);
 
             return res.status(403).json({
-                message: 'Unauthorized: This OTP was generated for a different Department, Year, Semester, or Section than your registered class profile.'
+                message: 'Unauthorized: This OTP was generated for a different Department than your registered profile.'
             });
         }
 
@@ -1147,15 +1146,14 @@ exports.verifyAttendanceQR = async (req, res) => {
         if (stRows.length > 0) {
             const student = stRows[0];
 
-            // 3. Enforce matching class profile (Dept, Year, Semester, Section)
+            // 3. Enforce matching department details
             if (
-                parseInt(student.department_id, 10) !== parseInt(activeQr.department_id, 10) ||
-                parseInt(student.academic_year, 10) !== parseInt(activeQr.academic_year, 10) ||
-                parseInt(student.semester, 10) !== parseInt(activeQr.semester, 10) ||
-                (activeQr.section && activeQr.section !== 'All' && student.section && activeQr.section.trim().toLowerCase() !== student.section.trim().toLowerCase())
+                activeQr.department_id &&
+                student.department_id &&
+                parseInt(student.department_id, 10) !== parseInt(activeQr.department_id, 10)
             ) {
                 return res.status(403).json({
-                    message: 'Unauthorized: This QR Code was generated for a different Department, Year, Semester, or Section than your registered class profile.'
+                    message: 'Unauthorized: This QR Code was generated for a different Department than your registered profile.'
                 });
             }
 

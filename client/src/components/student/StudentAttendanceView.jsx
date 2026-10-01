@@ -180,14 +180,11 @@ const StudentAttendanceView = () => {
             return;
         }
 
-        // Immediately stop scanner to avoid camera decoding duplicate frames concurrently
+        // Non-blocking stop of camera scanner to process verification immediately
         if (scannerInstanceRef.current && scannerInstanceRef.current.isScanning) {
-            try {
-                await scannerInstanceRef.current.stop();
-                await scannerInstanceRef.current.clear();
-            } catch (e) {
-                // Ignore stop errors
-            }
+            scannerInstanceRef.current.stop().catch(() => {}).then(() => {
+                try { scannerInstanceRef.current.clear().catch(() => {}); } catch (e) {}
+            });
         }
 
         // Automatically fill input and hide scanner modal
