@@ -1194,11 +1194,11 @@ exports.verifyAttendanceQR = async (req, res) => {
                     INSERT INTO attendance_audit_logs (
                         action, user_id, emp_id, user_role, target_student_id, department_id, academic_year,
                         semester, section, subject, period_number, date, otp_code, status, details
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'SUCCESS', $13)
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'SUCCESS', $14)
                 `, [
                     'QR_VERIFIED_INDIVIDUAL',
                     req.user.id,
-                    req.user.emp_id,
+                    req.user.emp_id || '',
                     req.user.role,
                     student.student_id,
                     activeQr.department_id,

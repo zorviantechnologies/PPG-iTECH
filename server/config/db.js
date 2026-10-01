@@ -149,6 +149,15 @@ const withDbClient = async (handler) => {
 
     try {
         return await handler(client);
+    } catch (err) {
+        if (client) {
+            try {
+                await client.query('ROLLBACK');
+            } catch (rbErr) {
+                // Quiet ignore rollback errors
+            }
+        }
+        throw err;
     } finally {
         if (client) client.release();
     }
